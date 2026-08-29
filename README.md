@@ -1,8 +1,8 @@
-License & Document Expiry Tracker
+# License & Document Expiry Tracker
 
 A privacy-first web application for tracking document expiration dates and receiving reminders before they expire.
 
-Features
+## Features
 
 - User authentication
 - Track document expiration dates
@@ -12,7 +12,7 @@ Features
 - Google Calendar integration
 - Custom document types
 
-Supported Documents
+## Supported Documents
 
 - National ID
 - Driving License
@@ -21,46 +21,47 @@ Supported Documents
 - Vehicle Insurance
 - Custom Documents
 
-Privacy
+## Privacy
 
 The application follows a data-minimization approach.
 
-Stored
+### Stored
 
 - Document type
 - Expiration date
 - Optional nickname
 - Reminder preferences
 
-Not Required
+### Not Required
 
 - National ID numbers
 - Passport numbers
 - Driving license numbers
 - Document scans or photos
 
-Tech Stack
+## Tech Stack
 
-Frontend
+### Frontend
 
 - React
 - TypeScript
 - Tailwind CSS
 
-Backend
+### Backend
 
 - Node.js
 - Express
 - PostgreSQL
 - Prisma ORM
 
-Integrations
+### Integrations
 
 - Google Calendar API
 - Email notifications
 
-Project Structure
+## Project Structure
 
+```text
 license-tracker/
 ├── client/
 │   └── src/
@@ -82,39 +83,47 @@ license-tracker/
 ├── .env.example
 ├── .gitignore
 └── README.md
+```
 
-API
+## API
 
-Authentication
+### Authentication
 
+```http
 POST /api/auth/register
 POST /api/auth/login
 POST /api/auth/refresh
+```
 
-Documents
+### Documents
 
+```http
 GET    /api/documents
 POST   /api/documents
 GET    /api/documents/:id
 PATCH  /api/documents/:id
 DELETE /api/documents/:id
+```
 
-Calendar
+### Calendar
 
+```http
 GET    /api/calendar/connect
 POST   /api/calendar/events
 DELETE /api/calendar/events/:id
+```
 
-Expiry Status
+## Expiry Status
 
-Status| Time Remaining
-Expired| 0 days or less
-Critical| 1–7 days
-Expiring Soon| 8–30 days
-Upcoming| 31–90 days
-Valid| 90+ days
+| Status | Time Remaining |
+|---|---|
+| Expired | 0 days or less |
+| Critical | 1–7 days |
+| Expiring Soon | 8–30 days |
+| Upcoming | 31–90 days |
+| Valid | 90+ days |
 
-Default Reminders
+## Default Reminders
 
 - 90 days before expiration
 - 30 days before expiration
@@ -122,6 +131,6 @@ Default Reminders
 - 1 day before expiration
 - Expiration day
 
-Disclaimer
+## Disclaimer
 
 This application is an independent document reminder tool and is not affiliated with or endorsed by any government authority.
