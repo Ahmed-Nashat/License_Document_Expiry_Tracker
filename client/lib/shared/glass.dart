@@ -1,17 +1,25 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
+// ─── Monochromatic design tokens (mirrors main.dart) ─────────────────────────
+const _fog = Color(0xFFF1EFE8);
+const _white = Color(0xFFFFFFFF);
+const _border = Color(0xFFD3D1C7);
+const _borderDark = Color(0xFF3A3A38);
+const _surfaceDark = Color(0xFF1A1A18);
+
 enum GlassBlurLevel {
-  subtle(8.0), // backdrop-blur-sm
-  medium(16.0), // backdrop-blur-md
-  strong(28.0), // backdrop-blur-xl
-  maximum(50.0); // backdrop-blur-3xl
+  subtle(8.0),
+  medium(16.0),
+  strong(28.0),
+  maximum(50.0);
 
   final double sigma;
   const GlassBlurLevel(this.sigma);
 }
 
-/// Rich Apple-style background with glowing ambient orbs so glassmorphism blur is clearly visible.
+/// Flat monochromatic app background — clean fog in light, deep graphite in dark.
+/// No gradients or ambient orbs; surfaces carry all the hierarchy.
 class GlassBackground extends StatelessWidget {
   const GlassBackground({super.key, required this.child});
 
@@ -23,47 +31,30 @@ class GlassBackground extends StatelessWidget {
 
     return Stack(
       children: [
-        // Clean base gradient background
         Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isDark
-                    ? const [
-                        Color(0xFF0A1020),
-                        Color(0xFF101A31),
-                        Color(0xFF0B1326),
-                      ]
-                    : const [
-                        Color(0xFFF8FAFF),
-                        Color(0xFFEEF3FF),
-                        Color(0xFFF8F9FC),
-                      ],
-              ),
-            ),
+          child: ColoredBox(
+            color: isDark ? const Color(0xFF0E0E0C) : _fog,
           ),
         ),
-
-        // Content
         Positioned.fill(child: child),
       ],
     );
   }
 }
 
-/// Advanced Frosted Glass Panel implementing the Glassmorphism Advanced design specification.
+/// Frosted glass panel — Apple Liquid Glass frosting retained but all
+/// colored drop-shadows removed. Surfaces read as white/graphite only.
 class AdvancedGlassPanel extends StatelessWidget {
   const AdvancedGlassPanel({
     super.key,
     required this.child,
-    this.blurLevel = GlassBlurLevel.strong, // default: backdrop-blur-xl
+    this.blurLevel = GlassBlurLevel.medium,
     this.padding,
-    this.radius = 24.0,
+    this.radius = 12.0,
     this.tint,
+    /// Retained for API compatibility; ignored in monochromatic theme.
     this.primaryColor,
-    this.showBorder = false,
+    this.showBorder = true,
   });
 
   final Widget child;
@@ -78,48 +69,28 @@ class AdvancedGlassPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Critical Rules from SKILL.md:
-    // 1. backdrop-blur required
-    // 2. Semi-transparent background (bg-white/10 to bg-white/25, dark:bg-black/40 to dark:bg-white/5)
-    // 3. Subtle borders: border-white/20 with specular light gradient
-    // 4. Shadow for depth: shadow-xl shadow-primary/10
-    // 5. Dark mode variant defined
-    final List<Color> surfaceColors;
+    final Color surface;
     if (tint != null) {
-      surfaceColors = [
-        tint!.withValues(alpha: isDark ? 0.75 : 0.90),
-        tint!.withValues(alpha: isDark ? 0.55 : 0.80),
-      ];
+      surface = tint!.withValues(alpha: isDark ? 0.72 : 0.90);
     } else if (isDark) {
-      surfaceColors = [
-        const Color(0xFF1E293B).withValues(alpha: 0.70),
-        const Color(0xFF0F172A).withValues(alpha: 0.85),
-      ];
+      surface = _surfaceDark.withValues(alpha: 0.82);
     } else {
-      surfaceColors = [
-        Colors.white.withValues(alpha: 0.92),
-        Colors.white.withValues(alpha: 0.82),
-      ];
+      surface = _white.withValues(alpha: 0.92);
     }
 
-    final Color shadowBaseColor = primaryColor ?? const Color(0xFF2563EB);
+    final borderColor = isDark
+        ? _borderDark.withValues(alpha: 0.60)
+        : _border.withValues(alpha: 0.80);
 
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(radius),
+        // Single neutral shadow — no color bloom
         boxShadow: [
-          // Colored depth shadow: shadow-xl shadow-primary/20
           BoxShadow(
-            color: shadowBaseColor.withValues(alpha: isDark ? 0.28 : 0.16),
-            blurRadius: 32,
-            offset: const Offset(0, 14),
-            spreadRadius: -2,
-          ),
-          // Ambient soft ambient dark shadow
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.08),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -134,17 +105,9 @@ class AdvancedGlassPanel extends StatelessWidget {
             padding: padding,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(radius),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: surfaceColors,
-              ),
+              color: surface,
               border: showBorder
-                  ? Border.all(
-                      color:
-                          Colors.white.withValues(alpha: isDark ? 0.22 : 0.55),
-                      width: 1.2,
-                    )
+                  ? Border.all(color: borderColor, width: 1)
                   : null,
             ),
             child: child,
@@ -155,7 +118,7 @@ class AdvancedGlassPanel extends StatelessWidget {
   }
 }
 
-/// A pre-built layered glass stack as described in SKILL.md
+/// Layered glass stack (kept for API compatibility).
 class LayeredGlassStack extends StatelessWidget {
   const LayeredGlassStack({
     super.key,
@@ -173,17 +136,14 @@ class LayeredGlassStack extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Background layer - most blur (3xl), bg-white/5
         Positioned.fill(
           child: AdvancedGlassPanel(
             blurLevel: GlassBlurLevel.maximum,
-            tint: isDark ? const Color(0xFF1E293B) : Colors.white,
-            radius: 32,
-            primaryColor: primaryColor,
+            tint: isDark ? _surfaceDark : _white,
+            radius: 24,
             child: const SizedBox.expand(),
           ),
         ),
-        // Middle layer - strong blur (xl), bg-white/10
         Positioned.fill(
           top: 10,
           bottom: 10,
@@ -191,21 +151,18 @@ class LayeredGlassStack extends StatelessWidget {
           right: 10,
           child: AdvancedGlassPanel(
             blurLevel: GlassBlurLevel.strong,
-            tint: isDark ? const Color(0xFF334155) : Colors.white,
-            radius: 28,
-            primaryColor: primaryColor,
+            tint: isDark ? const Color(0xFF222220) : _white,
+            radius: 20,
             child: const SizedBox.expand(),
           ),
         ),
-        // Content layer - medium blur (md), bg-white/20
         Padding(
           padding: const EdgeInsets.all(20.0),
           child: AdvancedGlassPanel(
             blurLevel: GlassBlurLevel.medium,
-            tint: isDark ? const Color(0xFF0F172A) : Colors.white,
-            radius: 24,
+            tint: isDark ? const Color(0xFF111110) : _white,
+            radius: 16,
             padding: const EdgeInsets.all(24.0),
-            primaryColor: primaryColor,
             child: child,
           ),
         ),

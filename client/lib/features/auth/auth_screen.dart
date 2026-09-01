@@ -8,6 +8,19 @@ import '../../shared/theme_mode.dart';
 import 'auth_api.dart';
 import 'auth_controller.dart';
 
+// ─── Monochromatic tokens ─────────────────────────────────────────────────────
+const _ink = Color(0xFF111111);
+const _charcoal = Color(0xFF444441);
+const _gray = Color(0xFFB4B2A9);
+const _fog = Color(0xFFF1EFE8);
+const _border = Color(0xFFD3D1C7);
+const _white = Color(0xFFFFFFFF);
+
+const _inkDark = Color(0xFFFAFAFA);
+const _charcoalDark = Color(0xFFB4B2A9);
+const _borderDark = Color(0xFF3A3A38);
+const _surfaceDark = Color(0xFF1A1A18);
+
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key, this.connectionError});
 
@@ -96,9 +109,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         });
       }
     } finally {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-      }
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -116,9 +127,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       final res = await ref.read(authApiProvider).requestPasswordReset(email);
       if (mounted) {
         final devCode = res['code'] as String?;
-        if (devCode != null) {
-          _resetCodeController.text = devCode;
-        }
+        if (devCode != null) _resetCodeController.text = devCode;
         setState(() {
           _resetStep = 1;
           _message = null;
@@ -169,7 +178,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           _resetCodeController.clear();
           _message = null;
           _successMessage =
-              'Password updated successfully! Please sign in with your new password.';
+              'Password updated. Sign in with your new password.';
         });
       }
     } on AuthException catch (error) {
@@ -211,21 +220,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1160),
+                constraints: const BoxConstraints(maxWidth: 1100),
                 child: isWide
                     ? Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Expanded(child: _introPanel(isDark)),
                           const SizedBox(width: 64),
-                          SizedBox(width: 430, child: _formCard(isDark)),
+                          SizedBox(width: 420, child: _formCard(isDark)),
                         ],
                       )
                     : Center(
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 430),
+                          constraints: const BoxConstraints(maxWidth: 420),
                           child: _formCard(isDark),
                         ),
                       ),
@@ -237,58 +247,85 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
   }
 
+  // ── Left intro panel (wide layout only) ────────────────────────────────────
+
   Widget _introPanel(bool isDark) => Padding(
-        padding: EdgeInsets.symmetric(horizontal: 26),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: const [
-              BrandMark(),
-              SizedBox(width: 12),
+            Row(children: [
+              const BrandMark(),
+              const SizedBox(width: 12),
               Text('DueNest',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-              Spacer(),
-              ThemeToggleButton(),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.4,
+                    color: isDark ? _inkDark : _ink,
+                  )),
+              const Spacer(),
+              const ThemeToggleButton(),
             ]),
-            SizedBox(height: 56),
-            Text('Never miss\nwhat’s due.',
-                style: TextStyle(
-                    fontSize: 52,
-                    height: 1.04,
-                    letterSpacing: -2,
-                    fontWeight: FontWeight.w800)),
-            SizedBox(height: 20),
+            const SizedBox(height: 56),
             Text(
-                'A calm, private home for the documents, licences, and subscriptions that matter.',
-                style: TextStyle(
-                    fontSize: 18,
-                    height: 1.55,
-                    color: isDark
-                        ? const Color(0xFF94A3B8)
-                        : const Color(0xFF4B5563))),
-            SizedBox(height: 38),
+              'Never miss\nwhat\u2019s due.',
+              style: TextStyle(
+                fontSize: 48,
+                height: 1.08,
+                letterSpacing: -2,
+                fontWeight: FontWeight.w600,
+                color: isDark ? _inkDark : _ink,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'A calm, private home for the documents, licences, and subscriptions that matter.',
+              style: TextStyle(
+                fontSize: 17,
+                height: 1.55,
+                color: isDark ? _charcoalDark : _charcoal,
+              ),
+            ),
+            const SizedBox(height: 36),
             _Benefit(
                 icon: Icons.notifications_none_rounded,
-                label: 'Clear reminders before each important date'),
-            SizedBox(height: 18),
+                label: 'Clear reminders before each important date',
+                isDark: isDark),
+            const SizedBox(height: 16),
             _Benefit(
                 icon: Icons.shield_outlined,
-                label: 'Your active session stays protected'),
-            SizedBox(height: 18),
+                label: 'Your active session stays protected',
+                isDark: isDark),
+            const SizedBox(height: 16),
             _Benefit(
                 icon: Icons.layers_outlined,
-                label: 'One simple space for everything due'),
+                label: 'One simple space for everything due',
+                isDark: isDark),
           ],
         ),
       );
 
-  Widget _formCard(bool isDark) => AdvancedGlassPanel(
-        radius: 30,
+  // ── Right form card ────────────────────────────────────────────────────────
+
+  Widget _formCard(bool isDark) => Container(
+        decoration: BoxDecoration(
+          color: isDark ? _surfaceDark : _white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isDark ? _borderDark : _border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.06),
+              blurRadius: 24,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
         child: Padding(
           padding: const EdgeInsets.all(30),
           child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 320),
+            duration: const Duration(milliseconds: 280),
             transitionBuilder: (child, animation) => FadeTransition(
               opacity: animation,
               child: SlideTransition(
@@ -306,37 +343,45 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ),
       );
 
+  // ── Forgot password content ────────────────────────────────────────────────
+
   Widget _forgotPasswordContent(bool isDark) => Column(
         key: const ValueKey<String>('forgot_password_view'),
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (MediaQuery.sizeOf(context).width < 900) ...[
-            Row(children: const [
-              BrandMark(size: 38),
-              SizedBox(width: 10),
+            Row(children: [
+              const BrandMark(size: 36),
+              const SizedBox(width: 10),
               Text('DueNest',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-              Spacer(),
-              ThemeToggleButton(),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? _inkDark : _ink,
+                  )),
+              const Spacer(),
+              const ThemeToggleButton(),
             ]),
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
           ],
           Text(
             _resetStep == 0 ? 'Reset password' : 'Enter reset code',
-            style: const TextStyle(
-                fontSize: 29, letterSpacing: -1, fontWeight: FontWeight.w800),
+            style: TextStyle(
+              fontSize: 22,
+              letterSpacing: -0.6,
+              fontWeight: FontWeight.w600,
+              color: isDark ? _inkDark : _ink,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             _resetStep == 0
-                ? '5 continuous failed sign-in attempts detected. Enter your email to recover access.'
+                ? '5 failed sign-in attempts detected. Enter your email to recover access.'
                 : 'Enter the 6-digit code and your new password below.',
             style: TextStyle(
-                color:
-                    isDark ? const Color(0xFF94A3B8) : const Color(0xFF6B7280),
-                height: 1.4),
+                color: isDark ? _charcoalDark : _charcoal, height: 1.4, fontSize: 14),
           ),
-          const SizedBox(height: 26),
+          const SizedBox(height: 22),
           if (_message != null) _MessageBox(message: _message!),
           if (_resetStep == 0) ...[
             TextFormField(
@@ -347,22 +392,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   labelText: 'Email address',
                   prefixIcon: Icon(Icons.mail_outline_rounded)),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             FilledButton(
               onPressed: _isSubmitting ? null : _submitForgotPassword,
               style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14))),
+                  minimumSize: const Size.fromHeight(50)),
               child: _isSubmitting
                   ? const SizedBox(
-                      width: 20,
-                      height: 20,
+                      width: 18,
+                      height: 18,
                       child: CircularProgressIndicator(
                           color: Colors.white, strokeWidth: 2))
                   : const Text('Send reset code'),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
           ] else ...[
             TextFormField(
               controller: _resetCodeController,
@@ -373,17 +416,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   counterText: '',
                   prefixIcon: Icon(Icons.pin_outlined)),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             TextFormField(
               controller: _newPasswordController,
               obscureText: _obscureNewPassword,
               decoration: InputDecoration(
                 labelText: 'New password',
                 helperText: 'Use at least 12 characters.',
-                helperStyle: TextStyle(
-                    color: isDark
-                        ? const Color(0xFF94A3B8)
-                        : const Color(0xFF6B7280)),
+                helperStyle:
+                    TextStyle(color: isDark ? _charcoalDark : _charcoal),
                 prefixIcon: const Icon(Icons.lock_outline_rounded),
                 suffixIcon: IconButton(
                   tooltip:
@@ -393,43 +434,43 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   icon: Icon(_obscureNewPassword
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined),
+                  style: IconButton.styleFrom(side: BorderSide.none),
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             FilledButton(
               onPressed: _isSubmitting ? null : _submitConfirmReset,
               style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14))),
+                  minimumSize: const Size.fromHeight(50)),
               child: _isSubmitting
                   ? const SizedBox(
-                      width: 20,
-                      height: 20,
+                      width: 18,
+                      height: 18,
                       child: CircularProgressIndicator(
                           color: Colors.white, strokeWidth: 2))
                   : const Text('Save new password'),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
           ],
           TextButton.icon(
             onPressed: _backToSignIn,
-            icon: const Icon(Icons.arrow_back_rounded, size: 18),
+            icon: const Icon(Icons.arrow_back_rounded, size: 16),
             label: const Text('Back to Sign in'),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Text(
-              'Your privacy is protected. Reset links expire after 15 minutes and can only be used once.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 12,
-                  height: 1.45,
-                  color: isDark
-                      ? const Color(0xFFCBD5E1)
-                      : const Color(0xFF6B7280))),
+            'Reset links expire after 15 minutes and can only be used once.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: 12,
+                height: 1.45,
+                color: isDark ? _charcoalDark : _gray),
+          ),
         ],
       );
+
+  // ── Auth form content ──────────────────────────────────────────────────────
 
   Widget _authFormContent(bool isDark) => AutofillGroup(
         key: const ValueKey<String>('auth_form_view'),
@@ -440,23 +481,26 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             children: [
               if (MediaQuery.sizeOf(context).width < 900) ...[
                 Row(children: [
-                  BrandMark(size: 38),
-                  SizedBox(width: 10),
+                  const BrandMark(size: 36),
+                  const SizedBox(width: 10),
                   Text('DueNest',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? _inkDark : _ink,
+                      )),
                   const Spacer(),
                   const ThemeToggleButton(),
                 ]),
-                const SizedBox(height: 32),
+                const SizedBox(height: 28),
               ],
               AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
+                duration: const Duration(milliseconds: 220),
                 transitionBuilder: (child, animation) => FadeTransition(
                   opacity: animation,
                   child: SlideTransition(
                     position: Tween<Offset>(
-                      begin: const Offset(0.0, 0.08),
+                      begin: const Offset(0.0, 0.06),
                       end: Offset.zero,
                     ).animate(animation),
                     child: child,
@@ -469,27 +513,28 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     children: [
                       Text(
                         _isRegistering ? 'Create your space' : 'Welcome back',
-                        style: const TextStyle(
-                            fontSize: 29,
-                            letterSpacing: -1,
-                            fontWeight: FontWeight.w800),
+                        style: TextStyle(
+                          fontSize: 22,
+                          letterSpacing: -0.6,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? _inkDark : _ink,
+                        ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(
                         _isRegistering
                             ? 'Start with a secure DueNest account.'
-                            : 'Sign in to see what’s coming due.',
+                            : 'Sign in to see what\u2019s coming due.',
                         style: TextStyle(
-                            color: isDark
-                                ? const Color(0xFF94A3B8)
-                                : const Color(0xFF6B7280),
-                            height: 1.4),
+                            color: isDark ? _charcoalDark : _charcoal,
+                            height: 1.4,
+                            fontSize: 14),
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 26),
+              const SizedBox(height: 22),
               if (widget.connectionError != null && !_isSubmitting)
                 const _MessageBox(
                     message:
@@ -497,6 +542,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               if (_successMessage != null)
                 _SuccessBox(message: _successMessage!),
               if (_message != null) _MessageBox(message: _message!),
+
+              // Register-only fields
               AnimatedCrossFade(
                 firstChild: const SizedBox.shrink(),
                 secondChild: Padding(
@@ -511,12 +558,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         decoration: const InputDecoration(
                             labelText: 'Your name',
                             prefixIcon: Icon(Icons.person_outline_rounded)),
-                        validator: (value) => _isRegistering &&
-                                (value == null || value.trim().isEmpty)
-                            ? 'Enter your name.'
-                            : null,
+                        validator: (value) =>
+                            _isRegistering &&
+                                    (value == null || value.trim().isEmpty)
+                                ? 'Enter your name.'
+                                : null,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       GlassDropdownField<String>(
                         initialValue: _ageRange,
                         labelText: 'Age range',
@@ -524,17 +572,23 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         items: const [
                           GlassDropdownItem(
                               value: 'UNDER_18', label: 'Under 18'),
-                          GlassDropdownItem(value: 'AGE_18_24', label: '18–24'),
-                          GlassDropdownItem(value: 'AGE_25_34', label: '25–34'),
-                          GlassDropdownItem(value: 'AGE_35_44', label: '35–44'),
-                          GlassDropdownItem(value: 'AGE_45_PLUS', label: '45+'),
+                          GlassDropdownItem(
+                              value: 'AGE_18_24', label: '18–24'),
+                          GlassDropdownItem(
+                              value: 'AGE_25_34', label: '25–34'),
+                          GlassDropdownItem(
+                              value: 'AGE_35_44', label: '35–44'),
+                          GlassDropdownItem(
+                              value: 'AGE_45_PLUS', label: '45+'),
                         ],
-                        onChanged: (value) => setState(() => _ageRange = value),
-                        validator: (value) => _isRegistering && value == null
-                            ? 'Select your age range.'
-                            : null,
+                        onChanged: (value) =>
+                            setState(() => _ageRange = value),
+                        validator: (value) =>
+                            _isRegistering && value == null
+                                ? 'Select your age range.'
+                                : null,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       GlassDropdownField<String>(
                         initialValue: _gender,
                         labelText: 'Gender',
@@ -550,20 +604,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                               label: 'Female',
                               icon: Icons.female_rounded),
                         ],
-                        onChanged: (value) => setState(() => _gender = value),
+                        onChanged: (value) =>
+                            setState(() => _gender = value),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                     ],
                   ),
                 ),
                 crossFadeState: _isRegistering
                     ? CrossFadeState.showSecond
                     : CrossFadeState.showFirst,
-                duration: const Duration(milliseconds: 320),
+                duration: const Duration(milliseconds: 300),
                 sizeCurve: Curves.easeInOutCubic,
                 firstCurve: Curves.easeOut,
                 secondCurve: Curves.easeIn,
               ),
+
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -578,7 +634,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ? 'Enter a valid email address.'
                     : null,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
               TextFormField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
@@ -591,10 +647,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   labelText: 'Password',
                   helperText:
                       _isRegistering ? 'Use at least 12 characters.' : null,
-                  helperStyle: TextStyle(
-                      color: isDark
-                          ? const Color(0xFF94A3B8)
-                          : const Color(0xFF6B7280)),
+                  helperStyle:
+                      TextStyle(color: isDark ? _charcoalDark : _charcoal),
                   prefixIcon: const Icon(Icons.lock_outline_rounded),
                   suffixIcon: IconButton(
                     tooltip:
@@ -604,6 +658,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     icon: Icon(_obscurePassword
                         ? Icons.visibility_outlined
                         : Icons.visibility_off_outlined),
+                    style: IconButton.styleFrom(side: BorderSide.none),
                   ),
                 ),
                 validator: (value) => value == null || value.length < 12
@@ -611,21 +666,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     : null,
                 onFieldSubmitted: (_) => _submit(),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 22),
               FilledButton(
                 onPressed: _isSubmitting ? null : _submit,
                 style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14))),
+                    minimumSize: const Size.fromHeight(50)),
                 child: _isSubmitting
                     ? const SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 18,
+                        height: 18,
                         child: CircularProgressIndicator(
                             color: Colors.white, strokeWidth: 2))
                     : AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 200),
+                        duration: const Duration(milliseconds: 180),
                         transitionBuilder: (child, animation) =>
                             FadeTransition(opacity: animation, child: child),
                         child: Text(
@@ -634,11 +687,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         ),
                       ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
               TextButton(
                 onPressed: _isSubmitting ? null : _toggleMode,
                 child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
+                  duration: const Duration(milliseconds: 180),
                   transitionBuilder: (child, animation) =>
                       FadeTransition(opacity: animation, child: child),
                   child: Text(
@@ -649,41 +702,49 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
               Text(
-                  'By continuing, you keep access to a private reminder space. We do not ask for document scans or ID numbers.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: 12,
-                      height: 1.45,
-                      color: isDark
-                          ? const Color(0xFFCBD5E1)
-                          : const Color(0xFF6B7280))),
+                'We do not ask for document scans or ID numbers.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 12,
+                    height: 1.45,
+                    color: isDark ? _charcoalDark : _gray),
+              ),
             ],
           ),
         ),
       );
 }
 
+// ─── Benefit row ──────────────────────────────────────────────────────────────
+
 class _Benefit extends StatelessWidget {
-  const _Benefit({required this.icon, required this.label});
+  const _Benefit(
+      {required this.icon, required this.label, required this.isDark});
 
   final IconData icon;
   final String label;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) => Row(
         children: [
-          Icon(icon, color: const Color(0xFF3B82F6), size: 26),
+          Icon(icon, color: isDark ? _charcoalDark : _charcoal, size: 22),
           const SizedBox(width: 14),
           Expanded(
             child: Text(label,
-                style:
-                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? _inkDark : _ink,
+                )),
           ),
         ],
       );
 }
+
+// ─── Message boxes ────────────────────────────────────────────────────────────
 
 class _MessageBox extends StatelessWidget {
   const _MessageBox({required this.message});
@@ -691,37 +752,30 @@ class _MessageBox extends StatelessWidget {
   final String message;
 
   @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: Container(
-        padding: const EdgeInsets.all(13),
-        decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF3F1212) : const Color(0xFFFFF1F0),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-                color: isDark
-                    ? const Color(0xFF7F1D1D)
-                    : const Color(0xFFFCA5A5))),
-        child: Row(
-          children: [
-            Icon(Icons.info_outline_rounded,
-                color:
-                    isDark ? const Color(0xFFF87171) : const Color(0xFFBA1A1A)),
-            const SizedBox(width: 10),
-            Expanded(
-                child: Text(message,
-                    style: TextStyle(
-                        color: isDark
-                            ? const Color(0xFFFECACA)
-                            : const Color(0xFF8A1010),
-                        height: 1.35))),
-          ],
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFCEBEB),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFEFCACA)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.info_outline_rounded,
+                  color: Color(0xFF791F1F), size: 17),
+              const SizedBox(width: 10),
+              Expanded(
+                  child: Text(message,
+                      style: const TextStyle(
+                          color: Color(0xFF791F1F),
+                          height: 1.35,
+                          fontSize: 13))),
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
 }
 
 class _SuccessBox extends StatelessWidget {
@@ -730,35 +784,28 @@ class _SuccessBox extends StatelessWidget {
   final String message;
 
   @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: Container(
-        padding: const EdgeInsets.all(13),
-        decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF063E26) : const Color(0xFFE6F4EA),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-                color: isDark
-                    ? const Color(0xFF047857)
-                    : const Color(0xFF86EFAC))),
-        child: Row(
-          children: [
-            Icon(Icons.check_circle_outline_rounded,
-                color:
-                    isDark ? const Color(0xFF34D399) : const Color(0xFF137333)),
-            const SizedBox(width: 10),
-            Expanded(
-                child: Text(message,
-                    style: TextStyle(
-                        color: isDark
-                            ? const Color(0xFFA7F3D0)
-                            : const Color(0xFF0D652D),
-                        height: 1.35))),
-          ],
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEAF3DE),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFC5DFB0)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.check_circle_outline_rounded,
+                  color: Color(0xFF27500A), size: 17),
+              const SizedBox(width: 10),
+              Expanded(
+                  child: Text(message,
+                      style: const TextStyle(
+                          color: Color(0xFF27500A),
+                          height: 1.35,
+                          fontSize: 13))),
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
 }

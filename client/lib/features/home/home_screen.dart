@@ -10,6 +10,19 @@ import '../documents/document_dialog.dart';
 import '../documents/document_models.dart';
 import '../documents/documents_controller.dart';
 
+// ─── Monochromatic tokens ─────────────────────────────────────────────────────
+const _ink = Color(0xFF111111);
+const _charcoal = Color(0xFF444441);
+const _gray = Color(0xFFB4B2A9);
+const _fog = Color(0xFFF1EFE8);
+const _border = Color(0xFFD3D1C7);
+const _white = Color(0xFFFFFFFF);
+
+const _inkDark = Color(0xFFFAFAFA);
+const _charcoalDark = Color(0xFFB4B2A9);
+const _borderDark = Color(0xFF3A3A38);
+const _surfaceDark = Color(0xFF1A1A18);
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key, required this.session});
 
@@ -32,17 +45,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete tracked item?'),
+        backgroundColor: _white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: _border),
+        ),
+        title: const Text('Delete tracked item?',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
         content: Text(
-            'Are you sure you want to delete "${doc.title}"? This cannot be undone.'),
+          'Are you sure you want to delete "${doc.title}"? This cannot be undone.',
+          style: const TextStyle(fontSize: 14, color: _charcoal, height: 1.4),
+        ),
         actions: [
-          TextButton(
+          OutlinedButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Cancel'),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444)),
+              backgroundColor: const Color(0xFF791F1F),
+              foregroundColor: _white,
+            ),
             onPressed: () {
               Navigator.of(context).pop();
               ref
@@ -75,30 +98,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               constraints: const BoxConstraints(maxWidth: 1180),
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Navigation Bar
+                    // ── Navigation bar ───────────────────────────────────
                     Row(
                       children: [
-                        const BrandMark(size: 38),
+                        const BrandMark(size: 36),
                         const SizedBox(width: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'DueNest',
                               style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.w900),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.4,
+                                color: isDark ? _inkDark : _ink,
+                              ),
                             ),
                             Text(
                               'Welcome back, $name',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: isDark
-                                    ? const Color(0xFF94A3B8)
-                                    : const Color(0xFF64748B),
+                                color: isDark ? _charcoalDark : _charcoal,
                               ),
                             ),
                           ],
@@ -111,13 +136,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           onPressed: () => ref
                               .read(authControllerProvider.notifier)
                               .signOut(),
-                          icon: const Icon(Icons.logout_rounded, size: 18),
+                          icon: Icon(Icons.logout_rounded,
+                              size: 17,
+                              color: isDark ? _charcoalDark : _charcoal),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 20),
 
-                    // Top Action & Search Bar
+                    // ── Search + Add button ──────────────────────────────
                     Row(
                       children: [
                         Expanded(
@@ -126,13 +153,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             onChanged: (val) => ref
                                 .read(documentSearchQueryProvider.notifier)
                                 .state = val,
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: isDark ? _inkDark : _ink),
                             decoration: InputDecoration(
-                              hintText: 'Search documents, providers, notes...',
-                              prefixIcon: const Icon(Icons.search_rounded),
+                              hintText: 'Search documents, providers…',
+                              prefixIcon:
+                                  Icon(Icons.search_rounded, color: _gray),
                               suffixIcon: _searchController.text.isNotEmpty
                                   ? IconButton(
-                                      icon: const Icon(Icons.clear_rounded,
-                                          size: 18),
+                                      icon: Icon(Icons.clear_rounded,
+                                          size: 16, color: _gray),
                                       onPressed: () {
                                         _searchController.clear();
                                         ref
@@ -147,30 +178,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 14),
+                        const SizedBox(width: 12),
                         FilledButton.icon(
                           onPressed: () => showDocumentDialog(context),
-                          icon: const Icon(Icons.add_rounded),
+                          icon: const Icon(Icons.add_rounded, size: 18),
                           label: const Text('Add item'),
                           style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 18),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 12),
 
-                    // Filter category pills
+                    // ── Filter chips ─────────────────────────────────────
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
                           FilterChip(
-                            label: const Text('All items'),
+                            label: const Text('All'),
                             selected: selectedType == null && !showArchived,
                             onSelected: (_) {
                               ref
@@ -186,7 +214,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             (type) => Padding(
                               padding: const EdgeInsets.only(right: 8),
                               child: FilterChip(
-                                avatar: Icon(type.icon, size: 16),
+                                avatar: Icon(type.icon,
+                                    size: 14,
+                                    color: selectedType == type && !showArchived
+                                        ? (isDark ? _surfaceDark : _white)
+                                        : _gray),
                                 label: Text(type.label),
                                 selected: selectedType == type && !showArchived,
                                 onSelected: (_) {
@@ -202,8 +234,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ),
                           FilterChip(
-                            avatar:
-                                const Icon(Icons.archive_outlined, size: 16),
+                            avatar: Icon(Icons.archive_outlined,
+                                size: 14,
+                                color: showArchived
+                                    ? (isDark ? _surfaceDark : _white)
+                                    : _gray),
                             label: const Text('Archived'),
                             selected: showArchived,
                             onSelected: (val) {
@@ -222,19 +257,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Document List & Status Breakdown
+                    // ── Document list ────────────────────────────────────
                     Expanded(
                       child: docsAsync.when(
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
+                        loading: () => Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: isDark ? _inkDark : _ink,
+                          ),
+                        ),
                         error: (err, stack) => Center(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.error_outline_rounded,
-                                  size: 36, color: Colors.red),
+                              Icon(Icons.error_outline_rounded,
+                                  size: 32,
+                                  color: isDark ? _charcoalDark : _charcoal),
                               const SizedBox(height: 12),
-                              const Text('Failed to load documents.'),
+                              const Text('Failed to load documents.',
+                                  style: TextStyle(fontSize: 14)),
                               const SizedBox(height: 12),
                               FilledButton(
                                 onPressed: () => ref
@@ -253,25 +294,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              // Urgency Metrics Cards
                               _MetricsRow(docs: docs, isDark: isDark),
-                              const SizedBox(height: 18),
-
-                              // Grid of Documents
+                              const SizedBox(height: 16),
                               Expanded(
                                 child: LayoutBuilder(
                                   builder: (context, constraints) {
-                                    final width = constraints.maxWidth;
-                                    final crossAxisCount =
-                                        width > 900 ? 3 : (width > 600 ? 2 : 1);
-
+                                    final w = constraints.maxWidth;
+                                    final cols =
+                                        w > 900 ? 3 : (w > 600 ? 2 : 1);
                                     return GridView.builder(
                                       gridDelegate:
                                           SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: crossAxisCount,
-                                        mainAxisSpacing: 16,
-                                        crossAxisSpacing: 16,
-                                        mainAxisExtent: 195,
+                                        crossAxisCount: cols,
+                                        mainAxisSpacing: 12,
+                                        crossAxisSpacing: 12,
+                                        mainAxisExtent: 188,
                                       ),
                                       itemCount: docs.length,
                                       itemBuilder: (context, index) {
@@ -311,6 +348,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
+// ─── Metrics row ─────────────────────────────────────────────────────────────
+
 class _MetricsRow extends StatelessWidget {
   const _MetricsRow({required this.docs, required this.isDark});
 
@@ -319,6 +358,8 @@ class _MetricsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final expired =
+        docs.where((d) => d.urgency == ExpiryUrgency.expired).length;
     final critical =
         docs.where((d) => d.urgency == ExpiryUrgency.critical).length;
     final expiringSoon =
@@ -326,110 +367,117 @@ class _MetricsRow extends StatelessWidget {
     final upcoming =
         docs.where((d) => d.urgency == ExpiryUrgency.upcoming).length;
     final valid = docs.where((d) => d.urgency == ExpiryUrgency.valid).length;
-    final expired =
-        docs.where((d) => d.urgency == ExpiryUrgency.expired).length;
 
     return Row(
       children: [
-        if (expired > 0) ...[
-          Expanded(
-              child: _MetricBadge(
-                  label: 'Expired',
-                  count: expired,
-                  color: const Color(0xFFEF4444),
-                  isDark: isDark)),
-          const SizedBox(width: 8),
-        ],
-        Expanded(
-            child: _MetricBadge(
-                label: 'Critical',
-                count: critical,
-                color: const Color(0xFFF87171),
-                isDark: isDark)),
+        _MetricTile(
+            label: 'Expired',
+            count: expired,
+            badgeBg: ExpiryUrgency.expired.badgeBg,
+            badgeText: ExpiryUrgency.expired.badgeText,
+            isDark: isDark),
         const SizedBox(width: 8),
-        Expanded(
-            child: _MetricBadge(
-                label: 'Expiring soon',
-                count: expiringSoon,
-                color: const Color(0xFFFBBF24),
-                isDark: isDark)),
+        _MetricTile(
+            label: 'Critical',
+            count: critical,
+            badgeBg: ExpiryUrgency.critical.badgeBg,
+            badgeText: ExpiryUrgency.critical.badgeText,
+            isDark: isDark),
         const SizedBox(width: 8),
-        Expanded(
-            child: _MetricBadge(
-                label: 'Upcoming',
-                count: upcoming,
-                color: const Color(0xFF60A5FA),
-                isDark: isDark)),
+        _MetricTile(
+            label: 'Expiring',
+            count: expiringSoon,
+            badgeBg: ExpiryUrgency.expiringSoon.badgeBg,
+            badgeText: ExpiryUrgency.expiringSoon.badgeText,
+            isDark: isDark),
         const SizedBox(width: 8),
-        Expanded(
-            child: _MetricBadge(
-                label: 'Valid',
-                count: valid,
-                color: const Color(0xFF34D399),
-                isDark: isDark)),
+        _MetricTile(
+            label: 'Upcoming',
+            count: upcoming,
+            badgeBg: ExpiryUrgency.upcoming.badgeBg,
+            badgeText: ExpiryUrgency.upcoming.badgeText,
+            isDark: isDark),
+        const SizedBox(width: 8),
+        _MetricTile(
+            label: 'Valid',
+            count: valid,
+            badgeBg: ExpiryUrgency.valid.badgeBg,
+            badgeText: ExpiryUrgency.valid.badgeText,
+            isDark: isDark),
       ],
     );
   }
 }
 
-class _MetricBadge extends StatelessWidget {
-  const _MetricBadge({
+class _MetricTile extends StatelessWidget {
+  const _MetricTile({
     required this.label,
     required this.count,
-    required this.color,
+    required this.badgeBg,
+    required this.badgeText,
     required this.isDark,
   });
 
   final String label;
   final int count;
-  final Color color;
+  final Color badgeBg;
+  final Color badgeText;
   final bool isDark;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0x201E293B)
-            : Colors.white.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withValues(alpha: count > 0 ? 0.6 : 0.2),
-          width: 1.2,
+    final surfaceBg = isDark ? _surfaceDark : _white;
+    final borderC = isDark ? _borderDark : _border;
+
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        decoration: BoxDecoration(
+          color: surfaceBg,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: borderC),
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            '$count',
-            style: TextStyle(
-                fontWeight: FontWeight.w800, fontSize: 13, color: color),
-          ),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              label,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                color:
-                    isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Colored dot — the only color in this widget
+            Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: badgeText,
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 6),
+            Text(
+              '$count',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                color: isDark ? _inkDark : _ink,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isDark ? _charcoalDark : _charcoal,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+
+// ─── Document card ────────────────────────────────────────────────────────────
 
 class _DocumentCard extends StatelessWidget {
   const _DocumentCard({
@@ -451,37 +499,53 @@ class _DocumentCard extends StatelessWidget {
     final urgency = doc.urgency;
     final days = doc.daysRemaining;
 
+    // Calm, plain copy — no exclamation marks
     String daysText;
     if (days < 0) {
       daysText = '${-days}d overdue';
     } else if (days == 0) {
       daysText = 'Expires today';
     } else {
-      daysText = '${days}d left';
+      daysText = 'Expires in $days days';
     }
 
     final dateFormatted =
-        "${doc.expiryDate.year}-${doc.expiryDate.month.toString().padLeft(2, '0')}-${doc.expiryDate.day.toString().padLeft(2, '0')}";
+        '${doc.expiryDate.year}-${doc.expiryDate.month.toString().padLeft(2, '0')}-${doc.expiryDate.day.toString().padLeft(2, '0')}';
 
-    return AdvancedGlassPanel(
-      radius: 18,
-      blurLevel: GlassBlurLevel.medium,
+    final cardBg = isDark ? _surfaceDark : _white;
+    final cardBorder = isDark ? _borderDark : _border;
+
+    // Badge icon
+    final IconData badgeIcon;
+    if (urgency == ExpiryUrgency.expired) {
+      badgeIcon = Icons.warning_amber_outlined;
+    } else if (urgency == ExpiryUrgency.critical ||
+        urgency == ExpiryUrgency.expiringSoon) {
+      badgeIcon = Icons.schedule_rounded;
+    } else {
+      badgeIcon = Icons.check_circle_outline_rounded;
+    }
+
+    return Container(
       padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cardBorder),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              // Category icon — gray, no color
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0x303B82F6)
-                      : const Color(0x182563EB),
-                  borderRadius: BorderRadius.circular(10),
+                  color: isDark ? const Color(0xFF252523) : _fog,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(doc.type.icon,
-                    size: 18, color: const Color(0xFF3B82F6)),
+                child: Icon(doc.type.icon, size: 17, color: _gray),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -489,12 +553,21 @@ class _DocumentCard extends StatelessWidget {
                   doc.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w800, fontSize: 16),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    color: isDark ? _inkDark : _ink,
+                  ),
                 ),
               ),
               PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert_rounded, size: 18),
+                icon: Icon(Icons.more_vert_rounded,
+                    size: 17, color: isDark ? _charcoalDark : _charcoal),
+                color: isDark ? _surfaceDark : _white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide(
+                        color: isDark ? _borderDark : _border)),
                 onSelected: (val) {
                   if (val == 'edit') onEdit();
                   if (val == 'archive') onToggleArchive();
@@ -503,39 +576,36 @@ class _DocumentCard extends StatelessWidget {
                 itemBuilder: (context) => [
                   const PopupMenuItem(
                     value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit_outlined, size: 18),
-                        SizedBox(width: 10),
-                        Text('Edit'),
-                      ],
-                    ),
+                    child: Row(children: [
+                      Icon(Icons.edit_outlined, size: 16),
+                      SizedBox(width: 10),
+                      Text('Edit', style: TextStyle(fontSize: 14)),
+                    ]),
                   ),
                   PopupMenuItem(
                     value: 'archive',
-                    child: Row(
-                      children: [
-                        Icon(
-                          doc.isArchived
-                              ? Icons.unarchive_outlined
-                              : Icons.archive_outlined,
-                          size: 18,
-                        ),
-                        SizedBox(width: 10),
-                        Text(doc.isArchived ? 'Unarchive' : 'Archive'),
-                      ],
-                    ),
+                    child: Row(children: [
+                      Icon(
+                        doc.isArchived
+                            ? Icons.unarchive_outlined
+                            : Icons.archive_outlined,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(doc.isArchived ? 'Unarchive' : 'Archive',
+                          style: const TextStyle(fontSize: 14)),
+                    ]),
                   ),
                   const PopupMenuItem(
                     value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_outline_rounded,
-                            size: 18, color: Colors.red),
-                        SizedBox(width: 10),
-                        Text('Delete', style: TextStyle(color: Colors.red)),
-                      ],
-                    ),
+                    child: Row(children: [
+                      Icon(Icons.delete_outline_rounded,
+                          size: 16, color: Color(0xFF791F1F)),
+                      SizedBox(width: 10),
+                      Text('Delete',
+                          style: TextStyle(
+                              fontSize: 14, color: Color(0xFF791F1F))),
+                    ]),
                   ),
                 ],
               ),
@@ -548,34 +618,34 @@ class _DocumentCard extends StatelessWidget {
               doc.providerName!,
               style: TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color:
-                    isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                fontWeight: FontWeight.w500,
+                color: isDark ? _charcoalDark : _charcoal,
               ),
             ),
             if (doc.renewalAmount != null)
               Text(
-                '${doc.renewalAmount!.toStringAsFixed(2)}${doc.billingCycle != null ? " / ${doc.billingCycle!.label}" : ""}',
-                style:
-                    const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                '${doc.renewalAmount!.toStringAsFixed(2)}'
+                '${doc.billingCycle != null ? " / ${doc.billingCycle!.label}" : ""}',
+                style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? _charcoalDark : _charcoal,
+                    fontFeatures: const [FontFeature.tabularFigures()]),
               ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 5),
           ],
           if (doc.notes != null && doc.notes!.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(bottom: 6),
+              padding: const EdgeInsets.only(bottom: 5),
               child: Text(
                 doc.notes!,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 12,
-                  color: isDark
-                      ? const Color(0xFF94A3B8)
-                      : const Color(0xFF64748B),
-                ),
+                    fontSize: 12,
+                    color: isDark ? _charcoalDark : _gray),
               ),
             ),
+          // Date row + status badge
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -583,25 +653,33 @@ class _DocumentCard extends StatelessWidget {
                 dateFormatted,
                 style: TextStyle(
                   fontSize: 12,
-                  color: isDark
-                      ? const Color(0xFFCBD5E1)
-                      : const Color(0xFF475569),
+                  color: isDark ? _charcoalDark : _charcoal,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
+              // Status badge — the only color in the card
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isDark ? urgency.darkBg : urgency.lightBg,
-                  borderRadius: BorderRadius.circular(20),
+                  color: urgency.badgeBg,
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(
-                  daysText,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color: urgency.baseColor,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(badgeIcon, size: 11, color: urgency.badgeText),
+                    const SizedBox(width: 4),
+                    Text(
+                      daysText,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: urgency.badgeText,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -612,6 +690,8 @@ class _DocumentCard extends StatelessWidget {
   }
 }
 
+// ─── Empty state ──────────────────────────────────────────────────────────────
+
 class _EmptyDashboard extends StatelessWidget {
   const _EmptyDashboard({required this.isDark});
 
@@ -621,47 +701,51 @@ class _EmptyDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: AdvancedGlassPanel(
-          radius: 26,
-          blurLevel: GlassBlurLevel.strong,
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Container(
           padding: const EdgeInsets.all(36),
+          decoration: BoxDecoration(
+            color: isDark ? _surfaceDark : _white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: isDark ? _borderDark : _border),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Icons.calendar_month_outlined,
-                size: 54,
-                color: const Color(0xFF3B82F6),
+                Icons.calendar_today_outlined,
+                size: 48,
+                color: isDark ? _charcoalDark : _gray,
               ),
-              const SizedBox(height: 20),
-              const Text(
-                'No tracked documents found',
+              const SizedBox(height: 18),
+              Text(
+                'Nothing tracked yet',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? _inkDark : _ink,
+                  letterSpacing: -0.3,
+                ),
               ),
               const SizedBox(height: 10),
               Text(
-                'Start tracking your national IDs, driver licenses, passports, and subscriptions to get timely reminders.',
+                'Add your national IDs, driving licences, passports, and subscriptions to see expiry dates at a glance.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: isDark
-                      ? const Color(0xFF94A3B8)
-                      : const Color(0xFF64748B),
+                  color: isDark ? _charcoalDark : _charcoal,
                   fontSize: 14,
-                  height: 1.4,
+                  height: 1.45,
                 ),
               ),
               const SizedBox(height: 24),
               FilledButton.icon(
                 onPressed: () => showDocumentDialog(context),
-                icon: const Icon(Icons.add_rounded),
-                label: const Text('Track your first document'),
+                icon: const Icon(Icons.add_rounded, size: 17),
+                label: const Text('Track your first item'),
                 style: FilledButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 22, vertical: 14),
                 ),
               ),
             ],

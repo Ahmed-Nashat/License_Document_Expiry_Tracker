@@ -33,21 +33,28 @@ enum BillingCycle {
       : BillingCycle.values.where((b) => b.code == code).firstOrNull;
 }
 
+/// Five urgency tiers with three brand-approved badge palettes.
+///
+/// Color mapping:
+///   expired  → red   badge (#FCEBEB / #791F1F)
+///   critical → amber badge (#FAEEDA / #633806)  — 1–7 d
+///   expiringSoon → amber badge               — 8–30 d
+///   upcoming → green badge (#EAF3DE / #27500A) — 31–90 d
+///   valid    → green badge                    — >90 d
 enum ExpiryUrgency {
-  expired('Expired', Color(0xFFEF4444), Color(0xFF450A0A), Color(0xFFFCA5A5)),
-  critical('Critical (1–7d)', Color(0xFFF87171), Color(0xFF7F1D1D),
-      Color(0xFFFECACA)),
-  expiringSoon(
-      'Expiring Soon', Color(0xFFFBBF24), Color(0xFF78350F), Color(0xFFFDE68A)),
-  upcoming('Upcoming', Color(0xFF60A5FA), Color(0xFF1E3A8A), Color(0xFFBFDBFE)),
-  valid('Valid', Color(0xFF34D399), Color(0xFF064E3B), Color(0xFFA7F3D0));
+  expired('Expired', Color(0xFFFCEBEB), Color(0xFF791F1F)),
+  critical('Expires soon', Color(0xFFFAEEDA), Color(0xFF633806)),
+  expiringSoon('Expiring soon', Color(0xFFFAEEDA), Color(0xFF633806)),
+  upcoming('Upcoming', Color(0xFFEAF3DE), Color(0xFF27500A)),
+  valid('Valid', Color(0xFFEAF3DE), Color(0xFF27500A));
 
   final String label;
-  final Color baseColor;
-  final Color darkBg;
-  final Color lightBg;
+  /// Badge background color (light and dark modes share the same value per spec).
+  final Color badgeBg;
+  /// Badge text color.
+  final Color badgeText;
 
-  const ExpiryUrgency(this.label, this.baseColor, this.darkBg, this.lightBg);
+  const ExpiryUrgency(this.label, this.badgeBg, this.badgeText);
 }
 
 class ReminderRuleModel {
