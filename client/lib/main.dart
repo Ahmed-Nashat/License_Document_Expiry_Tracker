@@ -41,7 +41,10 @@ class FoundationScreen extends StatelessWidget {
               children: [
                 Icon(Icons.calendar_month_rounded, size: 48),
                 SizedBox(height: 20),
-                Text('Expiry Tracker', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700)),
+                Text(
+                  'Expiry Tracker',
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700),
+                ),
                 SizedBox(height: 12),
                 Text(
                   'Your secure reminder space is being prepared. Sign in and document management are next in the implementation sequence.',
