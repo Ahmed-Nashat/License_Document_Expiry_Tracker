@@ -844,33 +844,25 @@ class _DocumentCardState extends State<_DocumentCard> {
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
-                  // Status badge — only color in the card
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 9, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: urgency.badgeBg,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(badgeIcon,
-                            size: 11, color: urgency.badgeText),
-                        const SizedBox(width: 4),
-                        Text(
-                          daysText,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: urgency.badgeText,
-                            fontFeatures: const [
-                              FontFeature.tabularFigures()
-                            ],
-                          ),
+                  // Status badge — colored text/icon only, no bg fill
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(badgeIcon,
+                          size: 12, color: urgency.badgeText),
+                      const SizedBox(width: 4),
+                      Text(
+                        daysText,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: urgency.badgeText,
+                          fontFeatures: const [
+                            FontFeature.tabularFigures()
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),
