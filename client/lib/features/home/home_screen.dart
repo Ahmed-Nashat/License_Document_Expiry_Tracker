@@ -555,16 +555,17 @@ class _MetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dark mode: tinted dark surface + light pastel text (badgeBg)
-    // Light mode: badge background fill + dark badge text
+    // Dark mode: blend the vivid badgeText hue into the dark surface
+    // so each tile has a clearly saturated color tint.
+    // Light mode: badge bg fills the tile, dark text on it.
     final Color bg;
     final Color textColor;
     if (isDark) {
       bg = Color.alphaBlend(
-        urgency.badgeBg.withValues(alpha: 0.15),
+        urgency.badgeText.withValues(alpha: 0.25),
         const Color(0xFF0E0E0C),
       );
-      textColor = urgency.badgeBg; // pastel is readable on dark
+      textColor = urgency.badgeBg; // lighter variant — readable on dark tint
     } else {
       bg = urgency.badgeBg;
       textColor = urgency.badgeText;
