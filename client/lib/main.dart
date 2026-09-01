@@ -241,13 +241,13 @@ class LicenseTrackerApp extends ConsumerWidget {
 
         chipTheme: ChipThemeData(
           backgroundColor: const Color(0xFF2A2A28),
-          selectedColor: _inkDark,
+          selectedColor: const Color(0xFF4A4A48), // elevated dark, not white
           labelStyle: const TextStyle(
               color: _charcoalDark,
               fontSize: 13,
               fontWeight: FontWeight.w500),
           secondaryLabelStyle: const TextStyle(
-              color: _surfaceDark, fontSize: 13, fontWeight: FontWeight.w600),
+              color: _inkDark, fontSize: 13, fontWeight: FontWeight.w600),
           side: BorderSide.none,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
