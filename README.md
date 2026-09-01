@@ -1,136 +1,120 @@
 # License & Document Expiry Tracker
 
-A privacy-first web application for tracking document expiration dates and receiving reminders before they expire.
+A privacy-first web application for tracking document, license, and subscription expiry dates and receiving reminders before they expire or renew.
 
-## Features
+The first client is planned with Flutter Web and will share the same API with future Flutter mobile applications.
 
-- User authentication
-- Track document expiration dates
-- Expiry status dashboard
-- Custom reminder schedules
-- Email notifications
-- Google Calendar integration
-- Custom document types
+## Project status
 
-## Supported Documents
+This repository currently contains the product specification and implementation plan. Application code will be added in the foundation phase.
 
-- National ID
-- Driving License
-- Passport
-- Vehicle License
-- Vehicle Insurance
-- Custom Documents
+Detailed plan: [plans/implementation-plan.md](plans/implementation-plan.md)
 
-## Privacy
+## Phase 1 — MVP
 
-The application follows a data-minimization approach.
+Users can:
 
-### Stored
+- Create an account and sign in
+- Track national IDs, driving licenses, and subscriptions
+- View expiry status on a dashboard
+- Add, edit, archive, and delete tracked items
+- Configure reminder schedules
+- Receive email reminders
+- Optionally connect Google Calendar
+- Stay signed in through silent token refresh
+- Use up to two active device or browser sessions
 
-- Document type
-- Expiration date
-- Optional nickname
-- Reminder preferences
+Subscription records require provider name, renewal amount, currency, and billing cycle.
 
-### Not Required
+## Phase 2 — Growth
 
-- National ID numbers
-- Passport numbers
-- Driving license numbers
-- Document scans or photos
+Family support is planned for a later phase. Users will be able to add family members and assign tracked items to them.
 
-## Tech Stack
+Additional phases will be defined after the MVP is validated.
 
-### Frontend
+## Expiry statuses
 
-- React
-- TypeScript
-- Tailwind CSS
+| Status | Time remaining |
+|---|---:|
+| Expired | 0 days or less |
+| Critical | 1–7 days |
+| Expiring soon | 8–30 days |
+| Upcoming | 31–90 days |
+| Valid | More than 90 days |
+
+Default reminders are planned for 90, 30, 7, and 1 day before expiry, plus the expiry date.
+
+## Architecture
+
+```text
+Flutter Web / Future Flutter Mobile
+              |
+              | HTTPS JSON API
+              v
+       Node.js + TypeScript API
+              |
+       PostgreSQL + Prisma
+              |
+       Background notification worker
+          /                    \\
+ Transactional email       Google Calendar
+```
+
+The first backend will be a modular monolith. Database access will be isolated behind repository interfaces so the storage layer can evolve as the product grows.
+
+## Planned technology
+
+### Client
+
+- Flutter and Dart
+- Riverpod
+- GoRouter
+- Dio
+- Freezed and JSON serialization
+- Responsive desktop and mobile web layouts
 
 ### Backend
 
-- Node.js
-- Express
-- PostgreSQL
-- Prisma ORM
+- Node.js and TypeScript
+- Express or Fastify, to be selected during foundation work
+- PostgreSQL and Prisma
+- Background worker for reminders and notification delivery
 
 ### Integrations
 
+- Transactional email provider
 - Google Calendar API
-- Email notifications
 
-## Project Structure
+## Authentication and sessions
 
-```text
-license-tracker/
-├── client/
-│   └── src/
-│       ├── components/
-│       ├── pages/
-│       ├── hooks/
-│       ├── services/
-│       └── types/
-├── server/
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   ├── middleware/
-│   │   ├── jobs/
-│   │   └── utils/
-│   └── prisma/
-│       └── schema.prisma
-├── .env.example
-├── .gitignore
-└── README.md
-```
+- Short-lived access tokens
+- Silent refresh without interrupting the user
+- Refresh-token rotation and replay detection
+- Maximum of two active sessions per user
+- A third login revokes the oldest active session
+- Explicit logout revokes the current session
 
-## API
+The exact token expiry and inactivity policy will be finalized during authentication implementation. Secrets and tokens must remain outside source control.
 
-### Authentication
+## Privacy
 
-```http
-POST /api/auth/register
-POST /api/auth/login
-POST /api/auth/refresh
-```
+The MVP follows data minimization principles.
 
-### Documents
+The application stores expiry-related metadata such as item type, title, date, reminder preferences, and optional subscription details. It does not require government ID numbers, passport numbers, driving license numbers, document scans, or photos.
 
-```http
-GET    /api/documents
-POST   /api/documents
-GET    /api/documents/:id
-PATCH  /api/documents/:id
-DELETE /api/documents/:id
-```
+## UI direction
 
-### Calendar
+The interface will use an original Apple-inspired glassmorphism design language:
 
-```http
-GET    /api/calendar/connect
-POST   /api/calendar/events
-DELETE /api/calendar/events/:id
-```
-
-## Expiry Status
-
-| Status | Time Remaining |
-|---|---|
-| Expired | 0 days or less |
-| Critical | 1–7 days |
-| Expiring Soon | 8–30 days |
-| Upcoming | 31–90 days |
-| Valid | 90+ days |
-
-## Default Reminders
-
-- 90 days before expiration
-- 30 days before expiration
-- 7 days before expiration
-- 1 day before expiration
-- Expiration day
+- Translucent surfaces
+- Subtle blur and borders
+- Large rounded corners
+- Calm typography
+- Clear status colors
+- Light and dark themes
+- Accessible contrast and solid-background fallback
+- Reduced-motion support
 
 ## Disclaimer
 
-This application is an independent document reminder tool and is not affiliated with or endorsed by any government authority.
+This application is an independent reminder tool and is not affiliated with or endorsed by any government authority.
