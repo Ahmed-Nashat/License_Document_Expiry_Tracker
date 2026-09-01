@@ -1,11 +1,13 @@
 import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import Fastify from 'fastify';
 import { ZodError } from 'zod';
 import { env } from './config/env.js';
 import { prisma } from './lib/prisma.js';
+import { authRoutes } from './modules/auth/routes.js';
 
 export function buildApp() {
   const app = Fastify({
@@ -16,6 +18,7 @@ export function buildApp() {
 
   app.register(helmet, { contentSecurityPolicy: false, global: true });
   app.register(cookie);
+  app.register(jwt, { secret: env.JWT_ACCESS_SECRET });
   app.register(cors, {
     origin: (origin, callback) => callback(null, !origin || env.webOrigins.includes(origin)),
     credentials: true,
@@ -32,10 +35,17 @@ export function buildApp() {
     }
   });
 
+  app.register(authRoutes);
+
 
   app.setErrorHandler((error, request, reply) => {
     if (error instanceof ZodError) {
       return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Request validation failed', details: error.flatten() });
+    }
+    if (typeof error === 'object' && error !== null && 'statusCode' in error && typeof error.statusCode === 'number' && error.statusCode < 500) {
+      const code = 'code' in error && typeof error.code === 'string' ? error.code : 'REQUEST_ERROR';
+      const message = 'message' in error && typeof error.message === 'string' ? error.message : 'Request failed.';
+      return reply.status(error.statusCode).send({ error: code, message });
     }
     request.log.error(error);
     return reply.status(500).send({ error: 'INTERNAL_ERROR', message: 'An unexpected error occurred' });
