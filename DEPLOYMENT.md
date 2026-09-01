@@ -1,6 +1,6 @@
 # Deployment guide
 
-This repository is structured to deploy the API, PostgreSQL database, and Flutter Web client as separate services. The current application is the deployable foundation; authentication, document APIs, reminders, and integrations will be added in the next stages before a public production launch.
+This repository is structured to deploy the API, PostgreSQL database, and Flutter Web client as separate services. Authentication is implemented; document APIs, reminders, and integrations will be added in the next stages before a public production launch.
 
 ## Required production services
 
@@ -17,6 +17,7 @@ This repository is structured to deploy the API, PostgreSQL database, and Flutte
 3. Set `NODE_ENV=production`, `COOKIE_SECURE=true`, a real `COOKIE_DOMAIN`, and only the permitted HTTPS address in `WEB_ORIGINS`.
 4. Configure the managed PostgreSQL URL in `DATABASE_URL`.
 5. Apply migrations as part of the release using `npm run prisma:migrate` or the API container startup command.
+6. Build the web image with the public HTTPS API address: `docker build --build-arg API_BASE_URL=https://api.example.com -t deunest-web client`.
 
 ## Local container smoke test
 
