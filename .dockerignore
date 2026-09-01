@@ -1,0 +1,9 @@
+.git
+.github
+node_modules
+server/node_modules
+server/dist
+client/.dart_tool
+client/build
+.env
+coverage

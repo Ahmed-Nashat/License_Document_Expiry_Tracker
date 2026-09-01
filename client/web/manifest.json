@@ -1,0 +1,9 @@
+{
+  "name": "Expiry Tracker",
+  "short_name": "Expiry Tracker",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F7F8FA",
+  "theme_color": "#2864DC",
+  "description": "Privacy-first document and subscription expiry reminders."
+}

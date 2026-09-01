@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DocumentType {
+  NATIONAL_ID
+  DRIVING_LICENSE
+  SUBSCRIPTION
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+  CUSTOM
+}
+
+model User {
+  id                        String        @id @default(cuid())
+  email                     String        @unique
+  passwordHash              String
+  displayName               String?
+  timeZone                  String        @default("Africa/Cairo")
+  emailNotificationsEnabled Boolean       @default(true)
+  sessions                  UserSession[]
+  documents                 Document[]
+  createdAt                 DateTime      @default(now())
+  updatedAt                 DateTime      @updatedAt
+}
+
+model UserSession {
+  id               String   @id @default(cuid())
+  userId           String
+  refreshTokenHash String   @unique
+  deviceName       String?
+  deviceType       String?
+  lastUsedAt       DateTime @default(now())
+  lastRefreshAt    DateTime?
+  revokedAt        DateTime?
+  expiresAt        DateTime
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt, lastUsedAt])
+}
+
+model Document {
+  id            String        @id @default(cuid())
+  userId        String
+  type          DocumentType
+  title         String
+  expiryDate    DateTime      @db.Date
+  notes         String?
+  providerName  String?
+  renewalAmount Decimal?      @db.Decimal(12, 2)
+  currency      String?       @db.VarChar(3)
+  billingCycle  BillingCycle?
+  isArchived    Boolean       @default(false)
+  reminderRules ReminderRule[]
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId, isArchived, expiryDate])
+}
+
+model ReminderRule {
+  id               String   @id @default(cuid())
+  documentId       String
+  daysBeforeExpiry Int
+  enabled          Boolean  @default(true)
+  document         Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([documentId, daysBeforeExpiry])
+}

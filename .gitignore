@@ -1,0 +1,27 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# JavaScript / TypeScript
+node_modules/
+server/node_modules/
+server/dist/
+coverage/
+
+# Prisma
+server/prisma/*.db
+server/prisma/*.db-journal
+
+# Flutter / Dart
+client/.dart_tool/
+client/.flutter-plugins
+client/.flutter-plugins-dependencies
+client/.packages
+client/build/
+client/.idea/
+client/.vscode/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db

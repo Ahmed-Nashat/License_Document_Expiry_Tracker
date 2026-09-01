@@ -6,8 +6,9 @@ The first client is planned with Flutter Web and will share the same API with fu
 
 ## Project status
 
-This repository currently contains the product specification and implementation plan. Application code will be added in the foundation phase.
+This repository contains the product specification, implementation plan, and the deployable foundation. The API has strict environment validation, PostgreSQL migrations, health endpoints, container configuration, and CI checks. The Flutter Web client has an initial application shell and a production build container.
 
+Deployment notes: [DEPLOYMENT.md](DEPLOYMENT.md)
 ## Phase 1 — MVP
 
 Users can:
