@@ -239,7 +239,7 @@ class _GlassDropdownTriggerState<T> extends State<_GlassDropdownTrigger<T>> {
                       ? Colors.red
                       : (isDark
                           ? const Color(0x33FFFFFF)
-                          : const Color(0x80FFFFFF)),
+                          : const Color(0xFFCBD5E1)),
                 ),
               ),
               focusedBorder: OutlineInputBorder(
