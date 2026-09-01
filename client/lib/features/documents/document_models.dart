@@ -45,8 +45,8 @@ enum ExpiryUrgency {
   expired('Expired',      Color(0xFFFEE2E2), Color(0xFFDC2626)),
   critical('Expires soon',Color(0xFFFEF3C7), Color(0xFFD97706)),
   expiringSoon('Expiring',Color(0xFFFFEDD5), Color(0xFFEA580C)),
-  upcoming('Upcoming',    Color(0xFFDCFCE7), Color(0xFF16A34A)),
-  valid('Valid',          Color(0xFFDCFCE7), Color(0xFF16A34A));
+  upcoming('Upcoming',    Color(0xFF86EFAC), Color(0xFF166534)),
+  valid('Valid',          Color(0xFF86EFAC), Color(0xFF166534));
 
   final String label;
   /// Badge background color.
