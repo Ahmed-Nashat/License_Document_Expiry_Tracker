@@ -8,7 +8,6 @@ import 'documents_controller.dart';
 const _ink = Color(0xFF111111);
 const _charcoal = Color(0xFF444441);
 const _gray = Color(0xFFB4B2A9);
-const _fog = Color(0xFFF1EFE8);
 const _border = Color(0xFFD3D1C7);
 const _white = Color(0xFFFFFFFF);
 
