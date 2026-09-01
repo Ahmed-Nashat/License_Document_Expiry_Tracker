@@ -87,18 +87,18 @@ class AdvancedGlassPanel extends StatelessWidget {
     final List<Color> surfaceColors;
     if (tint != null) {
       surfaceColors = [
-        tint!.withValues(alpha: isDark ? 0.65 : 0.55),
-        tint!.withValues(alpha: isDark ? 0.40 : 0.30),
+        tint!.withValues(alpha: isDark ? 0.75 : 0.90),
+        tint!.withValues(alpha: isDark ? 0.55 : 0.80),
       ];
     } else if (isDark) {
       surfaceColors = [
-        const Color(0xFFFFFFFF).withValues(alpha: 0.12),
-        const Color(0xFF0F172A).withValues(alpha: 0.45),
+        const Color(0xFF1E293B).withValues(alpha: 0.70),
+        const Color(0xFF0F172A).withValues(alpha: 0.85),
       ];
     } else {
       surfaceColors = [
-        Colors.white.withValues(alpha: 0.45),
-        Colors.white.withValues(alpha: 0.20),
+        Colors.white.withValues(alpha: 0.92),
+        Colors.white.withValues(alpha: 0.82),
       ];
     }
 

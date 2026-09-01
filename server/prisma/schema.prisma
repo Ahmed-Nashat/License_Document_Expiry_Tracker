@@ -10,7 +10,9 @@ datasource db {
 enum DocumentType {
   NATIONAL_ID
   DRIVING_LICENSE
+  PASSPORT
   SUBSCRIPTION
+  OTHER
 }
 
 enum BillingCycle {

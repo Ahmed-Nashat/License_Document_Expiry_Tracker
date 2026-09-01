@@ -37,16 +37,20 @@ class LicenseTrackerApp extends ConsumerWidget {
             ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: const Color(0xA8FFFFFF),
+          fillColor: Colors.white,
+          labelStyle: const TextStyle(
+              color: Color(0xFF475569), fontWeight: FontWeight.w500),
+          floatingLabelStyle: const TextStyle(
+              color: Color(0xFF1D4ED8), fontWeight: FontWeight.w600),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0x80FFFFFF)),
+            borderSide: const BorderSide(color: Color(0xFFCBD5E1), width: 1.2),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0x80FFFFFF)),
+            borderSide: const BorderSide(color: Color(0xFFCBD5E1), width: 1.2),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
