@@ -13,13 +13,11 @@ const _ink = Color(0xFF111111);       // primary text & solid buttons
 const _charcoal = Color(0xFF444441);  // secondary text
 const _gray = Color(0xFFB4B2A9);      // muted text / icons
 const _fog = Color(0xFFF1EFE8);       // subtle backgrounds & borders
-const _border = Color(0xFFD3D1C7);    // hairline borders
 const _white = Color(0xFFFFFFFF);     // card surfaces
 
 // Dark-mode equivalents
 const _inkDark = Color(0xFFFAFAFA);
 const _charcoalDark = Color(0xFFB4B2A9);
-const _borderDark = Color(0xFF3A3A38);
 const _surfaceDark = Color(0xFF1A1A18);
 
 void main() {
@@ -56,7 +54,7 @@ class LicenseTrackerApp extends ConsumerWidget {
               fontFamily: 'Inter',
             ),
 
-        // Input fields
+        // Input fields — filled, no border stroke
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: _white,
@@ -68,33 +66,32 @@ class LicenseTrackerApp extends ConsumerWidget {
               const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: _border, width: 1),
+            borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: _border, width: 1),
+            borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: _ink, width: 1.5),
+            borderSide: BorderSide.none,
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF791F1F), width: 1),
+            borderSide: BorderSide.none,
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide:
-                const BorderSide(color: Color(0xFF791F1F), width: 1.5),
+            borderSide: BorderSide.none,
           ),
         ),
 
-        // FilledButton — solid ink, white text, 8px radius
+        // FilledButton — no changes needed (already no border)
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
             backgroundColor: _ink,
             foregroundColor: _white,
-            disabledBackgroundColor: _border,
+            disabledBackgroundColor: const Color(0xFFD3D1C7),
             disabledForegroundColor: _gray,
             textStyle:
                 const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
@@ -104,11 +101,11 @@ class LicenseTrackerApp extends ConsumerWidget {
           ),
         ),
 
-        // OutlinedButton — ghost style (transparent bg, D3D1C7 border)
+        // OutlinedButton — ghost style, no stroke border
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
             foregroundColor: _ink,
-            side: const BorderSide(color: _border),
+            side: BorderSide.none,
             textStyle:
                 const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             shape: RoundedRectangleBorder(
@@ -126,7 +123,7 @@ class LicenseTrackerApp extends ConsumerWidget {
           ),
         ),
 
-        // FilterChip — fog bg inactive, ink bg selected
+        // FilterChip — no border stroke
         chipTheme: ChipThemeData(
           backgroundColor: _fog,
           selectedColor: _ink,
@@ -134,17 +131,17 @@ class LicenseTrackerApp extends ConsumerWidget {
               color: _charcoal, fontSize: 13, fontWeight: FontWeight.w500),
           secondaryLabelStyle: const TextStyle(
               color: _white, fontSize: 13, fontWeight: FontWeight.w600),
-          side: const BorderSide(color: _border, width: 1),
+          side: BorderSide.none,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           iconTheme: const IconThemeData(color: _gray, size: 16),
         ),
 
-        // IconButton outlined
+        // IconButton — no outline border
         iconButtonTheme: IconButtonThemeData(
           style: IconButton.styleFrom(
             foregroundColor: _charcoal,
-            side: const BorderSide(color: _border),
+            side: BorderSide.none,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -152,8 +149,9 @@ class LicenseTrackerApp extends ConsumerWidget {
         ),
 
         // Dividers
-        dividerColor: _border,
-        dividerTheme: const DividerThemeData(color: _border, thickness: 1),
+        dividerColor: Colors.transparent,
+        dividerTheme:
+            const DividerThemeData(color: Colors.transparent, thickness: 0),
       ),
 
       // ── Dark theme ───────────────────────────────────────────────────────
@@ -187,24 +185,23 @@ class LicenseTrackerApp extends ConsumerWidget {
               const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: _borderDark, width: 1),
+            borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: _borderDark, width: 1),
+            borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: _inkDark, width: 1.5),
+            borderSide: BorderSide.none,
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFFFCA5A5), width: 1),
+            borderSide: BorderSide.none,
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide:
-                const BorderSide(color: Color(0xFFFCA5A5), width: 1.5),
+            borderSide: BorderSide.none,
           ),
         ),
 
@@ -212,7 +209,7 @@ class LicenseTrackerApp extends ConsumerWidget {
           style: FilledButton.styleFrom(
             backgroundColor: _inkDark,
             foregroundColor: _ink,
-            disabledBackgroundColor: _borderDark,
+            disabledBackgroundColor: const Color(0xFF3A3A38),
             disabledForegroundColor: _gray,
             textStyle:
                 const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
@@ -225,7 +222,7 @@ class LicenseTrackerApp extends ConsumerWidget {
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
             foregroundColor: _inkDark,
-            side: const BorderSide(color: _borderDark),
+            side: BorderSide.none,
             textStyle:
                 const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             shape: RoundedRectangleBorder(
@@ -251,7 +248,7 @@ class LicenseTrackerApp extends ConsumerWidget {
               fontWeight: FontWeight.w500),
           secondaryLabelStyle: const TextStyle(
               color: _surfaceDark, fontSize: 13, fontWeight: FontWeight.w600),
-          side: const BorderSide(color: _borderDark, width: 1),
+          side: BorderSide.none,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           iconTheme: const IconThemeData(color: _gray, size: 16),
@@ -260,16 +257,16 @@ class LicenseTrackerApp extends ConsumerWidget {
         iconButtonTheme: IconButtonThemeData(
           style: IconButton.styleFrom(
             foregroundColor: _charcoalDark,
-            side: const BorderSide(color: _borderDark),
+            side: BorderSide.none,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
           ),
         ),
 
-        dividerColor: _borderDark,
+        dividerColor: Colors.transparent,
         dividerTheme:
-            const DividerThemeData(color: _borderDark, thickness: 1),
+            const DividerThemeData(color: Colors.transparent, thickness: 0),
       ),
 
       home: const AuthGate(),

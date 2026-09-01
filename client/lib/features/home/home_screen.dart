@@ -15,12 +15,10 @@ const _ink = Color(0xFF111111);
 const _charcoal = Color(0xFF444441);
 const _gray = Color(0xFFB4B2A9);
 const _fog = Color(0xFFF1EFE8);
-const _border = Color(0xFFD3D1C7);
 const _white = Color(0xFFFFFFFF);
 
 const _inkDark = Color(0xFFFAFAFA);
 const _charcoalDark = Color(0xFFB4B2A9);
-const _borderDark = Color(0xFF3A3A38);
 const _surfaceDark = Color(0xFF1A1A18);
 
 // ─── Resting card shadow ───────────────────────────────────────────────────────
@@ -103,7 +101,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         backgroundColor: _white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: _border),
         ),
         title: const Text('Delete tracked item?',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
@@ -499,76 +496,91 @@ class _MetricsRow extends StatelessWidget {
         docs.where((d) => d.urgency == ExpiryUrgency.critical).length;
     final expiringSoon =
         docs.where((d) => d.urgency == ExpiryUrgency.expiringSoon).length;
-    final upcoming =
-        docs.where((d) => d.urgency == ExpiryUrgency.upcoming).length;
-    final valid = docs.where((d) => d.urgency == ExpiryUrgency.valid).length;
+    // Upcoming (31–90d) merged into Valid for a cleaner 4-tile layout
+    final valid = docs
+        .where((d) =>
+            d.urgency == ExpiryUrgency.valid ||
+            d.urgency == ExpiryUrgency.upcoming)
+        .length;
 
     return Row(
       children: [
         _MetricTile(
-            label: 'Expired',
-            count: expired,
-            badgeText: ExpiryUrgency.expired.badgeText,
-            isDark: isDark),
+          label: 'Expired',
+          count: expired,
+          urgency: ExpiryUrgency.expired,
+          isDark: isDark,
+        ),
         const SizedBox(width: 8),
         _MetricTile(
-            label: 'Critical',
-            count: critical,
-            badgeText: ExpiryUrgency.critical.badgeText,
-            isDark: isDark),
+          label: 'Critical',
+          count: critical,
+          urgency: ExpiryUrgency.critical,
+          isDark: isDark,
+        ),
         const SizedBox(width: 8),
         _MetricTile(
-            label: 'Expiring',
-            count: expiringSoon,
-            badgeText: ExpiryUrgency.expiringSoon.badgeText,
-            isDark: isDark),
+          label: 'Expiring',
+          count: expiringSoon,
+          urgency: ExpiryUrgency.expiringSoon,
+          isDark: isDark,
+        ),
         const SizedBox(width: 8),
         _MetricTile(
-            label: 'Upcoming',
-            count: upcoming,
-            badgeText: ExpiryUrgency.upcoming.badgeText,
-            isDark: isDark),
-        const SizedBox(width: 8),
-        _MetricTile(
-            label: 'Valid',
-            count: valid,
-            badgeText: ExpiryUrgency.valid.badgeText,
-            isDark: isDark),
+          label: 'Valid',
+          count: valid,
+          urgency: ExpiryUrgency.valid,
+          isDark: isDark,
+        ),
       ],
     );
   }
 }
 
 // ─── Metric tile ──────────────────────────────────────────────────────────────
-/// Animated counter tile — count changes with a cross-fade flicker.
+/// The badge color fills the entire tile — count + label share the same
+/// brand-specified text color. No border stroke.
 class _MetricTile extends StatelessWidget {
   const _MetricTile({
     required this.label,
     required this.count,
-    required this.badgeText,
+    required this.urgency,
     required this.isDark,
   });
 
   final String label;
   final int count;
-  final Color badgeText;
+  final ExpiryUrgency urgency;
   final bool isDark;
 
   @override
   Widget build(BuildContext context) {
+    // Dark mode: tinted dark surface + light pastel text (badgeBg)
+    // Light mode: badge background fill + dark badge text
+    final Color bg;
+    final Color textColor;
+    if (isDark) {
+      bg = Color.alphaBlend(
+        urgency.badgeBg.withValues(alpha: 0.15),
+        const Color(0xFF0E0E0C),
+      );
+      textColor = urgency.badgeBg; // pastel is readable on dark
+    } else {
+      bg = urgency.badgeBg;
+      textColor = urgency.badgeText;
+    }
+
     return Expanded(
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: isDark ? _surfaceDark : _white,
+          color: bg,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: isDark ? _borderDark : _border),
-          // Subtle lift shadow on tiles too
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -577,23 +589,14 @@ class _MetricTile extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 7,
-              height: 7,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: badgeText,
-              ),
-            ),
-            const SizedBox(width: 6),
-            // Animated count number
+            // Animated count
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 280),
               transitionBuilder: (child, animation) => FadeTransition(
                 opacity: animation,
                 child: ScaleTransition(
-                  scale:
-                      Tween<double>(begin: 0.75, end: 1.0).animate(animation),
+                  scale: Tween<double>(begin: 0.75, end: 1.0)
+                      .animate(animation),
                   child: child,
                 ),
               ),
@@ -602,20 +605,21 @@ class _MetricTile extends StatelessWidget {
                 key: ValueKey<int>(count),
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  color: isDark ? _inkDark : _ink,
+                  fontSize: 14,
+                  color: textColor,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 5),
             Flexible(
               child: Text(
                 label,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 11,
-                  color: isDark ? _charcoalDark : _charcoal,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: textColor.withValues(alpha: 0.80),
                 ),
               ),
             ),
@@ -625,6 +629,7 @@ class _MetricTile extends StatelessWidget {
     );
   }
 }
+
 
 // ─── Document card ────────────────────────────────────────────────────────────
 /// Hover-reactive card with animated shadow depth and scale lift.
@@ -695,13 +700,6 @@ class _DocumentCardState extends State<_DocumentCard> {
           decoration: BoxDecoration(
             color: isDark ? _surfaceDark : _white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: _hovered
-                  ? (isDark
-                      ? const Color(0xFF555552)
-                      : const Color(0xFFBBB9B0))
-                  : (isDark ? _borderDark : _border),
-            ),
             boxShadow: _hovered
                 ? _cardShadowHover(isDark)
                 : _cardShadowRest(isDark),
@@ -748,9 +746,7 @@ class _DocumentCardState extends State<_DocumentCard> {
                           color: isDark ? _charcoalDark : _charcoal),
                       color: isDark ? _surfaceDark : _white,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          side: BorderSide(
-                              color: isDark ? _borderDark : _border)),
+                          borderRadius: BorderRadius.circular(10)),
                       onSelected: (val) {
                         if (val == 'edit') widget.onEdit();
                         if (val == 'archive') widget.onToggleArchive();
@@ -936,7 +932,6 @@ class _EmptyDashboardState extends State<_EmptyDashboard>
               decoration: BoxDecoration(
                 color: isDark ? _surfaceDark : _white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isDark ? _borderDark : _border),
                 boxShadow: _cardShadowRest(isDark),
               ),
               child: Column(

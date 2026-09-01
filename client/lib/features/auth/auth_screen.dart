@@ -12,12 +12,10 @@ import 'auth_controller.dart';
 const _ink = Color(0xFF111111);
 const _charcoal = Color(0xFF444441);
 const _gray = Color(0xFFB4B2A9);
-const _border = Color(0xFFD3D1C7);
 const _white = Color(0xFFFFFFFF);
 
 const _inkDark = Color(0xFFFAFAFA);
 const _charcoalDark = Color(0xFFB4B2A9);
-const _borderDark = Color(0xFF3A3A38);
 const _surfaceDark = Color(0xFF1A1A18);
 
 class AuthScreen extends ConsumerStatefulWidget {
@@ -343,7 +341,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         decoration: BoxDecoration(
           color: isDark ? _surfaceDark : _white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isDark ? _borderDark : _border),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.06),
@@ -789,7 +786,6 @@ class _MessageBox extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFFFCEBEB),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFEFCACA)),
           ),
           child: Row(
             children: [
@@ -821,7 +817,6 @@ class _SuccessBox extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFFEAF3DE),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFC5DFB0)),
           ),
           child: Row(
             children: [

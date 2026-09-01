@@ -8,11 +8,9 @@ import 'documents_controller.dart';
 const _ink = Color(0xFF111111);
 const _charcoal = Color(0xFF444441);
 const _gray = Color(0xFFB4B2A9);
-const _border = Color(0xFFD3D1C7);
 const _white = Color(0xFFFFFFFF);
 
 const _inkDark = Color(0xFFFAFAFA);
-const _borderDark = Color(0xFF3A3A38);
 const _surfaceDark = Color(0xFF1A1A18);
 
 Future<void> showDocumentDialog(
@@ -186,8 +184,6 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
           decoration: BoxDecoration(
             color: isDark ? _surfaceDark : _white,
             borderRadius: BorderRadius.circular(12),
-            border:
-                Border.all(color: isDark ? _borderDark : _border, width: 1),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.08),
@@ -413,7 +409,6 @@ class _ErrorBox extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFFFCEBEB),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFEFCACA)),
         ),
         child: Row(
           children: [
