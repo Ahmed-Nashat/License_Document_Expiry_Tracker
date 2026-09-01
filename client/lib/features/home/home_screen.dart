@@ -23,6 +23,35 @@ const _charcoalDark = Color(0xFFB4B2A9);
 const _borderDark = Color(0xFF3A3A38);
 const _surfaceDark = Color(0xFF1A1A18);
 
+// ─── Resting card shadow ───────────────────────────────────────────────────────
+List<BoxShadow> _cardShadowRest(bool isDark) => [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.05),
+        blurRadius: 4,
+        offset: const Offset(0, 1),
+      ),
+      BoxShadow(
+        color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.08),
+        blurRadius: 12,
+        offset: const Offset(0, 4),
+      ),
+    ];
+
+// ─── Hover card shadow — deeper ────────────────────────────────────────────────
+List<BoxShadow> _cardShadowHover(bool isDark) => [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.07),
+        blurRadius: 6,
+        offset: const Offset(0, 2),
+      ),
+      BoxShadow(
+        color: Colors.black.withValues(alpha: isDark ? 0.30 : 0.12),
+        blurRadius: 24,
+        offset: const Offset(0, 10),
+        spreadRadius: -2,
+      ),
+    ];
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key, required this.session});
 
@@ -32,11 +61,37 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
   final _searchController = TextEditingController();
+
+  // Nav-bar slide-down reveal on mount
+  late final AnimationController _navAnim;
+  late final Animation<double> _navFade;
+  late final Animation<Offset> _navSlide;
+
+  @override
+  void initState() {
+    super.initState();
+    _navAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 480),
+    );
+    _navFade = CurvedAnimation(parent: _navAnim, curve: Curves.easeOut);
+    _navSlide = Tween<Offset>(
+      begin: const Offset(0, -0.25),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _navAnim, curve: Curves.easeOutCubic));
+
+    // Small delay so the page settles before animating in
+    Future.delayed(const Duration(milliseconds: 60), () {
+      if (mounted) _navAnim.forward();
+    });
+  }
 
   @override
   void dispose() {
+    _navAnim.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -102,157 +157,180 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // ── Navigation bar ───────────────────────────────────
-                    Row(
-                      children: [
-                        const BrandMark(size: 36),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    // ── Animated nav bar ────────────────────────────────
+                    FadeTransition(
+                      opacity: _navFade,
+                      child: SlideTransition(
+                        position: _navSlide,
+                        child: Row(
                           children: [
-                            Text(
-                              'DueNest',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: -0.4,
-                                color: isDark ? _inkDark : _ink,
-                              ),
+                            const BrandMark(size: 36),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'DueNest',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: -0.4,
+                                    color: isDark ? _inkDark : _ink,
+                                  ),
+                                ),
+                                Text(
+                                  'Welcome back, $name',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark ? _charcoalDark : _charcoal,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              'Welcome back, $name',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isDark ? _charcoalDark : _charcoal,
-                              ),
+                            const Spacer(),
+                            const ThemeToggleButton(),
+                            const SizedBox(width: 8),
+                            IconButton.outlined(
+                              tooltip: 'Sign out',
+                              onPressed: () => ref
+                                  .read(authControllerProvider.notifier)
+                                  .signOut(),
+                              icon: Icon(Icons.logout_rounded,
+                                  size: 17,
+                                  color:
+                                      isDark ? _charcoalDark : _charcoal),
                             ),
                           ],
                         ),
-                        const Spacer(),
-                        const ThemeToggleButton(),
-                        const SizedBox(width: 8),
-                        IconButton.outlined(
-                          tooltip: 'Sign out',
-                          onPressed: () => ref
-                              .read(authControllerProvider.notifier)
-                              .signOut(),
-                          icon: Icon(Icons.logout_rounded,
-                              size: 17,
-                              color: isDark ? _charcoalDark : _charcoal),
-                        ),
-                      ],
+                      ),
                     ),
                     const SizedBox(height: 20),
 
-                    // ── Search + Add button ──────────────────────────────
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _searchController,
-                            onChanged: (val) => ref
-                                .read(documentSearchQueryProvider.notifier)
-                                .state = val,
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: isDark ? _inkDark : _ink),
-                            decoration: InputDecoration(
-                              hintText: 'Search documents, providers…',
-                              prefixIcon:
-                                  Icon(Icons.search_rounded, color: _gray),
-                              suffixIcon: _searchController.text.isNotEmpty
-                                  ? IconButton(
-                                      icon: Icon(Icons.clear_rounded,
-                                          size: 16, color: _gray),
-                                      onPressed: () {
-                                        _searchController.clear();
-                                        ref
-                                            .read(documentSearchQueryProvider
-                                                .notifier)
-                                            .state = '';
-                                      },
-                                    )
-                                  : null,
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        FilledButton.icon(
-                          onPressed: () => showDocumentDialog(context),
-                          icon: const Icon(Icons.add_rounded, size: 18),
-                          label: const Text('Add item'),
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 18),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    // ── Filter chips ─────────────────────────────────────
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
+                    // ── Search + Add ─────────────────────────────────────
+                    FadeTransition(
+                      opacity: _navFade,
                       child: Row(
                         children: [
-                          FilterChip(
-                            label: const Text('All'),
-                            selected: selectedType == null && !showArchived,
-                            onSelected: (_) {
-                              ref
-                                  .read(documentTypeFilterProvider.notifier)
-                                  .state = null;
-                              ref
-                                  .read(documentShowArchivedProvider.notifier)
-                                  .state = false;
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          ...DocumentType.values.map(
-                            (type) => Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: FilterChip(
-                                avatar: Icon(type.icon,
-                                    size: 14,
-                                    color: selectedType == type && !showArchived
-                                        ? (isDark ? _surfaceDark : _white)
-                                        : _gray),
-                                label: Text(type.label),
-                                selected: selectedType == type && !showArchived,
-                                onSelected: (_) {
-                                  ref
-                                      .read(documentTypeFilterProvider.notifier)
-                                      .state = type;
-                                  ref
-                                      .read(
-                                          documentShowArchivedProvider.notifier)
-                                      .state = false;
-                                },
+                          Expanded(
+                            child: TextFormField(
+                              controller: _searchController,
+                              onChanged: (val) => ref
+                                  .read(documentSearchQueryProvider.notifier)
+                                  .state = val,
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: isDark ? _inkDark : _ink),
+                              decoration: InputDecoration(
+                                hintText: 'Search documents, providers…',
+                                prefixIcon:
+                                    Icon(Icons.search_rounded, color: _gray),
+                                suffixIcon: _searchController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: Icon(Icons.clear_rounded,
+                                            size: 16, color: _gray),
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          ref
+                                              .read(
+                                                  documentSearchQueryProvider
+                                                      .notifier)
+                                              .state = '';
+                                        },
+                                      )
+                                    : null,
+                                contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 12, horizontal: 16),
                               ),
                             ),
                           ),
-                          FilterChip(
-                            avatar: Icon(Icons.archive_outlined,
-                                size: 14,
-                                color: showArchived
-                                    ? (isDark ? _surfaceDark : _white)
-                                    : _gray),
-                            label: const Text('Archived'),
-                            selected: showArchived,
-                            onSelected: (val) {
-                              ref
-                                  .read(documentShowArchivedProvider.notifier)
-                                  .state = val;
-                              if (val) {
+                          const SizedBox(width: 12),
+                          FilledButton.icon(
+                            onPressed: () => showDocumentDialog(context),
+                            icon: const Icon(Icons.add_rounded, size: 18),
+                            label: const Text('Add item'),
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 18),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // ── Filter chips ────────────────────────────────────
+                    FadeTransition(
+                      opacity: _navFade,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            FilterChip(
+                              label: const Text('All'),
+                              selected:
+                                  selectedType == null && !showArchived,
+                              onSelected: (_) {
                                 ref
                                     .read(documentTypeFilterProvider.notifier)
                                     .state = null;
-                              }
-                            },
-                          ),
-                        ],
+                                ref
+                                    .read(
+                                        documentShowArchivedProvider.notifier)
+                                    .state = false;
+                              },
+                            ),
+                            const SizedBox(width: 8),
+                            ...DocumentType.values.map(
+                              (type) => Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: FilterChip(
+                                  avatar: Icon(type.icon,
+                                      size: 14,
+                                      color: selectedType == type &&
+                                              !showArchived
+                                          ? (isDark
+                                              ? _surfaceDark
+                                              : _white)
+                                          : _gray),
+                                  label: Text(type.label),
+                                  selected:
+                                      selectedType == type && !showArchived,
+                                  onSelected: (_) {
+                                    ref
+                                        .read(
+                                            documentTypeFilterProvider
+                                                .notifier)
+                                        .state = type;
+                                    ref
+                                        .read(documentShowArchivedProvider
+                                            .notifier)
+                                        .state = false;
+                                  },
+                                ),
+                              ),
+                            ),
+                            FilterChip(
+                              avatar: Icon(Icons.archive_outlined,
+                                  size: 14,
+                                  color: showArchived
+                                      ? (isDark ? _surfaceDark : _white)
+                                      : _gray),
+                              label: const Text('Archived'),
+                              selected: showArchived,
+                              onSelected: (val) {
+                                ref
+                                    .read(
+                                        documentShowArchivedProvider.notifier)
+                                    .state = val;
+                                if (val) {
+                                  ref
+                                      .read(documentTypeFilterProvider.notifier)
+                                      .state = null;
+                                }
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -272,7 +350,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             children: [
                               Icon(Icons.error_outline_rounded,
                                   size: 32,
-                                  color: isDark ? _charcoalDark : _charcoal),
+                                  color:
+                                      isDark ? _charcoalDark : _charcoal),
                               const SizedBox(height: 12),
                               const Text('Failed to load documents.',
                                   style: TextStyle(fontSize: 14)),
@@ -313,19 +392,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       itemCount: docs.length,
                                       itemBuilder: (context, index) {
                                         final doc = docs[index];
-                                        return _DocumentCard(
-                                          doc: doc,
-                                          isDark: isDark,
-                                          onEdit: () => showDocumentDialog(
-                                              context,
-                                              document: doc),
-                                          onToggleArchive: () => ref
-                                              .read(documentsControllerProvider
-                                                  .notifier)
-                                              .toggleArchive(
-                                                  doc.id, !doc.isArchived),
-                                          onDelete: () =>
-                                              _confirmDelete(context, doc),
+                                        // Staggered entry: each card slides up + fades in
+                                        return _StaggeredCard(
+                                          index: index,
+                                          child: _DocumentCard(
+                                            doc: doc,
+                                            isDark: isDark,
+                                            onEdit: () =>
+                                                showDocumentDialog(context,
+                                                    document: doc),
+                                            onToggleArchive: () => ref
+                                                .read(
+                                                    documentsControllerProvider
+                                                        .notifier)
+                                                .toggleArchive(
+                                                    doc.id, !doc.isArchived),
+                                            onDelete: () =>
+                                                _confirmDelete(context, doc),
+                                          ),
                                         );
                                       },
                                     );
@@ -348,8 +432,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-// ─── Metrics row ─────────────────────────────────────────────────────────────
+// ─── Staggered entry wrapper ───────────────────────────────────────────────────
+/// Wraps a card with a staggered fade + upward-slide entry animation.
+/// Each card's delay = index × 40ms, capped at 360ms total.
+class _StaggeredCard extends StatefulWidget {
+  const _StaggeredCard({required this.index, required this.child});
 
+  final int index;
+  final Widget child;
+
+  @override
+  State<_StaggeredCard> createState() => _StaggeredCardState();
+}
+
+class _StaggeredCardState extends State<_StaggeredCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 380),
+    );
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.12),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+
+    // Delay capped so late items don't feel sluggish
+    final delay = (widget.index * 40).clamp(0, 360);
+    Future.delayed(Duration(milliseconds: delay), () {
+      if (mounted) _ctrl.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FadeTransition(
+        opacity: _fade,
+        child: SlideTransition(position: _slide, child: widget.child),
+      );
+}
+
+// ─── Metrics row ──────────────────────────────────────────────────────────────
 class _MetricsRow extends StatelessWidget {
   const _MetricsRow({required this.docs, required this.isDark});
 
@@ -373,35 +508,30 @@ class _MetricsRow extends StatelessWidget {
         _MetricTile(
             label: 'Expired',
             count: expired,
-            badgeBg: ExpiryUrgency.expired.badgeBg,
             badgeText: ExpiryUrgency.expired.badgeText,
             isDark: isDark),
         const SizedBox(width: 8),
         _MetricTile(
             label: 'Critical',
             count: critical,
-            badgeBg: ExpiryUrgency.critical.badgeBg,
             badgeText: ExpiryUrgency.critical.badgeText,
             isDark: isDark),
         const SizedBox(width: 8),
         _MetricTile(
             label: 'Expiring',
             count: expiringSoon,
-            badgeBg: ExpiryUrgency.expiringSoon.badgeBg,
             badgeText: ExpiryUrgency.expiringSoon.badgeText,
             isDark: isDark),
         const SizedBox(width: 8),
         _MetricTile(
             label: 'Upcoming',
             count: upcoming,
-            badgeBg: ExpiryUrgency.upcoming.badgeBg,
             badgeText: ExpiryUrgency.upcoming.badgeText,
             isDark: isDark),
         const SizedBox(width: 8),
         _MetricTile(
             label: 'Valid',
             count: valid,
-            badgeBg: ExpiryUrgency.valid.badgeBg,
             badgeText: ExpiryUrgency.valid.badgeText,
             isDark: isDark),
       ],
@@ -409,38 +539,44 @@ class _MetricsRow extends StatelessWidget {
   }
 }
 
+// ─── Metric tile ──────────────────────────────────────────────────────────────
+/// Animated counter tile — count changes with a cross-fade flicker.
 class _MetricTile extends StatelessWidget {
   const _MetricTile({
     required this.label,
     required this.count,
-    required this.badgeBg,
     required this.badgeText,
     required this.isDark,
   });
 
   final String label;
   final int count;
-  final Color badgeBg;
   final Color badgeText;
   final bool isDark;
 
   @override
   Widget build(BuildContext context) {
-    final surfaceBg = isDark ? _surfaceDark : _white;
-    final borderC = isDark ? _borderDark : _border;
-
     return Expanded(
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
         decoration: BoxDecoration(
-          color: surfaceBg,
+          color: isDark ? _surfaceDark : _white,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: borderC),
+          border: Border.all(color: isDark ? _borderDark : _border),
+          // Subtle lift shadow on tiles too
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Colored dot — the only color in this widget
             Container(
               width: 7,
               height: 7,
@@ -450,13 +586,26 @@ class _MetricTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 6),
-            Text(
-              '$count',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
-                color: isDark ? _inkDark : _ink,
-                fontFeatures: const [FontFeature.tabularFigures()],
+            // Animated count number
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 280),
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: ScaleTransition(
+                  scale:
+                      Tween<double>(begin: 0.75, end: 1.0).animate(animation),
+                  child: child,
+                ),
+              ),
+              child: Text(
+                '$count',
+                key: ValueKey<int>(count),
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  color: isDark ? _inkDark : _ink,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
               ),
             ),
             const SizedBox(width: 4),
@@ -478,8 +627,8 @@ class _MetricTile extends StatelessWidget {
 }
 
 // ─── Document card ────────────────────────────────────────────────────────────
-
-class _DocumentCard extends StatelessWidget {
+/// Hover-reactive card with animated shadow depth and scale lift.
+class _DocumentCard extends StatefulWidget {
   const _DocumentCard({
     required this.doc,
     required this.isDark,
@@ -495,11 +644,19 @@ class _DocumentCard extends StatelessWidget {
   final VoidCallback onDelete;
 
   @override
+  State<_DocumentCard> createState() => _DocumentCardState();
+}
+
+class _DocumentCardState extends State<_DocumentCard> {
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
+    final doc = widget.doc;
+    final isDark = widget.isDark;
     final urgency = doc.urgency;
     final days = doc.daysRemaining;
 
-    // Calm, plain copy — no exclamation marks
     String daysText;
     if (days < 0) {
       daysText = '${-days}d overdue';
@@ -512,10 +669,6 @@ class _DocumentCard extends StatelessWidget {
     final dateFormatted =
         '${doc.expiryDate.year}-${doc.expiryDate.month.toString().padLeft(2, '0')}-${doc.expiryDate.day.toString().padLeft(2, '0')}';
 
-    final cardBg = isDark ? _surfaceDark : _white;
-    final cardBorder = isDark ? _borderDark : _border;
-
-    // Badge icon
     final IconData badgeIcon;
     if (urgency == ExpiryUrgency.expired) {
       badgeIcon = Icons.warning_amber_outlined;
@@ -526,229 +679,308 @@ class _DocumentCard extends StatelessWidget {
       badgeIcon = Icons.check_circle_outline_rounded;
     }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: cardBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onEdit,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.all(16),
+          transform: _hovered
+              ? Matrix4.translationValues(0, -2, 0)
+              : Matrix4.identity(),
+          decoration: BoxDecoration(
+            color: isDark ? _surfaceDark : _white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: _hovered
+                  ? (isDark
+                      ? const Color(0xFF555552)
+                      : const Color(0xFFBBB9B0))
+                  : (isDark ? _borderDark : _border),
+            ),
+            boxShadow: _hovered
+                ? _cardShadowHover(isDark)
+                : _cardShadowRest(isDark),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Category icon — gray, no color
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF252523) : _fog,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(doc.type.icon, size: 17, color: _gray),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  doc.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                    color: isDark ? _inkDark : _ink,
+              // ── Header row ──────────────────────────────────────────
+              Row(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: _hovered
+                          ? (isDark
+                              ? const Color(0xFF303030)
+                              : const Color(0xFFE8E6DF))
+                          : (isDark ? const Color(0xFF252523) : _fog),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(doc.type.icon, size: 17, color: _gray),
                   ),
-                ),
-              ),
-              PopupMenuButton<String>(
-                icon: Icon(Icons.more_vert_rounded,
-                    size: 17, color: isDark ? _charcoalDark : _charcoal),
-                color: isDark ? _surfaceDark : _white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: BorderSide(
-                        color: isDark ? _borderDark : _border)),
-                onSelected: (val) {
-                  if (val == 'edit') onEdit();
-                  if (val == 'archive') onToggleArchive();
-                  if (val == 'delete') onDelete();
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Row(children: [
-                      Icon(Icons.edit_outlined, size: 16),
-                      SizedBox(width: 10),
-                      Text('Edit', style: TextStyle(fontSize: 14)),
-                    ]),
-                  ),
-                  PopupMenuItem(
-                    value: 'archive',
-                    child: Row(children: [
-                      Icon(
-                        doc.isArchived
-                            ? Icons.unarchive_outlined
-                            : Icons.archive_outlined,
-                        size: 16,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      doc.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        color: isDark ? _inkDark : _ink,
                       ),
-                      const SizedBox(width: 10),
-                      Text(doc.isArchived ? 'Unarchive' : 'Archive',
-                          style: const TextStyle(fontSize: 14)),
-                    ]),
+                    ),
                   ),
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Row(children: [
-                      Icon(Icons.delete_outline_rounded,
-                          size: 16, color: Color(0xFF791F1F)),
-                      SizedBox(width: 10),
-                      Text('Delete',
+                  // Stop tap-to-edit propagating from the menu button
+                  GestureDetector(
+                    onTap: () {}, // absorb
+                    behavior: HitTestBehavior.opaque,
+                    child: PopupMenuButton<String>(
+                      icon: Icon(Icons.more_vert_rounded,
+                          size: 17,
+                          color: isDark ? _charcoalDark : _charcoal),
+                      color: isDark ? _surfaceDark : _white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: BorderSide(
+                              color: isDark ? _borderDark : _border)),
+                      onSelected: (val) {
+                        if (val == 'edit') widget.onEdit();
+                        if (val == 'archive') widget.onToggleArchive();
+                        if (val == 'delete') widget.onDelete();
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Row(children: [
+                            Icon(Icons.edit_outlined, size: 16),
+                            SizedBox(width: 10),
+                            Text('Edit', style: TextStyle(fontSize: 14)),
+                          ]),
+                        ),
+                        PopupMenuItem(
+                          value: 'archive',
+                          child: Row(children: [
+                            Icon(
+                              doc.isArchived
+                                  ? Icons.unarchive_outlined
+                                  : Icons.archive_outlined,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(doc.isArchived ? 'Unarchive' : 'Archive',
+                                style: const TextStyle(fontSize: 14)),
+                          ]),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(children: [
+                            Icon(Icons.delete_outline_rounded,
+                                size: 16, color: Color(0xFF791F1F)),
+                            SizedBox(width: 10),
+                            Text('Delete',
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF791F1F))),
+                          ]),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+
+              // ── Subscription meta ───────────────────────────────────
+              if (doc.type == DocumentType.subscription &&
+                  doc.providerName != null) ...[
+                Text(
+                  doc.providerName!,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? _charcoalDark : _charcoal,
+                  ),
+                ),
+                if (doc.renewalAmount != null)
+                  Text(
+                    '${doc.renewalAmount!.toStringAsFixed(2)}'
+                    '${doc.billingCycle != null ? " / ${doc.billingCycle!.label}" : ""}',
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? _charcoalDark : _charcoal,
+                        fontFeatures: const [FontFeature.tabularFigures()]),
+                  ),
+                const SizedBox(height: 5),
+              ],
+
+              // ── Notes ───────────────────────────────────────────────
+              if (doc.notes != null && doc.notes!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 5),
+                  child: Text(
+                    doc.notes!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? _charcoalDark : _gray),
+                  ),
+                ),
+
+              // ── Date + status badge ─────────────────────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    dateFormatted,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? _charcoalDark : _charcoal,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  // Status badge — only color in the card
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 9, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: urgency.badgeBg,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(badgeIcon,
+                            size: 11, color: urgency.badgeText),
+                        const SizedBox(width: 4),
+                        Text(
+                          daysText,
                           style: TextStyle(
-                              fontSize: 14, color: Color(0xFF791F1F))),
-                    ]),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: urgency.badgeText,
+                            fontFeatures: const [
+                              FontFeature.tabularFigures()
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ],
           ),
-          const Spacer(),
-          if (doc.type == DocumentType.subscription &&
-              doc.providerName != null) ...[
-            Text(
-              doc.providerName!,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: isDark ? _charcoalDark : _charcoal,
-              ),
-            ),
-            if (doc.renewalAmount != null)
-              Text(
-                '${doc.renewalAmount!.toStringAsFixed(2)}'
-                '${doc.billingCycle != null ? " / ${doc.billingCycle!.label}" : ""}',
-                style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? _charcoalDark : _charcoal,
-                    fontFeatures: const [FontFeature.tabularFigures()]),
-              ),
-            const SizedBox(height: 5),
-          ],
-          if (doc.notes != null && doc.notes!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 5),
-              child: Text(
-                doc.notes!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? _charcoalDark : _gray),
-              ),
-            ),
-          // Date row + status badge
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                dateFormatted,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark ? _charcoalDark : _charcoal,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-              // Status badge — the only color in the card
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                decoration: BoxDecoration(
-                  color: urgency.badgeBg,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(badgeIcon, size: 11, color: urgency.badgeText),
-                    const SizedBox(width: 4),
-                    Text(
-                      daysText,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: urgency.badgeText,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
-
-class _EmptyDashboard extends StatelessWidget {
+// ─── Empty dashboard ──────────────────────────────────────────────────────────
+class _EmptyDashboard extends StatefulWidget {
   const _EmptyDashboard({required this.isDark});
 
   final bool isDark;
 
   @override
+  State<_EmptyDashboard> createState() => _EmptyDashboardState();
+}
+
+class _EmptyDashboardState extends State<_EmptyDashboard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 500));
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.10),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+    Future.delayed(const Duration(milliseconds: 100),
+        () => mounted ? _ctrl.forward() : null);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = widget.isDark;
     return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 420),
-        child: Container(
-          padding: const EdgeInsets.all(36),
-          decoration: BoxDecoration(
-            color: isDark ? _surfaceDark : _white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isDark ? _borderDark : _border),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.calendar_today_outlined,
-                size: 48,
-                color: isDark ? _charcoalDark : _gray,
+      child: FadeTransition(
+        opacity: _fade,
+        child: SlideTransition(
+          position: _slide,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Container(
+              padding: const EdgeInsets.all(36),
+              decoration: BoxDecoration(
+                color: isDark ? _surfaceDark : _white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: isDark ? _borderDark : _border),
+                boxShadow: _cardShadowRest(isDark),
               ),
-              const SizedBox(height: 18),
-              Text(
-                'Nothing tracked yet',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? _inkDark : _ink,
-                  letterSpacing: -0.3,
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 48,
+                    color: isDark ? _charcoalDark : _gray,
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    'Nothing tracked yet',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? _inkDark : _ink,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Add your national IDs, driving licences, passports, and subscriptions to see expiry dates at a glance.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: isDark ? _charcoalDark : _charcoal,
+                      fontSize: 14,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: () => showDocumentDialog(context),
+                    icon: const Icon(Icons.add_rounded, size: 17),
+                    label: const Text('Track your first item'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 22, vertical: 14),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              Text(
-                'Add your national IDs, driving licences, passports, and subscriptions to see expiry dates at a glance.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: isDark ? _charcoalDark : _charcoal,
-                  fontSize: 14,
-                  height: 1.45,
-                ),
-              ),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: () => showDocumentDialog(context),
-                icon: const Icon(Icons.add_rounded, size: 17),
-                label: const Text('Track your first item'),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 22, vertical: 14),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

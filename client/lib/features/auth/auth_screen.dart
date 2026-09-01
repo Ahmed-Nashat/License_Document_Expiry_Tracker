@@ -29,7 +29,8 @@ class AuthScreen extends ConsumerStatefulWidget {
   ConsumerState<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends ConsumerState<AuthScreen> {
+class _AuthScreenState extends ConsumerState<AuthScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -49,8 +50,32 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   bool _isForgotPassword = false;
   int _resetStep = 0;
 
+  // Form card reveal animation
+  late final AnimationController _entryAnim;
+  late final Animation<double> _entryFade;
+  late final Animation<Offset> _entrySlide;
+
+  @override
+  void initState() {
+    super.initState();
+    _entryAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 520),
+    );
+    _entryFade =
+        CurvedAnimation(parent: _entryAnim, curve: Curves.easeOut);
+    _entrySlide = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(
+        CurvedAnimation(parent: _entryAnim, curve: Curves.easeOutCubic));
+    Future.delayed(const Duration(milliseconds: 80),
+        () => mounted ? _entryAnim.forward() : null);
+  }
+
   @override
   void dispose() {
+    _entryAnim.dispose();
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -223,21 +248,27 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1100),
-                child: isWide
-                    ? Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(child: _introPanel(isDark)),
-                          const SizedBox(width: 64),
-                          SizedBox(width: 420, child: _formCard(isDark)),
-                        ],
-                      )
-                    : Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 420),
-                          child: _formCard(isDark),
-                        ),
-                      ),
+                child: FadeTransition(
+                  opacity: _entryFade,
+                  child: SlideTransition(
+                    position: _entrySlide,
+                    child: isWide
+                        ? Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(child: _introPanel(isDark)),
+                              const SizedBox(width: 64),
+                              SizedBox(width: 420, child: _formCard(isDark)),
+                            ],
+                          )
+                        : Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 420),
+                              child: _formCard(isDark),
+                            ),
+                          ),
+                  ),
+                ),
               ),
             ),
           ),

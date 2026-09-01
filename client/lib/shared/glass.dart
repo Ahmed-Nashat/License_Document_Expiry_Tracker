@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-// ─── Monochromatic design tokens (mirrors main.dart) ─────────────────────────
+// ─── Monochromatic design tokens ──────────────────────────────────────────────
 const _fog = Color(0xFFF1EFE8);
 const _white = Color(0xFFFFFFFF);
 const _border = Color(0xFFD3D1C7);
@@ -18,8 +18,37 @@ enum GlassBlurLevel {
   const GlassBlurLevel(this.sigma);
 }
 
-/// Flat monochromatic app background — clean fog in light, deep graphite in dark.
-/// No gradients or ambient orbs; surfaces carry all the hierarchy.
+// ─── Background dot-grid painter ──────────────────────────────────────────────
+/// Draws an evenly-spaced dot grid, creating a calm "graph-paper" texture
+/// that adds structure without competing with the content.
+class _DotGridPainter extends CustomPainter {
+  const _DotGridPainter({required this.dotColor});
+
+  final Color dotColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = dotColor
+      ..style = PaintingStyle.fill;
+
+    const spacing = 26.0; // gap between dots
+    const radius = 1.1; // dot radius
+
+    for (double x = spacing; x < size.width; x += spacing) {
+      for (double y = spacing; y < size.height; y += spacing) {
+        canvas.drawCircle(Offset(x, y), radius, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DotGridPainter old) => old.dotColor != dotColor;
+}
+
+// ─── App background ────────────────────────────────────────────────────────────
+/// Flat monochromatic canvas with a subtle dot-grid texture for visual
+/// structure. The pattern is barely-there — purely perceptible, not decorative.
 class GlassBackground extends StatelessWidget {
   const GlassBackground({super.key, required this.child});
 
@@ -29,21 +58,28 @@ class GlassBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final bgColor = isDark ? const Color(0xFF0E0E0C) : _fog;
+    final dotColor = isDark
+        ? const Color(0xFFFFFFFF).withValues(alpha: 0.045)
+        : const Color(0xFF111111).withValues(alpha: 0.055);
+
     return Stack(
       children: [
+        // Base canvas
+        Positioned.fill(child: ColoredBox(color: bgColor)),
+        // Dot-grid structure layer
         Positioned.fill(
-          child: ColoredBox(
-            color: isDark ? const Color(0xFF0E0E0C) : _fog,
-          ),
+          child: CustomPaint(painter: _DotGridPainter(dotColor: dotColor)),
         ),
+        // Content
         Positioned.fill(child: child),
       ],
     );
   }
 }
 
-/// Frosted glass panel — Apple Liquid Glass frosting retained but all
-/// colored drop-shadows removed. Surfaces read as white/graphite only.
+// ─── Frosted glass panel ───────────────────────────────────────────────────────
+/// Apple Liquid Glass panel. Shadows are neutral (no color bloom).
 class AdvancedGlassPanel extends StatelessWidget {
   const AdvancedGlassPanel({
     super.key,
@@ -52,8 +88,7 @@ class AdvancedGlassPanel extends StatelessWidget {
     this.padding,
     this.radius = 12.0,
     this.tint,
-    /// Retained for API compatibility; ignored in monochromatic theme.
-    this.primaryColor,
+    this.primaryColor, // retained for API compatibility; ignored
     this.showBorder = true,
   });
 
@@ -85,7 +120,6 @@ class AdvancedGlassPanel extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(radius),
-        // Single neutral shadow — no color bloom
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.06),
@@ -118,13 +152,9 @@ class AdvancedGlassPanel extends StatelessWidget {
   }
 }
 
-/// Layered glass stack (kept for API compatibility).
+// ─── Layered glass stack ───────────────────────────────────────────────────────
 class LayeredGlassStack extends StatelessWidget {
-  const LayeredGlassStack({
-    super.key,
-    required this.child,
-    this.primaryColor,
-  });
+  const LayeredGlassStack({super.key, required this.child, this.primaryColor});
 
   final Widget child;
   final Color? primaryColor;
