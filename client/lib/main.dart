@@ -126,7 +126,7 @@ class LicenseTrackerApp extends ConsumerWidget {
         // FilterChip — no border stroke
         chipTheme: ChipThemeData(
           backgroundColor: _fog,
-          selectedColor: _ink,
+          selectedColor: _charcoal,
           labelStyle: const TextStyle(
               color: _charcoal, fontSize: 13, fontWeight: FontWeight.w500),
           secondaryLabelStyle: const TextStyle(
