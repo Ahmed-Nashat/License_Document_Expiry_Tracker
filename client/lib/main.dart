@@ -12,7 +12,7 @@ class LicenseTrackerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     const surface = Color(0xFFF7F8FA);
     return MaterialApp(
-      title: 'Expiry Tracker',
+      title: 'DeuNest',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2864DC)),
@@ -42,12 +42,12 @@ class FoundationScreen extends StatelessWidget {
                 Icon(Icons.calendar_month_rounded, size: 48),
                 SizedBox(height: 20),
                 Text(
-                  'Expiry Tracker',
+                  'DeuNest',
                   style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700),
                 ),
                 SizedBox(height: 12),
                 Text(
-                  'Your secure reminder space is being prepared. Sign in and document management are next in the implementation sequence.',
+                  'Never miss what’s due. Your secure reminder space is being prepared, with sign-in and document management next in the implementation sequence.',
                   style: TextStyle(fontSize: 16, height: 1.5),
                 ),
               ],
