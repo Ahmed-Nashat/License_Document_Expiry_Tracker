@@ -8,8 +8,6 @@ The first client is planned with Flutter Web and will share the same API with fu
 
 This repository currently contains the product specification and implementation plan. Application code will be added in the foundation phase.
 
-Detailed plan: [plans/implementation-plan.md](plans/implementation-plan.md)
-
 ## Phase 1 — MVP
 
 Users can:
