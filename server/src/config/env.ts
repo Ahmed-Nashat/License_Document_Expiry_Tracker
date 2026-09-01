@@ -1,4 +1,7 @@
-import 'dotenv/config';
+import { resolve } from 'node:path';
+import dotenv from 'dotenv';
+dotenv.config();
+dotenv.config({ path: resolve(process.cwd(), '../.env') });
 import { z } from 'zod';
 
 const booleanFromEnvironment = z.enum(['true', 'false']).default('false').transform((value) => value === 'true');

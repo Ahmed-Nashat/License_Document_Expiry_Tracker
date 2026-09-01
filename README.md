@@ -8,7 +8,7 @@ The first client is planned with Flutter Web and will share the same API with fu
 
 ## Project status
 
-This repository contains the product specification, implementation plan, and the deployable foundation. The API has strict environment validation, PostgreSQL migrations, health endpoints, container configuration, and CI checks. The Flutter Web client has an initial application shell and a production build container.
+This repository contains the product specification, implementation plan, and the deployable foundation. The API has strict environment validation, PostgreSQL migrations, health endpoints, secure authentication sessions, container configuration, and CI checks. The Flutter Web client includes responsive sign-in and account creation, silent session restoration, and sign out.
 
 Deployment notes: [DEPLOYMENT.md](DEPLOYMENT.md)
 ## Phase 1 — MVP
@@ -94,6 +94,8 @@ The first backend will be a modular monolith. Database access will be isolated b
 - Maximum of two active sessions per user
 - A third login revokes the oldest active session
 - Explicit logout revokes the current session
+
+The web client keeps the access token only in memory. Its refresh token is an HTTP-only cookie set by the API, which allows a browser refresh to restore a session without exposing the refresh token to JavaScript. Configure `API_BASE_URL` at Flutter build time for a deployed API, for example `--dart-define=API_BASE_URL=https://api.example.com`.
 
 The exact token expiry and inactivity policy will be finalized during authentication implementation. Secrets and tokens must remain outside source control.
 

@@ -1,11 +1,11 @@
 {
-  "name": "DeuNest",
-  "short_name": "DeuNest",
+  "name": "DueNest",
+  "short_name": "DueNest",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#F7F8FA",
   "theme_color": "#2864DC",
-  "description": "DeuNest — never miss what’s due.",
+  "description": "DueNest — never miss what’s due.",
   "icons": [
     {
       "src": "deunest-mark.svg",

@@ -2,7 +2,6 @@ import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
-import rateLimit from '@fastify/rate-limit';
 import Fastify from 'fastify';
 import { ZodError } from 'zod';
 import { env } from './config/env.js';
@@ -20,10 +19,15 @@ export function buildApp() {
   app.register(cookie);
   app.register(jwt, { secret: env.JWT_ACCESS_SECRET });
   app.register(cors, {
-    origin: (origin, callback) => callback(null, !origin || env.webOrigins.includes(origin)),
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (env.NODE_ENV === 'development' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, env.webOrigins.includes(origin));
+    },
     credentials: true,
   });
-  app.register(rateLimit, { global: true, max: 200, timeWindow: '1 minute' });
 
   app.get('/health/live', async () => ({ status: 'ok', version: env.APP_VERSION }));
   app.get('/health/ready', async (_request, reply) => {

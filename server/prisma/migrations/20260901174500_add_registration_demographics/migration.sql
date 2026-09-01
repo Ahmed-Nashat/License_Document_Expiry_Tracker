@@ -1,0 +1,6 @@
+CREATE TYPE "AgeRange" AS ENUM ('UNDER_18', 'AGE_18_24', 'AGE_25_34', 'AGE_35_44', 'AGE_45_PLUS');
+CREATE TYPE "Gender" AS ENUM ('MALE', 'FEMALE', 'PREFER_NOT_TO_SAY');
+
+ALTER TABLE "User"
+  ADD COLUMN "ageRange" "AgeRange",
+  ADD COLUMN "gender" "Gender";
