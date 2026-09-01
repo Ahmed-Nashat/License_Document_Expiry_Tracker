@@ -1,4 +1,6 @@
-# License & Document Expiry Tracker
+# DeuNest
+
+> Never miss what’s due.
 
 A privacy-first web application for tracking document, license, and subscription expiry dates and receiving reminders before they expire or renew.
 
