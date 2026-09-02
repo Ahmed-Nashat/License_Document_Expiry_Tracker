@@ -86,11 +86,21 @@ class AuthApi {
     }
   }
 
-  Future<DeuNestUser> updateProfile(String displayName) async {
+  Future<DeuNestUser> updateProfile({
+    required String token,
+    required String displayName,
+    String? ageRange,
+    String? gender,
+  }) async {
     try {
       final response = await _dio.patch<Map<String, dynamic>>(
         '/api/auth/profile',
-        data: {'displayName': displayName},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+        data: {
+          'displayName': displayName,
+          if (ageRange != null) 'ageRange': ageRange,
+          if (gender != null) 'gender': gender,
+        },
       );
       return DeuNestUser.fromJson(response.data!);
     } on DioException catch (error) {
@@ -99,10 +109,11 @@ class AuthApi {
   }
 
   Future<void> updatePassword(
-      String currentPassword, String newPassword) async {
+      String token, String currentPassword, String newPassword) async {
     try {
       await _dio.patch<Map<String, dynamic>>(
         '/api/auth/password',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
         data: {
           'currentPassword': currentPassword,
           'newPassword': newPassword,

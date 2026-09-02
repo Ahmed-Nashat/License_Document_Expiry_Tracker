@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import 'design_tokens.dart';
 import 'glass.dart';
@@ -194,7 +195,11 @@ class _GlassDropdownTriggerState<T> extends State<_GlassDropdownTrigger<T>> {
                     },
                   ),
                 ),
-              ),
+              ).animate().fadeIn(duration: 150.ms).slideY(
+                  begin: -0.05,
+                  end: 0,
+                  duration: 150.ms,
+                  curve: Curves.easeOutCubic),
             ),
           ),
         ],

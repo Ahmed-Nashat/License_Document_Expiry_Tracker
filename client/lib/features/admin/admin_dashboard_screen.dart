@@ -874,6 +874,36 @@ class _UserDetailPanel extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
+                      onPressed: () {
+                        final isCurrentlyAdmin = user.role == 'ADMIN';
+                        final newRole = isCurrentlyAdmin ? 'USER' : 'ADMIN';
+                        confirm(
+                          'Change Role',
+                          'Change ${user.email} role to \$newRole?',
+                          () async {
+                            try {
+                              await actions.changeUserRole(user.id, newRole);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Role changed to \$newRole')));
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error: \$e')));
+                              }
+                            }
+                          },
+                        );
+                      },
+                      icon: const Icon(Icons.admin_panel_settings_rounded, size: 14),
+                      label: Text(user.role == 'ADMIN' ? 'Revoke Admin Access' : 'Make Admin'),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
                       onPressed: () => confirm('Start Deletion Workflow',
                           'Open a privacy deletion ticket for ${user.email}?',
                           () async {
@@ -1920,7 +1950,9 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
     }
     setState(() => _isLoading = true);
     try {
-      await ref.read(authControllerProvider.notifier).updateProfile(name);
+      await ref
+          .read(authControllerProvider.notifier)
+          .updateProfile(displayName: name);
       if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Profile updated.')));

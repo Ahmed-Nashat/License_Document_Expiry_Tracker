@@ -5,12 +5,12 @@ import '../../shared/brand_mark.dart';
 import '../../shared/design_tokens.dart';
 import '../../shared/glass.dart';
 import '../../shared/theme_mode.dart';
-import '../auth/auth_controller.dart';
 import '../auth/auth_models.dart';
 import '../auth/api_client_platform.dart';
 import '../documents/document_dialog.dart';
 import '../documents/document_models.dart';
 import '../documents/documents_controller.dart';
+import 'user_profile_dialog.dart';
 
 // ─── Resting card shadow ───────────────────────────────────────────────────────
 List<BoxShadow> _cardShadowRest(bool isDark) => [
@@ -194,16 +194,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                       : AppColors.charcoal),
                             ),
                             const SizedBox(width: 8),
-                            IconButton.outlined(
-                              tooltip: 'Sign out',
-                              onPressed: () => ref
-                                  .read(authControllerProvider.notifier)
-                                  .signOut(),
-                              icon: Icon(Icons.logout_rounded,
-                                  size: 17,
-                                  color: isDark
-                                      ? AppColors.charcoalDark
-                                      : AppColors.charcoal),
+                            InkWell(
+                              borderRadius: BorderRadius.circular(20),
+                              onTap: () => showDialog(
+                                context: context,
+                                builder: (context) => UserProfileDialog(
+                                    user: widget.session.user),
+                              ),
+                              child: CircleAvatar(
+                                radius: 18,
+                                backgroundColor:
+                                    isDark ? AppColors.charcoal : AppColors.fog,
+                                foregroundColor:
+                                    isDark ? AppColors.white : AppColors.ink,
+                                child: Text(
+                                  name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -214,52 +224,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     // ── Search + Add ─────────────────────────────────────
                     FadeTransition(
                       opacity: _navFade,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _searchController,
-                              onChanged: (val) => ref
-                                  .read(documentSearchQueryProvider.notifier)
-                                  .state = val,
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  color: isDark
-                                      ? AppColors.inkDark
-                                      : AppColors.ink),
-                              decoration: InputDecoration(
-                                hintText: 'Search documents, providers…',
-                                prefixIcon: Icon(Icons.search_rounded,
-                                    color: AppColors.gray),
-                                suffixIcon: _searchController.text.isNotEmpty
-                                    ? IconButton(
-                                        icon: Icon(Icons.clear_rounded,
-                                            size: 16, color: AppColors.gray),
-                                        onPressed: () {
-                                          _searchController.clear();
-                                          ref
-                                              .read(documentSearchQueryProvider
-                                                  .notifier)
-                                              .state = '';
-                                        },
-                                      )
-                                    : null,
-                                contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 12, horizontal: 16),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isMobile = constraints.maxWidth < 500;
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _searchController,
+                                  onChanged: (val) => ref
+                                      .read(documentSearchQueryProvider.notifier)
+                                      .state = val,
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? AppColors.inkDark
+                                          : AppColors.ink),
+                                  decoration: InputDecoration(
+                                    hintText: isMobile ? 'Search...' : 'Search documents, providers…',
+                                    prefixIcon: Icon(Icons.search_rounded,
+                                        color: AppColors.gray),
+                                    suffixIcon: _searchController.text.isNotEmpty
+                                        ? IconButton(
+                                            icon: Icon(Icons.clear_rounded,
+                                                size: 16, color: AppColors.gray),
+                                            onPressed: () {
+                                              _searchController.clear();
+                                              ref
+                                                  .read(documentSearchQueryProvider
+                                                      .notifier)
+                                                  .state = '';
+                                            },
+                                          )
+                                        : null,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 12, horizontal: 16),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          FilledButton.icon(
-                            onPressed: () => showDocumentDialog(context),
-                            icon: const Icon(Icons.add_rounded, size: 18),
-                            label: const Text('Add item'),
-                            style: FilledButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 18),
-                            ),
-                          ),
-                        ],
+                              const SizedBox(width: 12),
+                              if (isMobile)
+                                SizedBox(
+                                  width: 48,
+                                  height: 48,
+                                  child: FilledButton(
+                                    onPressed: () => showDocumentDialog(context),
+                                    style: FilledButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    child: const Icon(Icons.add_rounded, size: 20),
+                                  ),
+                                )
+                              else
+                                FilledButton.icon(
+                                  onPressed: () => showDocumentDialog(context),
+                                  icon: const Icon(Icons.add_rounded, size: 18),
+                                  label: const Text('Add item'),
+                                  style: FilledButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 18),
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -369,89 +397,101 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
                     // ── Document list ────────────────────────────────────
                     Expanded(
-                      child: docsAsync.when(
-                        loading: () => Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: isDark ? AppColors.inkDark : AppColors.ink,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        child: docsAsync.when(
+                          loading: () => Center(
+                            key: const ValueKey('loading'),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: isDark ? AppColors.inkDark : AppColors.ink,
+                            ),
                           ),
-                        ),
-                        error: (err, stack) => Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.error_outline_rounded,
-                                  size: 32,
-                                  color: isDark
-                                      ? AppColors.charcoalDark
-                                      : AppColors.charcoal),
-                              const SizedBox(height: 12),
-                              const Text('Failed to load documents.',
-                                  style: TextStyle(fontSize: 14)),
-                              const SizedBox(height: 12),
-                              FilledButton(
-                                onPressed: () => ref
-                                    .read(documentsControllerProvider.notifier)
-                                    .reload(),
-                                child: const Text('Retry'),
-                              ),
-                            ],
-                          ),
-                        ),
-                        data: (docs) {
-                          if (docs.isEmpty) {
-                            return _EmptyDashboard(isDark: isDark);
-                          }
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _MetricsRow(docs: docs, isDark: isDark),
-                              const SizedBox(height: 16),
-                              Expanded(
-                                child: LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    final w = constraints.maxWidth;
-                                    final cols =
-                                        w > 900 ? 3 : (w > 600 ? 2 : 1);
-                                    return GridView.builder(
-                                      gridDelegate:
-                                          SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: cols,
-                                        mainAxisSpacing: 12,
-                                        crossAxisSpacing: 12,
-                                        mainAxisExtent: 188,
-                                      ),
-                                      itemCount: docs.length,
-                                      itemBuilder: (context, index) {
-                                        final doc = docs[index];
-                                        // Staggered entry: each card slides up + fades in
-                                        return _StaggeredCard(
-                                          index: index,
-                                          child: _DocumentCard(
-                                            doc: doc,
-                                            isDark: isDark,
-                                            onEdit: () => showDocumentDialog(
-                                                context,
-                                                document: doc),
-                                            onToggleArchive: () => ref
-                                                .read(
-                                                    documentsControllerProvider
-                                                        .notifier)
-                                                .toggleArchive(
-                                                    doc.id, !doc.isArchived),
-                                            onDelete: () =>
-                                                _confirmDelete(context, doc),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
+                          error: (err, stack) => Center(
+                            key: const ValueKey('error'),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.error_outline_rounded,
+                                    size: 32,
+                                    color: isDark
+                                        ? AppColors.charcoalDark
+                                        : AppColors.charcoal),
+                                const SizedBox(height: 12),
+                                const Text('Failed to load documents.',
+                                    style: TextStyle(fontSize: 14)),
+                                const SizedBox(height: 12),
+                                FilledButton(
+                                  onPressed: () => ref
+                                      .read(
+                                          documentsControllerProvider.notifier)
+                                      .reload(),
+                                  child: const Text('Retry'),
                                 ),
-                              ),
-                            ],
-                          );
-                        },
+                              ],
+                            ),
+                          ),
+                          data: (docs) {
+                            if (docs.isEmpty) {
+                              return _EmptyDashboard(
+                                  key: const ValueKey('empty'), isDark: isDark);
+                            }
+
+                            return Column(
+                              key:
+                                  ValueKey('data_${docs.length}_$selectedType'),
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _MetricsRow(docs: docs, isDark: isDark),
+                                const SizedBox(height: 16),
+                                Expanded(
+                                  child: LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final w = constraints.maxWidth;
+                                      final cols =
+                                          w > 900 ? 3 : (w > 600 ? 2 : 1);
+                                      return GridView.builder(
+                                        gridDelegate:
+                                            SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: cols,
+                                          mainAxisSpacing: 12,
+                                          crossAxisSpacing: 12,
+                                          mainAxisExtent: 188,
+                                        ),
+                                        itemCount: docs.length,
+                                        itemBuilder: (context, index) {
+                                          final doc = docs[index];
+                                          // Staggered entry: each card slides up + fades in
+                                          return _StaggeredCard(
+                                            key: ValueKey(doc.id),
+                                            index: index,
+                                            child: _DocumentCard(
+                                              doc: doc,
+                                              isDark: isDark,
+                                              onEdit: () => showDocumentDialog(
+                                                  context,
+                                                  document: doc),
+                                              onToggleArchive: () => ref
+                                                  .read(
+                                                      documentsControllerProvider
+                                                          .notifier)
+                                                  .toggleArchive(
+                                                      doc.id, !doc.isArchived),
+                                              onDelete: () =>
+                                                  _confirmDelete(context, doc),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ],
@@ -469,7 +509,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 /// Wraps a card with a staggered fade + upward-slide entry animation.
 /// Each card's delay = index × 40ms, capped at 360ms total.
 class _StaggeredCard extends StatefulWidget {
-  const _StaggeredCard({required this.index, required this.child});
+  const _StaggeredCard({super.key, required this.index, required this.child});
 
   final int index;
   final Widget child;
@@ -539,36 +579,68 @@ class _MetricsRow extends StatelessWidget {
             d.urgency == ExpiryUrgency.upcoming)
         .length;
 
-    return Row(
-      children: [
-        _MetricTile(
-          label: 'Expired',
-          count: expired,
-          urgency: ExpiryUrgency.expired,
-          isDark: isDark,
-        ),
-        const SizedBox(width: 8),
-        _MetricTile(
-          label: 'Critical',
-          count: critical,
-          urgency: ExpiryUrgency.critical,
-          isDark: isDark,
-        ),
-        const SizedBox(width: 8),
-        _MetricTile(
-          label: 'Expiring',
-          count: expiringSoon,
-          urgency: ExpiryUrgency.expiringSoon,
-          isDark: isDark,
-        ),
-        const SizedBox(width: 8),
-        _MetricTile(
-          label: 'Valid',
-          count: valid,
-          urgency: ExpiryUrgency.valid,
-          isDark: isDark,
-        ),
-      ],
+    final tiles = [
+      _MetricTile(
+        label: 'Expired',
+        count: expired,
+        urgency: ExpiryUrgency.expired,
+        isDark: isDark,
+      ),
+      _MetricTile(
+        label: 'Critical',
+        count: critical,
+        urgency: ExpiryUrgency.critical,
+        isDark: isDark,
+      ),
+      _MetricTile(
+        label: 'Expiring',
+        count: expiringSoon,
+        urgency: ExpiryUrgency.expiringSoon,
+        isDark: isDark,
+      ),
+      _MetricTile(
+        label: 'Valid',
+        count: valid,
+        urgency: ExpiryUrgency.valid,
+        isDark: isDark,
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 500) {
+          return Column(
+            children: [
+              Row(
+                children: [
+                  tiles[0],
+                  const SizedBox(width: 8),
+                  tiles[1],
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  tiles[2],
+                  const SizedBox(width: 8),
+                  tiles[3],
+                ],
+              ),
+            ],
+          );
+        }
+        return Row(
+          children: [
+            tiles[0],
+            const SizedBox(width: 8),
+            tiles[1],
+            const SizedBox(width: 8),
+            tiles[2],
+            const SizedBox(width: 8),
+            tiles[3],
+          ],
+        );
+      },
     );
   }
 }
@@ -912,7 +984,7 @@ class _DocumentCardState extends State<_DocumentCard> {
 
 // ─── Empty dashboard ──────────────────────────────────────────────────────────
 class _EmptyDashboard extends StatefulWidget {
-  const _EmptyDashboard({required this.isDark});
+  const _EmptyDashboard({super.key, required this.isDark});
 
   final bool isDark;
 

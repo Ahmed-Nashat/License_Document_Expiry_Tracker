@@ -168,6 +168,39 @@ export async function adminRoutes(app: FastifyInstance) {
     return reply.status(200).send({ message: 'User reactivated.' });
   });
 
+  // PATCH /api/admin/users/:id/role - Update user role
+  app.patch('/api/admin/users/:id/role', async (request, reply) => {
+    const admin = request.user as JwtPayload;
+    const { id: targetUserId } = request.params as { id: string };
+    const { role } = z.object({
+      role: z.enum(['USER', 'ADMIN']),
+    }).parse(request.body);
+
+    if (admin.userId === targetUserId) {
+      return reply.status(400).send({ error: 'INVALID_TARGET', message: 'You cannot change your own role.' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: targetUserId }, select: { id: true, role: true } });
+    if (!user) return reply.status(404).send({ error: 'NOT_FOUND', message: 'User not found.' });
+    if (user.role === role) return reply.status(200).send({ message: 'User already has this role.' });
+
+    await prisma.user.update({
+      where: { id: targetUserId },
+      data: { role },
+    });
+
+    await createAuditLog(app, {
+      actorId: admin.userId,
+      action: 'ROLE_CHANGE',
+      targetId: targetUserId,
+      metadata: { previousRole: user.role, newRole: role },
+      ipAddress: request.ip,
+      requestId: request.id,
+    });
+
+    return reply.status(200).send({ message: `User role updated to ${role}.` });
+  });
+
   // POST /api/admin/users/:id/delete-workflow - Open a deletion support ticket
   app.post('/api/admin/users/:id/delete-workflow', async (request, reply) => {
     const admin = request.user as JwtPayload;

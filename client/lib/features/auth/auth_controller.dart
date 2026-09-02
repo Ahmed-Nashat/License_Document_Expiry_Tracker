@@ -42,9 +42,20 @@ class AuthController extends AsyncNotifier<AuthSession?> {
     }
   }
 
-  Future<void> updateProfile(String displayName) async {
-    final updatedUser =
-        await ref.read(authApiProvider).updateProfile(displayName);
+  Future<void> updateProfile({
+    required String displayName,
+    String? ageRange,
+    String? gender,
+  }) async {
+    final token = state.value?.accessToken;
+    if (token == null) throw StateError('No active session.');
+
+    final updatedUser = await ref.read(authApiProvider).updateProfile(
+          token: token,
+          displayName: displayName,
+          ageRange: ageRange,
+          gender: gender,
+        );
     if (state.value != null) {
       state = AsyncData(state.value!.copyWith(user: updatedUser));
     }
@@ -52,9 +63,12 @@ class AuthController extends AsyncNotifier<AuthSession?> {
 
   Future<void> updatePassword(
       String currentPassword, String newPassword) async {
+    final token = state.value?.accessToken;
+    if (token == null) throw StateError('No active session.');
+
     await ref
         .read(authApiProvider)
-        .updatePassword(currentPassword, newPassword);
+        .updatePassword(token, currentPassword, newPassword);
     await signOut();
   }
 }

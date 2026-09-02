@@ -581,6 +581,12 @@ class AdminActions {
     _ref.invalidate(adminAuditLogsProvider);
   }
 
+  Future<void> changeUserRole(String userId, String role) async {
+    await _client.patch('/api/admin/users/$userId/role', data: {'role': role});
+    _ref.invalidate(adminUsersProvider);
+    _ref.invalidate(adminAuditLogsProvider);
+  }
+
   Future<void> retryReminder(String logId) async {
     await _client.post('/api/admin/reminders/retry/$logId');
     _ref.invalidate(adminReminderLogsProvider);
