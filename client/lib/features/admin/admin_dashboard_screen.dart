@@ -345,9 +345,22 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           ),
           Expanded(
             child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              transitionBuilder: (child, anim) =>
-                  FadeTransition(opacity: anim, child: child),
+              duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, anim) {
+                final slideAnim = Tween<Offset>(
+                  begin: const Offset(0.0, 0.05),
+                  end: Offset.zero,
+                ).animate(anim);
+                return FadeTransition(
+                  opacity: anim,
+                  child: SlideTransition(
+                    position: slideAnim,
+                    child: child,
+                  ),
+                );
+              },
               child: _buildTab(_tab),
             ),
           ),
