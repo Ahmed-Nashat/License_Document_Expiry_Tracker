@@ -20,6 +20,10 @@ const schema = z.object({
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(90).default(30),
   COOKIE_SECURE: booleanFromEnvironment,
   COOKIE_DOMAIN: z.string().optional(),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.string().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);

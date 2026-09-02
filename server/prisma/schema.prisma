@@ -52,6 +52,7 @@ model User {
   emailNotificationsEnabled Boolean       @default(true)
   sessions                  UserSession[]
   documents                 Document[]
+  notifications             NotificationLog[]
   createdAt                 DateTime      @default(now())
   updatedAt                 DateTime      @updatedAt
 }
@@ -84,6 +85,7 @@ model Document {
   billingCycle  BillingCycle?
   isArchived    Boolean       @default(false)
   reminderRules ReminderRule[]
+  notifications NotificationLog[]
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -115,4 +117,34 @@ model AuditLog {
   @@index([timestamp])
   @@index([actorId])
   @@index([action])
+}
+enum NotificationStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+}
+
+model NotificationLog {
+  id               String             @id @default(cuid())
+  documentId       String
+  userId           String
+  daysBefore       Int
+  targetExpiryDate DateTime           @db.Date
+  channel          String             @default("EMAIL")
+  status           NotificationStatus @default(PENDING)
+  processingAt     DateTime?
+  retryCount       Int                @default(0)
+  error            String?
+  sentAt           DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  document         Document           @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Ensures we never send the exact same reminder for the same expiry date
+  @@unique([documentId, daysBefore, targetExpiryDate])
+  @@index([status, retryCount])
+  @@index([userId])
 }

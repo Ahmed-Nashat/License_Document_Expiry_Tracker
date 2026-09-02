@@ -9,8 +9,14 @@ import { prisma } from './lib/prisma.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { documentRoutes } from './modules/documents/routes.js';
 import { adminRoutes } from './modules/admin/routes.js';
+import { startReminderEngine } from './modules/reminders/engine.js';
 
 export function buildApp() {
+  // Start background engine
+  if (env.NODE_ENV !== 'test') {
+    startReminderEngine();
+  }
+
   const app = Fastify({
     logger: { level: env.LOG_LEVEL, redact: ['req.headers.authorization', 'req.headers.cookie', 'res.headers.set-cookie'] },
     requestIdHeader: 'x-request-id',

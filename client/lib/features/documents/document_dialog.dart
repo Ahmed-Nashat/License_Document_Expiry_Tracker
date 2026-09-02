@@ -53,6 +53,7 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
   DateTime? _expiryDate;
   bool _isSaving = false;
   String? _errorMessage;
+  Set<int> _reminderDays = {90, 30, 7, 1, 0};
 
   @override
   void initState() {
@@ -68,6 +69,13 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
     _billingCycle = doc?.billingCycle ?? BillingCycle.monthly;
     _expiryDate =
         doc?.expiryDate ?? DateTime.now().add(const Duration(days: 365));
+
+    if (doc != null) {
+      _reminderDays = doc.reminderRules
+          .where((r) => r.enabled)
+          .map((r) => r.daysBeforeExpiry)
+          .toSet();
+    }
   }
 
   @override
@@ -128,6 +136,7 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
               billingCycle: _selectedType == DocumentType.subscription
                   ? _billingCycle
                   : null,
+              reminderDays: _reminderDays.toList(),
             );
       } else {
         await ref.read(documentsControllerProvider.notifier).editDocument(
@@ -144,6 +153,7 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
               billingCycle: _selectedType == DocumentType.subscription
                   ? _billingCycle
                   : null,
+              reminderDays: _reminderDays.toList(),
             );
       }
       if (mounted) Navigator.of(context).pop();
@@ -350,6 +360,62 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                       hintText: 'Any reminder details…',
                       prefixIcon: Icon(Icons.notes_rounded),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Reminders
+                  Text(
+                    'Email Reminders',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppColors.gray : AppColors.charcoal,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [90, 30, 7, 1, 0].map((days) {
+                      final isSelected = _reminderDays.contains(days);
+                      final label = days == 0 ? 'On Due Date' : '$days Days';
+                      return FilterChip(
+                        label: Text(
+                          label,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isSelected
+                                ? Colors.white
+                                : (isDark ? AppColors.inkDark : AppColors.ink),
+                          ),
+                        ),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          setState(() {
+                            if (selected) {
+                              _reminderDays.add(days);
+                            } else {
+                              _reminderDays.remove(days);
+                            }
+                          });
+                        },
+                        backgroundColor:
+                            isDark ? AppColors.surfaceDark : AppColors.fog,
+                        selectedColor: AppColors.charcoal,
+                        checkmarkColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(
+                            color: isSelected
+                                ? Colors.transparent
+                                : (isDark
+                                    ? AppColors.borderDark
+                                    : AppColors.border),
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                   const SizedBox(height: 24),
 
