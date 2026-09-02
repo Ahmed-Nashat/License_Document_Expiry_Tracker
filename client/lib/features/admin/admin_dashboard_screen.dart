@@ -68,6 +68,21 @@ class _TabHeader extends StatelessWidget {
   }
 }
 
+class _StatRow extends StatelessWidget {
+  const _StatRow({required this.children});
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final spaced = <Widget>[];
+    for (var i = 0; i < children.length; i++) {
+      spaced.add(Expanded(child: children[i]));
+      if (i < children.length - 1) spaced.add(const SizedBox(width: 12));
+    }
+    return Row(children: spaced);
+  }
+}
+
 class _StatCard extends StatelessWidget {
   const _StatCard({required this.label, required this.value, required this.icon, this.sub, this.color});
   final String label;
@@ -80,7 +95,6 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      width: 160,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark ? AppColors.selectedDark : AppColors.white,
@@ -305,14 +319,14 @@ class _OverviewTab extends ConsumerWidget {
                 children: [
                   const Text('Users', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.gray, letterSpacing: 0.5)),
                   const SizedBox(height: 12),
-                  Wrap(spacing: 12, runSpacing: 12, children: [
+                  _StatRow(children: [
                     _StatCard(label: 'Total Users', value: '${m.usersTotal}', icon: Icons.people_rounded),
                     _StatCard(label: 'New (7d)', value: '+${m.usersNewLast7Days}', icon: Icons.person_add_rounded, color: Colors.greenAccent.shade400),
                   ]),
                   const SizedBox(height: 24),
                   const Text('Documents', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.gray, letterSpacing: 0.5)),
                   const SizedBox(height: 12),
-                  Wrap(spacing: 12, runSpacing: 12, children: [
+                  _StatRow(children: [
                     _StatCard(label: 'Total', value: '${m.docsTotal}', icon: Icons.description_rounded),
                     _StatCard(label: 'Expired', value: '${m.docsExpired}', icon: Icons.cancel_rounded, color: Colors.redAccent),
                     _StatCard(label: 'Critical <7d', value: '${m.docsCritical}', icon: Icons.warning_rounded, color: Colors.orange),
@@ -324,7 +338,7 @@ class _OverviewTab extends ConsumerWidget {
                   reminderAsync.when(
                     loading: () => const CircularProgressIndicator(),
                     error: (e, _) => Text('Reminder error: $e', style: const TextStyle(color: Colors.redAccent)),
-                    data: (r) => Wrap(spacing: 12, runSpacing: 12, children: [
+                    data: (r) => _StatRow(children: [
                       _StatCard(label: 'Delivery Rate', value: '${m.deliveryRate}%', icon: Icons.send_rounded, color: Colors.greenAccent.shade400),
                       _StatCard(label: 'Pending', value: '${r.pending}', icon: Icons.hourglass_bottom_rounded),
                       _StatCard(label: 'Failed', value: '${r.failed}', icon: Icons.error_outline_rounded, color: r.failed > 0 ? Colors.redAccent : null),
@@ -343,7 +357,7 @@ class _OverviewTab extends ConsumerWidget {
                   ref.watch(adminHealthProvider).when(
                     loading: () => const CircularProgressIndicator(),
                     error: (e, _) => Text('Health check failed: $e', style: const TextStyle(color: Colors.redAccent)),
-                    data: (h) => Wrap(spacing: 12, runSpacing: 12, children: [
+                    data: (h) => _StatRow(children: [
                       _StatCard(label: 'API Server', value: h['status'] == 'ok' ? 'ONLINE' : 'DOWN', icon: Icons.api_rounded, color: h['status'] == 'ok' ? Colors.greenAccent.shade400 : Colors.redAccent),
                       _StatCard(label: 'Database', value: h['database'] == 'ok' ? 'CONNECTED' : 'DOWN', icon: Icons.storage_rounded, color: h['database'] == 'ok' ? Colors.greenAccent.shade400 : Colors.redAccent),
                       _StatCard(label: 'Version', value: h['version'] ?? 'Unknown', icon: Icons.verified_rounded),
@@ -728,7 +742,7 @@ class _RemindersTab extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Wrap(spacing: 12, runSpacing: 12, children: [
+                      _StatRow(children: [
                         _StatCard(label: 'Pending', value: '${s.pending}', icon: Icons.hourglass_bottom_rounded),
                         _StatCard(label: 'Processing', value: '${s.processing}', icon: Icons.sync_rounded),
                         _StatCard(label: 'Sent', value: '${s.sent}', icon: Icons.check_circle_outline_rounded, color: Colors.greenAccent.shade400),
