@@ -224,52 +224,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     // ── Search + Add ─────────────────────────────────────
                     FadeTransition(
                       opacity: _navFade,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _searchController,
-                              onChanged: (val) => ref
-                                  .read(documentSearchQueryProvider.notifier)
-                                  .state = val,
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  color: isDark
-                                      ? AppColors.inkDark
-                                      : AppColors.ink),
-                              decoration: InputDecoration(
-                                hintText: 'Search documents, providers…',
-                                prefixIcon: Icon(Icons.search_rounded,
-                                    color: AppColors.gray),
-                                suffixIcon: _searchController.text.isNotEmpty
-                                    ? IconButton(
-                                        icon: Icon(Icons.clear_rounded,
-                                            size: 16, color: AppColors.gray),
-                                        onPressed: () {
-                                          _searchController.clear();
-                                          ref
-                                              .read(documentSearchQueryProvider
-                                                  .notifier)
-                                              .state = '';
-                                        },
-                                      )
-                                    : null,
-                                contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 12, horizontal: 16),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isMobile = constraints.maxWidth < 500;
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _searchController,
+                                  onChanged: (val) => ref
+                                      .read(documentSearchQueryProvider.notifier)
+                                      .state = val,
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? AppColors.inkDark
+                                          : AppColors.ink),
+                                  decoration: InputDecoration(
+                                    hintText: isMobile ? 'Search...' : 'Search documents, providers…',
+                                    prefixIcon: Icon(Icons.search_rounded,
+                                        color: AppColors.gray),
+                                    suffixIcon: _searchController.text.isNotEmpty
+                                        ? IconButton(
+                                            icon: Icon(Icons.clear_rounded,
+                                                size: 16, color: AppColors.gray),
+                                            onPressed: () {
+                                              _searchController.clear();
+                                              ref
+                                                  .read(documentSearchQueryProvider
+                                                      .notifier)
+                                                  .state = '';
+                                            },
+                                          )
+                                        : null,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 12, horizontal: 16),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          FilledButton.icon(
-                            onPressed: () => showDocumentDialog(context),
-                            icon: const Icon(Icons.add_rounded, size: 18),
-                            label: const Text('Add item'),
-                            style: FilledButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 18),
-                            ),
-                          ),
-                        ],
+                              const SizedBox(width: 12),
+                              if (isMobile)
+                                SizedBox(
+                                  width: 48,
+                                  height: 48,
+                                  child: FilledButton(
+                                    onPressed: () => showDocumentDialog(context),
+                                    style: FilledButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    child: const Icon(Icons.add_rounded, size: 20),
+                                  ),
+                                )
+                              else
+                                FilledButton.icon(
+                                  onPressed: () => showDocumentDialog(context),
+                                  icon: const Icon(Icons.add_rounded, size: 18),
+                                  label: const Text('Add item'),
+                                  style: FilledButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 18),
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -561,36 +579,68 @@ class _MetricsRow extends StatelessWidget {
             d.urgency == ExpiryUrgency.upcoming)
         .length;
 
-    return Row(
-      children: [
-        _MetricTile(
-          label: 'Expired',
-          count: expired,
-          urgency: ExpiryUrgency.expired,
-          isDark: isDark,
-        ),
-        const SizedBox(width: 8),
-        _MetricTile(
-          label: 'Critical',
-          count: critical,
-          urgency: ExpiryUrgency.critical,
-          isDark: isDark,
-        ),
-        const SizedBox(width: 8),
-        _MetricTile(
-          label: 'Expiring',
-          count: expiringSoon,
-          urgency: ExpiryUrgency.expiringSoon,
-          isDark: isDark,
-        ),
-        const SizedBox(width: 8),
-        _MetricTile(
-          label: 'Valid',
-          count: valid,
-          urgency: ExpiryUrgency.valid,
-          isDark: isDark,
-        ),
-      ],
+    final tiles = [
+      _MetricTile(
+        label: 'Expired',
+        count: expired,
+        urgency: ExpiryUrgency.expired,
+        isDark: isDark,
+      ),
+      _MetricTile(
+        label: 'Critical',
+        count: critical,
+        urgency: ExpiryUrgency.critical,
+        isDark: isDark,
+      ),
+      _MetricTile(
+        label: 'Expiring',
+        count: expiringSoon,
+        urgency: ExpiryUrgency.expiringSoon,
+        isDark: isDark,
+      ),
+      _MetricTile(
+        label: 'Valid',
+        count: valid,
+        urgency: ExpiryUrgency.valid,
+        isDark: isDark,
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 500) {
+          return Column(
+            children: [
+              Row(
+                children: [
+                  tiles[0],
+                  const SizedBox(width: 8),
+                  tiles[1],
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  tiles[2],
+                  const SizedBox(width: 8),
+                  tiles[3],
+                ],
+              ),
+            ],
+          );
+        }
+        return Row(
+          children: [
+            tiles[0],
+            const SizedBox(width: 8),
+            tiles[1],
+            const SizedBox(width: 8),
+            tiles[2],
+            const SizedBox(width: 8),
+            tiles[3],
+          ],
+        );
+      },
     );
   }
 }
