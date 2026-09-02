@@ -185,8 +185,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             const SizedBox(width: 8),
                             IconButton.outlined(
                               tooltip: 'Contact Support',
-                              onPressed: () => _showSupportDialog(context, ref),
-                              icon: Icon(Icons.support_agent_rounded, size: 17, color: isDark ? AppColors.charcoalDark : AppColors.charcoal),
+                              onPressed: () => _showSupportDialog(
+                                  context, widget.session.accessToken),
+                              icon: Icon(Icons.support_agent_rounded,
+                                  size: 17,
+                                  color: isDark
+                                      ? AppColors.charcoalDark
+                                      : AppColors.charcoal),
                             ),
                             const SizedBox(width: 8),
                             IconButton.outlined(
@@ -1007,7 +1012,9 @@ class _EmptyDashboardState extends State<_EmptyDashboard>
     );
   }
 }
-Future<void> _showSupportDialog(BuildContext context, WidgetRef ref) async {
+
+Future<void> _showSupportDialog(
+    BuildContext context, String accessToken) async {
   final subjectCtrl = TextEditingController();
   final descCtrl = TextEditingController();
   String category = 'OTHER';
@@ -1019,10 +1026,12 @@ Future<void> _showSupportDialog(BuildContext context, WidgetRef ref) async {
     builder: (ctx) => StatefulBuilder(
       builder: (context, setState) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
-        
+
         return AlertDialog(
           backgroundColor: isDark ? AppColors.surfaceDark : AppColors.white,
-          title: Text('Contact Support', style: TextStyle(color: isDark ? AppColors.inkDark : AppColors.ink)),
+          title: Text('Contact Support',
+              style:
+                  TextStyle(color: isDark ? AppColors.inkDark : AppColors.ink)),
           content: SizedBox(
             width: 400,
             child: Column(
@@ -1031,11 +1040,17 @@ Future<void> _showSupportDialog(BuildContext context, WidgetRef ref) async {
               children: [
                 DropdownButtonFormField<String>(
                   initialValue: category,
-                  decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'Category', border: OutlineInputBorder()),
                   items: const [
-                    DropdownMenuItem(value: 'ACCOUNT_ACCESS', child: Text('Account Access')),
-                    DropdownMenuItem(value: 'REMINDER_DELIVERY', child: Text('Reminder Delivery')),
-                    DropdownMenuItem(value: 'PRIVACY_DELETION', child: Text('Privacy / Data Deletion')),
+                    DropdownMenuItem(
+                        value: 'ACCOUNT_ACCESS', child: Text('Account Access')),
+                    DropdownMenuItem(
+                        value: 'REMINDER_DELIVERY',
+                        child: Text('Reminder Delivery')),
+                    DropdownMenuItem(
+                        value: 'PRIVACY_DELETION',
+                        child: Text('Privacy / Data Deletion')),
                     DropdownMenuItem(value: 'OTHER', child: Text('Other')),
                   ],
                   onChanged: (v) => setState(() => category = v!),
@@ -1043,44 +1058,64 @@ Future<void> _showSupportDialog(BuildContext context, WidgetRef ref) async {
                 const SizedBox(height: 16),
                 TextField(
                   controller: subjectCtrl,
-                  decoration: const InputDecoration(labelText: 'Subject', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'Subject', border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: descCtrl,
                   maxLines: 4,
-                  decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'Description', border: OutlineInputBorder()),
                 ),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: isLoading ? null : () => Navigator.pop(ctx), child: const Text('Cancel')),
+            TextButton(
+                onPressed: isLoading ? null : () => Navigator.pop(ctx),
+                child: const Text('Cancel')),
             FilledButton(
-              onPressed: isLoading ? null : () async {
-                if (subjectCtrl.text.trim().length < 5 || descCtrl.text.trim().length < 10) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please provide a detailed subject and description.')));
-                  return;
-                }
-                setState(() => isLoading = true);
-                try {
-                  final client = createDio();
-                  await client.post('/api/support/tickets', data: {
-                    'category': category,
-                    'subject': subjectCtrl.text.trim(),
-                    'description': descCtrl.text.trim(),
-                  });
-                  if (ctx.mounted) {
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Support ticket created. We will be in touch!')));
-                  }
-                } catch (e) {
-                  if (ctx.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                } finally {
-                  if (ctx.mounted) setState(() => isLoading = false);
-                }
-              },
-              child: isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Submit Ticket'),
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      if (subjectCtrl.text.trim().length < 5 ||
+                          descCtrl.text.trim().length < 10) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                            content: Text(
+                                'Please provide a detailed subject and description.')));
+                        return;
+                      }
+                      setState(() => isLoading = true);
+                      try {
+                        final client = createDio();
+                        client.options.headers['Authorization'] =
+                            'Bearer $accessToken';
+                        await client.post('/api/support/tickets', data: {
+                          'category': category,
+                          'subject': subjectCtrl.text.trim(),
+                          'description': descCtrl.text.trim(),
+                        });
+                        if (ctx.mounted) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                              content: Text(
+                                  'Support ticket created. We will be in touch!')));
+                        }
+                      } catch (e) {
+                        if (ctx.mounted)
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error: $e')));
+                      } finally {
+                        if (ctx.mounted) setState(() => isLoading = false);
+                      }
+                    },
+              child: isLoading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text('Submit Ticket'),
             ),
           ],
         );

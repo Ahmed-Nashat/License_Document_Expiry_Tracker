@@ -123,6 +123,12 @@ async function generateReminders() {
 }
 
 async function dispatchReminders() {
+  const pauseFlag = await prisma.systemConfig.findUnique({ where: { key: 'REMINDER_ENGINE_PAUSED' } });
+  if (pauseFlag?.value === 'true') {
+    console.log('[ReminderEngine] Engine is paused. Skipping dispatchReminders.');
+    return;
+  }
+
   const processingCutoff = new Date(Date.now() - 15 * 60 * 1000);
   const pendingLogs = await prisma.notificationLog.findMany({
     where: {

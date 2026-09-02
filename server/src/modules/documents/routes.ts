@@ -2,6 +2,7 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../../lib/prisma.js';
+import { requireAuthenticatedSession } from '../../plugins/requireAuthenticatedSession.js';
 
 interface JwtPayload {
   userId: string;
@@ -79,13 +80,7 @@ function serializeDocument(doc: RawDocument) {
 export async function documentRoutes(app: FastifyInstance) {
   // Authentication hook for all document routes
   app.addHook('preHandler', async (request, reply) => {
-    try {
-      await request.jwtVerify();
-    } catch {
-      return reply
-        .status(401)
-        .send({ error: 'UNAUTHORIZED', message: 'Authentication required.' });
-    }
+    await requireAuthenticatedSession(request, reply);
   });
 
   // GET /api/documents - List documents with filters

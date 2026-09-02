@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../../lib/prisma.js';
 import { createAuditLog } from '../../utils/auditLogger.js';
+import { requireAuthenticatedSession } from '../../plugins/requireAuthenticatedSession.js';
 
 interface JwtPayload {
   userId: string;
@@ -13,11 +14,7 @@ export async function supportRoutes(app: FastifyInstance) {
   // Consumer ticket creation route
   app.post('/api/support/tickets', {
     preHandler: async (request, reply) => {
-      try {
-        await request.jwtVerify();
-      } catch {
-        return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'You must be logged in.' });
-      }
+      await requireAuthenticatedSession(request, reply);
     }
   }, async (request, reply) => {
     const user = request.user as JwtPayload;

@@ -57,7 +57,9 @@ class AdminUser {
       gender: json['gender'],
       timeZone: json['timeZone'] ?? 'Africa/Cairo',
       emailNotificationsEnabled: json['emailNotificationsEnabled'] ?? true,
-      suspendedAt: json['suspendedAt'] != null ? DateTime.parse(json['suspendedAt']) : null,
+      suspendedAt: json['suspendedAt'] != null
+          ? DateTime.parse(json['suspendedAt'])
+          : null,
       suspendedReason: json['suspendedReason'],
       createdAt: DateTime.parse(json['createdAt']),
       documentCount: json['_count']?['documents'] ?? 0,
@@ -72,7 +74,11 @@ class AdminUserPage {
   final int page;
   final int pages;
 
-  AdminUserPage({required this.users, required this.total, required this.page, required this.pages});
+  AdminUserPage(
+      {required this.users,
+      required this.total,
+      required this.page,
+      required this.pages});
 
   factory AdminUserPage.fromJson(Map<String, dynamic> json) {
     return AdminUserPage(
@@ -120,7 +126,9 @@ class AuditLogEntry {
       reason: json['reason'],
       ipAddress: json['ipAddress'],
       result: json['result'] ?? 'SUCCESS',
-      metadata: json['metadata'] != null ? Map<String, dynamic>.from(json['metadata']) : null,
+      metadata: json['metadata'] != null
+          ? Map<String, dynamic>.from(json['metadata'])
+          : null,
     );
   }
 }
@@ -131,11 +139,16 @@ class AuditLogPage {
   final int page;
   final int pages;
 
-  AuditLogPage({required this.logs, required this.total, required this.page, required this.pages});
+  AuditLogPage(
+      {required this.logs,
+      required this.total,
+      required this.page,
+      required this.pages});
 
   factory AuditLogPage.fromJson(Map<String, dynamic> json) {
     return AuditLogPage(
-      logs: (json['logs'] as List).map((l) => AuditLogEntry.fromJson(l)).toList(),
+      logs:
+          (json['logs'] as List).map((l) => AuditLogEntry.fromJson(l)).toList(),
       total: json['total'],
       page: json['page'],
       pages: json['pages'],
@@ -208,7 +221,13 @@ class ReminderStats {
   final bool paused;
   final String? lastRun;
 
-  ReminderStats({required this.pending, required this.processing, required this.sent, required this.failed, required this.paused, this.lastRun});
+  ReminderStats(
+      {required this.pending,
+      required this.processing,
+      required this.sent,
+      required this.failed,
+      required this.paused,
+      this.lastRun});
 
   factory ReminderStats.fromJson(Map<String, dynamic> json) {
     final q = json['queue'] as Map<String, dynamic>;
@@ -266,7 +285,8 @@ class ReminderLogPage {
   final int total;
   final int pages;
 
-  ReminderLogPage({required this.logs, required this.total, required this.pages});
+  ReminderLogPage(
+      {required this.logs, required this.total, required this.pages});
 
   factory ReminderLogPage.fromJson(Map<String, dynamic> json) {
     return ReminderLogPage(
@@ -327,7 +347,9 @@ class TicketPage {
 
   factory TicketPage.fromJson(Map<String, dynamic> json) {
     return TicketPage(
-      tickets: (json['tickets'] as List).map((t) => SupportTicket.fromJson(t)).toList(),
+      tickets: (json['tickets'] as List)
+          .map((t) => SupportTicket.fromJson(t))
+          .toList(),
       total: json['total'],
       pages: json['pages'],
     );
@@ -340,7 +362,11 @@ class SystemConfigEntry {
   final DateTime updatedAt;
   final String reason;
 
-  SystemConfigEntry({required this.key, required this.value, required this.updatedAt, required this.reason});
+  SystemConfigEntry(
+      {required this.key,
+      required this.value,
+      required this.updatedAt,
+      required this.reason});
 
   factory SystemConfigEntry.fromJson(Map<String, dynamic> json) {
     return SystemConfigEntry(
@@ -407,9 +433,11 @@ class AdminUsersFilter {
 
 // ─── Providers ───────────────────────────────────────────────────────────────
 
-final adminUsersFilterProvider = StateProvider<AdminUsersFilter>((ref) => const AdminUsersFilter());
+final adminUsersFilterProvider =
+    StateProvider<AdminUsersFilter>((ref) => const AdminUsersFilter());
 
-final adminUsersProvider = FutureProvider.autoDispose<AdminUserPage>((ref) async {
+final adminUsersProvider =
+    FutureProvider.autoDispose<AdminUserPage>((ref) async {
   final filter = ref.watch(adminUsersFilterProvider);
   final client = ref.watch(adminDioProvider);
   final params = <String, String>{
@@ -418,7 +446,8 @@ final adminUsersProvider = FutureProvider.autoDispose<AdminUserPage>((ref) async
   };
   if (filter.search.isNotEmpty) params['search'] = filter.search;
   if (filter.suspended != null) params['suspended'] = filter.suspended!;
-  final response = await client.get<Map<String, dynamic>>('/api/admin/users', queryParameters: params);
+  final response = await client.get<Map<String, dynamic>>('/api/admin/users',
+      queryParameters: params);
   return AdminUserPage.fromJson(response.data!);
 });
 
@@ -430,69 +459,93 @@ class AuditLogFilter {
   const AuditLogFilter({this.action, this.result, this.page = 1});
 
   AuditLogFilter copyWith({String? action, String? result, int? page}) {
-    return AuditLogFilter(action: action ?? this.action, result: result ?? this.result, page: page ?? this.page);
+    return AuditLogFilter(
+        action: action ?? this.action,
+        result: result ?? this.result,
+        page: page ?? this.page);
   }
 }
 
-final auditLogFilterProvider = StateProvider<AuditLogFilter>((ref) => const AuditLogFilter());
+final auditLogFilterProvider =
+    StateProvider<AuditLogFilter>((ref) => const AuditLogFilter());
 
-final adminAuditLogsProvider = FutureProvider.autoDispose<AuditLogPage>((ref) async {
+final adminAuditLogsProvider =
+    FutureProvider.autoDispose<AuditLogPage>((ref) async {
   final filter = ref.watch(auditLogFilterProvider);
   final client = ref.watch(adminDioProvider);
-  final params = <String, String>{'page': filter.page.toString(), 'limit': '50'};
-  if (filter.action != null && filter.action!.isNotEmpty) params['action'] = filter.action!;
+  final params = <String, String>{
+    'page': filter.page.toString(),
+    'limit': '50'
+  };
+  if (filter.action != null && filter.action!.isNotEmpty)
+    params['action'] = filter.action!;
   if (filter.result != null) params['result'] = filter.result!;
-  final response = await client.get<Map<String, dynamic>>('/api/admin/audit-logs', queryParameters: params);
+  final response = await client.get<Map<String, dynamic>>(
+      '/api/admin/audit-logs',
+      queryParameters: params);
   return AuditLogPage.fromJson(response.data!);
 });
 
-final adminMetricsProvider = FutureProvider.autoDispose<AdminMetrics>((ref) async {
+final adminMetricsProvider =
+    FutureProvider.autoDispose<AdminMetrics>((ref) async {
   final client = ref.watch(adminDioProvider);
   final response = await client.get<Map<String, dynamic>>('/api/admin/metrics');
   return AdminMetrics.fromJson(response.data!);
 });
 
-final adminReminderStatsProvider = FutureProvider.autoDispose<ReminderStats>((ref) async {
+final adminReminderStatsProvider =
+    FutureProvider.autoDispose<ReminderStats>((ref) async {
   final client = ref.watch(adminDioProvider);
-  final response = await client.get<Map<String, dynamic>>('/api/admin/reminders/stats');
+  final response =
+      await client.get<Map<String, dynamic>>('/api/admin/reminders/stats');
   return ReminderStats.fromJson(response.data!);
 });
 
-final reminderLogFilterProvider = StateProvider<String?>((ref) => null); // status filter
+final reminderLogFilterProvider =
+    StateProvider<String?>((ref) => null); // status filter
 
-final adminReminderLogsProvider = FutureProvider.autoDispose<ReminderLogPage>((ref) async {
+final adminReminderLogsProvider =
+    FutureProvider.autoDispose<ReminderLogPage>((ref) async {
   final status = ref.watch(reminderLogFilterProvider);
   final client = ref.watch(adminDioProvider);
   final params = <String, String>{'page': '1', 'limit': '50'};
   if (status != null) params['status'] = status;
-  final response = await client.get<Map<String, dynamic>>('/api/admin/reminders/logs', queryParameters: params);
+  final response = await client.get<Map<String, dynamic>>(
+      '/api/admin/reminders/logs',
+      queryParameters: params);
   return ReminderLogPage.fromJson(response.data!);
 });
 
-final adminSecuritySessionsProvider = FutureProvider.autoDispose<List<AdminSession>>((ref) async {
+final adminSecuritySessionsProvider =
+    FutureProvider.autoDispose<List<AdminSession>>((ref) async {
   final client = ref.watch(adminDioProvider);
   final response = await client.get<List>('/api/admin/security/sessions');
   return response.data!.map((s) => AdminSession.fromJson(s)).toList();
 });
 
-final adminSecurityEventsProvider = FutureProvider.autoDispose<List<AuditLogEntry>>((ref) async {
+final adminSecurityEventsProvider =
+    FutureProvider.autoDispose<List<AuditLogEntry>>((ref) async {
   final client = ref.watch(adminDioProvider);
   final response = await client.get<List>('/api/admin/security/events');
   return response.data!.map((e) => AuditLogEntry.fromJson(e)).toList();
 });
 
-final ticketFilterProvider = StateProvider<String?>((ref) => null); // status filter
+final ticketFilterProvider =
+    StateProvider<String?>((ref) => null); // status filter
 
-final adminSupportTicketsProvider = FutureProvider.autoDispose<TicketPage>((ref) async {
+final adminSupportTicketsProvider =
+    FutureProvider.autoDispose<TicketPage>((ref) async {
   final status = ref.watch(ticketFilterProvider);
   final client = ref.watch(adminDioProvider);
   final params = <String, String>{'page': '1', 'limit': '50'};
   if (status != null) params['status'] = status;
-  final response = await client.get<Map<String, dynamic>>('/api/admin/support', queryParameters: params);
+  final response = await client.get<Map<String, dynamic>>('/api/admin/support',
+      queryParameters: params);
   return TicketPage.fromJson(response.data!);
 });
 
-final adminSystemConfigProvider = FutureProvider.autoDispose<List<SystemConfigEntry>>((ref) async {
+final adminSystemConfigProvider =
+    FutureProvider.autoDispose<List<SystemConfigEntry>>((ref) async {
   final client = ref.watch(adminDioProvider);
   final response = await client.get<List>('/api/admin/config');
   return response.data!.map((c) => SystemConfigEntry.fromJson(c)).toList();
@@ -515,7 +568,8 @@ class AdminActions {
   }
 
   Future<void> suspendUser(String userId, String reason) async {
-    await _client.post('/api/admin/users/$userId/suspend', data: {'reason': reason});
+    await _client
+        .post('/api/admin/users/$userId/suspend', data: {'reason': reason});
     _ref.invalidate(adminUsersProvider);
     _ref.invalidate(adminAuditLogsProvider);
   }
@@ -552,7 +606,8 @@ class AdminActions {
   }
 
   Future<void> updateConfig(String key, String value, String reason) async {
-    await _client.put('/api/admin/config/$key', data: {'value': value, 'reason': reason});
+    await _client.put('/api/admin/config/$key',
+        data: {'value': value, 'reason': reason});
     _ref.invalidate(adminSystemConfigProvider);
     _ref.invalidate(adminAuditLogsProvider);
   }
@@ -563,7 +618,9 @@ class AdminActions {
     _ref.invalidate(adminAuditLogsProvider);
   }
 }
-final adminHealthProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
+
+final adminHealthProvider =
+    FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final client = ref.watch(adminDioProvider);
   final response = await client.get<Map<String, dynamic>>('/health/ready');
   return response.data!;

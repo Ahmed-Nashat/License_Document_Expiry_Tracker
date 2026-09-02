@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/design_tokens.dart';
 import '../auth/auth_controller.dart';
+import 'admin_login_screen.dart';
 import 'admin_providers.dart';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -23,8 +24,11 @@ String _fmtDate(DateTime dt) {
 
 Widget _chip(String label, Color bg, Color fg) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
-      child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: fg)),
+      decoration:
+          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
+      child: Text(label,
+          style:
+              TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: fg)),
     );
 
 Widget _statusChip(String status) {
@@ -32,10 +36,13 @@ Widget _statusChip(String status) {
     'SENT' => _chip('SENT', const Color(0xFF1A4731), Colors.greenAccent),
     'FAILED' => _chip('FAILED', const Color(0xFF4C1415), Colors.redAccent),
     'PENDING' => _chip('PENDING', const Color(0xFF3D2B05), Colors.amber),
-    'PROCESSING' => _chip('PROCESSING', const Color(0xFF1A2E4C), Colors.lightBlueAccent),
+    'PROCESSING' =>
+      _chip('PROCESSING', const Color(0xFF1A2E4C), Colors.lightBlueAccent),
     'OPEN' => _chip('OPEN', const Color(0xFF1A2E4C), Colors.lightBlueAccent),
-    'IN_PROGRESS' => _chip('IN PROGRESS', const Color(0xFF3D2B05), Colors.amber),
-    'RESOLVED' => _chip('RESOLVED', const Color(0xFF1A4731), Colors.greenAccent),
+    'IN_PROGRESS' =>
+      _chip('IN PROGRESS', const Color(0xFF3D2B05), Colors.amber),
+    'RESOLVED' =>
+      _chip('RESOLVED', const Color(0xFF1A4731), Colors.greenAccent),
     'SUCCESS' => _chip('OK', const Color(0xFF1A4731), Colors.greenAccent),
     'FAILURE' => _chip('FAIL', const Color(0xFF4C1415), Colors.redAccent),
     _ => _chip(status, const Color(0xFF2A2A28), AppColors.gray),
@@ -51,16 +58,25 @@ class _TabHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(authControllerProvider).value;
+    if (session?.user.role != 'ADMIN') return const AdminLoginScreen();
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(32, 32, 32, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: -0.5, color: isDark ? AppColors.inkDark : AppColors.ink)),
+          Text(title,
+              style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
+                  color: isDark ? AppColors.inkDark : AppColors.ink)),
           if (subtitle != null) ...[
             const SizedBox(height: 4),
-            Text(subtitle!, style: const TextStyle(fontSize: 13, color: AppColors.gray)),
+            Text(subtitle!,
+                style: const TextStyle(fontSize: 13, color: AppColors.gray)),
           ],
         ],
       ),
@@ -84,7 +100,12 @@ class _StatRow extends StatelessWidget {
 }
 
 class _StatCard extends StatelessWidget {
-  const _StatCard({required this.label, required this.value, required this.icon, this.sub, this.color});
+  const _StatCard(
+      {required this.label,
+      required this.value,
+      required this.icon,
+      this.sub,
+      this.color});
   final String label;
   final String value;
   final IconData icon;
@@ -99,7 +120,8 @@ class _StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.selectedDark : AppColors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.border, width: 1),
+        border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.border, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,11 +129,24 @@ class _StatCard extends StatelessWidget {
           Row(children: [
             Icon(icon, size: 14, color: color ?? AppColors.gray),
             const SizedBox(width: 6),
-            Flexible(child: Text(label, style: const TextStyle(fontSize: 11, color: AppColors.gray))),
+            Flexible(
+                child: Text(label,
+                    style:
+                        const TextStyle(fontSize: 11, color: AppColors.gray))),
           ]),
           const SizedBox(height: 10),
-          Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: -0.5, color: color ?? (isDark ? AppColors.inkDark : AppColors.ink))),
-          if (sub != null) ...[const SizedBox(height: 4), Text(sub!, style: const TextStyle(fontSize: 11, color: AppColors.gray))],
+          Text(value,
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
+                  color:
+                      color ?? (isDark ? AppColors.inkDark : AppColors.ink))),
+          if (sub != null) ...[
+            const SizedBox(height: 4),
+            Text(sub!,
+                style: const TextStyle(fontSize: 11, color: AppColors.gray))
+          ],
         ],
       ),
     );
@@ -131,7 +166,8 @@ class _SectionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.selectedDark : AppColors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.border, width: 1),
+        border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.border, width: 1),
       ),
       child: child,
     );
@@ -151,8 +187,15 @@ class _DetailRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: 120, child: Text(label, style: const TextStyle(fontSize: 12, color: AppColors.gray))),
-          Expanded(child: Text(value, style: TextStyle(fontSize: 13, color: isDark ? AppColors.inkDark : AppColors.ink))),
+          SizedBox(
+              width: 120,
+              child: Text(label,
+                  style: const TextStyle(fontSize: 12, color: AppColors.gray))),
+          Expanded(
+              child: Text(value,
+                  style: TextStyle(
+                      fontSize: 13,
+                      color: isDark ? AppColors.inkDark : AppColors.ink))),
         ],
       ),
     );
@@ -164,7 +207,8 @@ class _DetailRow extends StatelessWidget {
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
   @override
-  ConsumerState<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+  ConsumerState<AdminDashboardScreen> createState() =>
+      _AdminDashboardScreenState();
 }
 
 class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
@@ -213,8 +257,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('DueNest', style: TextStyle(color: AppColors.inkDark, fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: -0.5)),
-                      const Text('Admin', style: TextStyle(color: AppColors.charcoalDark, fontSize: 12, letterSpacing: 1.2)),
+                      const Text('DueNest',
+                          style: TextStyle(
+                              color: AppColors.inkDark,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.5)),
+                      const Text('Admin',
+                          style: TextStyle(
+                              color: AppColors.charcoalDark,
+                              fontSize: 12,
+                              letterSpacing: 1.2)),
                     ],
                   ),
                 ),
@@ -229,18 +282,33 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 2),
                         child: Material(
-                          color: selected ? AppColors.charcoal.withValues(alpha: 0.5) : Colors.transparent,
+                          color: selected
+                              ? AppColors.charcoal.withValues(alpha: 0.5)
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(8),
                             onTap: () => setState(() => _tab = i),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 10),
                               child: Row(
                                 children: [
-                                  Icon(tab.icon, size: 17, color: selected ? AppColors.inkDark : AppColors.gray),
+                                  Icon(tab.icon,
+                                      size: 17,
+                                      color: selected
+                                          ? AppColors.inkDark
+                                          : AppColors.gray),
                                   const SizedBox(width: 12),
-                                  Text(tab.label, style: TextStyle(fontSize: 13, fontWeight: selected ? FontWeight.w600 : FontWeight.w400, color: selected ? AppColors.inkDark : AppColors.gray)),
+                                  Text(tab.label,
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: selected
+                                              ? FontWeight.w600
+                                              : FontWeight.w400,
+                                          color: selected
+                                              ? AppColors.inkDark
+                                              : AppColors.gray)),
                                 ],
                               ),
                             ),
@@ -255,12 +323,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
-                      IconButton(icon: const Icon(Icons.refresh_rounded, color: AppColors.gray, size: 18), tooltip: 'Refresh all', onPressed: _refresh),
+                      IconButton(
+                          icon: const Icon(Icons.refresh_rounded,
+                              color: AppColors.gray, size: 18),
+                          tooltip: 'Refresh all',
+                          onPressed: _refresh),
                       const Spacer(),
                       IconButton(
-                        icon: const Icon(Icons.logout_rounded, color: AppColors.gray, size: 18),
+                        icon: const Icon(Icons.logout_rounded,
+                            color: AppColors.gray, size: 18),
                         tooltip: 'Sign out',
-                        onPressed: () async => ref.read(authControllerProvider.notifier).signOut(),
+                        onPressed: () async =>
+                            ref.read(authControllerProvider.notifier).signOut(),
                       ),
                     ],
                   ),
@@ -271,7 +345,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
-              transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
+              transitionBuilder: (child, anim) =>
+                  FadeTransition(opacity: anim, child: child),
               child: _buildTab(_tab),
             ),
           ),
@@ -308,61 +383,144 @@ class _OverviewTab extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _TabHeader(title: 'Overview', subtitle: 'Live operational snapshot'),
+          const _TabHeader(
+              title: 'Overview', subtitle: 'Live operational snapshot'),
           metricsAsync.when(
-            loading: () => const Padding(padding: EdgeInsets.all(64), child: Center(child: CircularProgressIndicator())),
-            error: (e, _) => Padding(padding: const EdgeInsets.all(32), child: Text('Error: $e', style: const TextStyle(color: Colors.redAccent))),
+            loading: () => const Padding(
+                padding: EdgeInsets.all(64),
+                child: Center(child: CircularProgressIndicator())),
+            error: (e, _) => Padding(
+                padding: const EdgeInsets.all(32),
+                child: Text('Error: $e',
+                    style: const TextStyle(color: Colors.redAccent))),
             data: (m) => Padding(
               padding: const EdgeInsets.fromLTRB(32, 24, 32, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Users', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.gray, letterSpacing: 0.5)),
+                  const Text('Users',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.gray,
+                          letterSpacing: 0.5)),
                   const SizedBox(height: 12),
                   _StatRow(children: [
-                    _StatCard(label: 'Total Users', value: '${m.usersTotal}', icon: Icons.people_rounded),
-                    _StatCard(label: 'New (7d)', value: '+${m.usersNewLast7Days}', icon: Icons.person_add_rounded, color: Colors.greenAccent.shade400),
+                    _StatCard(
+                        label: 'Total Users',
+                        value: '${m.usersTotal}',
+                        icon: Icons.people_rounded),
+                    _StatCard(
+                        label: 'New (7d)',
+                        value: '+${m.usersNewLast7Days}',
+                        icon: Icons.person_add_rounded,
+                        color: Colors.greenAccent.shade400),
                   ]),
                   const SizedBox(height: 24),
-                  const Text('Documents', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.gray, letterSpacing: 0.5)),
+                  const Text('Documents',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.gray,
+                          letterSpacing: 0.5)),
                   const SizedBox(height: 12),
                   _StatRow(children: [
-                    _StatCard(label: 'Total', value: '${m.docsTotal}', icon: Icons.description_rounded),
-                    _StatCard(label: 'Expired', value: '${m.docsExpired}', icon: Icons.cancel_rounded, color: Colors.redAccent),
-                    _StatCard(label: 'Critical <7d', value: '${m.docsCritical}', icon: Icons.warning_rounded, color: Colors.orange),
-                    _StatCard(label: 'Expiring Soon', value: '${m.docsSoon}', icon: Icons.schedule_rounded, color: Colors.amber),
+                    _StatCard(
+                        label: 'Total',
+                        value: '${m.docsTotal}',
+                        icon: Icons.description_rounded),
+                    _StatCard(
+                        label: 'Expired',
+                        value: '${m.docsExpired}',
+                        icon: Icons.cancel_rounded,
+                        color: Colors.redAccent),
+                    _StatCard(
+                        label: 'Critical <7d',
+                        value: '${m.docsCritical}',
+                        icon: Icons.warning_rounded,
+                        color: Colors.orange),
+                    _StatCard(
+                        label: 'Expiring Soon',
+                        value: '${m.docsSoon}',
+                        icon: Icons.schedule_rounded,
+                        color: Colors.amber),
                   ]),
                   const SizedBox(height: 24),
-                  const Text('Reminders', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.gray, letterSpacing: 0.5)),
+                  const Text('Reminders',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.gray,
+                          letterSpacing: 0.5)),
                   const SizedBox(height: 12),
                   reminderAsync.when(
                     loading: () => const CircularProgressIndicator(),
-                    error: (e, _) => Text('Reminder error: $e', style: const TextStyle(color: Colors.redAccent)),
+                    error: (e, _) => Text('Reminder error: $e',
+                        style: const TextStyle(color: Colors.redAccent)),
                     data: (r) => _StatRow(children: [
-                      _StatCard(label: 'Delivery Rate', value: '${m.deliveryRate}%', icon: Icons.send_rounded, color: Colors.greenAccent.shade400),
-                      _StatCard(label: 'Pending', value: '${r.pending}', icon: Icons.hourglass_bottom_rounded),
-                      _StatCard(label: 'Failed', value: '${r.failed}', icon: Icons.error_outline_rounded, color: r.failed > 0 ? Colors.redAccent : null),
+                      _StatCard(
+                          label: 'Delivery Rate',
+                          value: '${m.deliveryRate}%',
+                          icon: Icons.send_rounded,
+                          color: Colors.greenAccent.shade400),
+                      _StatCard(
+                          label: 'Pending',
+                          value: '${r.pending}',
+                          icon: Icons.hourglass_bottom_rounded),
+                      _StatCard(
+                          label: 'Failed',
+                          value: '${r.failed}',
+                          icon: Icons.error_outline_rounded,
+                          color: r.failed > 0 ? Colors.redAccent : null),
                       _StatCard(
                         label: 'Engine',
                         value: r.paused ? 'PAUSED' : 'RUNNING',
-                        icon: r.paused ? Icons.pause_circle_rounded : Icons.play_circle_rounded,
-                        color: r.paused ? Colors.orange : Colors.greenAccent.shade400,
-                        sub: r.lastRun != null ? 'Last: ${r.lastRun!.substring(0, 16).replaceAll('T', ' ')}' : null,
+                        icon: r.paused
+                            ? Icons.pause_circle_rounded
+                            : Icons.play_circle_rounded,
+                        color: r.paused
+                            ? Colors.orange
+                            : Colors.greenAccent.shade400,
+                        sub: r.lastRun != null
+                            ? 'Last: ${r.lastRun!.substring(0, 16).replaceAll('T', ' ')}'
+                            : null,
                       ),
                     ]),
                   ),
                   const SizedBox(height: 24),
-                  const Text('System Health', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.gray, letterSpacing: 0.5)),
+                  const Text('System Health',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.gray,
+                          letterSpacing: 0.5)),
                   const SizedBox(height: 12),
                   ref.watch(adminHealthProvider).when(
-                    loading: () => const CircularProgressIndicator(),
-                    error: (e, _) => Text('Health check failed: $e', style: const TextStyle(color: Colors.redAccent)),
-                    data: (h) => _StatRow(children: [
-                      _StatCard(label: 'API Server', value: h['status'] == 'ok' ? 'ONLINE' : 'DOWN', icon: Icons.api_rounded, color: h['status'] == 'ok' ? Colors.greenAccent.shade400 : Colors.redAccent),
-                      _StatCard(label: 'Database', value: h['database'] == 'ok' ? 'CONNECTED' : 'DOWN', icon: Icons.storage_rounded, color: h['database'] == 'ok' ? Colors.greenAccent.shade400 : Colors.redAccent),
-                      _StatCard(label: 'Version', value: h['version'] ?? 'Unknown', icon: Icons.verified_rounded),
-                    ]),
-                  ),
+                        loading: () => const CircularProgressIndicator(),
+                        error: (e, _) => Text('Health check failed: $e',
+                            style: const TextStyle(color: Colors.redAccent)),
+                        data: (h) => _StatRow(children: [
+                          _StatCard(
+                              label: 'API Server',
+                              value: h['status'] == 'ok' ? 'ONLINE' : 'DOWN',
+                              icon: Icons.api_rounded,
+                              color: h['status'] == 'ok'
+                                  ? Colors.greenAccent.shade400
+                                  : Colors.redAccent),
+                          _StatCard(
+                              label: 'Database',
+                              value:
+                                  h['database'] == 'ok' ? 'CONNECTED' : 'DOWN',
+                              icon: Icons.storage_rounded,
+                              color: h['database'] == 'ok'
+                                  ? Colors.greenAccent.shade400
+                                  : Colors.redAccent),
+                          _StatCard(
+                              label: 'Version',
+                              value: h['version'] ?? 'Unknown',
+                              icon: Icons.verified_rounded),
+                        ]),
+                      ),
                 ],
               ),
             ),
@@ -404,7 +562,8 @@ class _UsersTabState extends ConsumerState<_UsersTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _TabHeader(title: 'Users', subtitle: 'Search and manage user accounts'),
+              const _TabHeader(
+                  title: 'Users', subtitle: 'Search and manage user accounts'),
               Padding(
                 padding: const EdgeInsets.fromLTRB(32, 16, 32, 0),
                 child: TextField(
@@ -413,20 +572,29 @@ class _UsersTabState extends ConsumerState<_UsersTab> {
                     hintText: 'Search by email or name…',
                     prefixIcon: const Icon(Icons.search_rounded, size: 18),
                     suffixIcon: _searchCtrl.text.isNotEmpty
-                        ? IconButton(icon: const Icon(Icons.clear_rounded, size: 16), onPressed: () {
-                            _searchCtrl.clear();
-                            ref.read(adminUsersFilterProvider.notifier).state = const AdminUsersFilter();
-                          })
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded, size: 16),
+                            onPressed: () {
+                              _searchCtrl.clear();
+                              ref
+                                  .read(adminUsersFilterProvider.notifier)
+                                  .state = const AdminUsersFilter();
+                            })
                         : null,
                   ),
-                  onChanged: (v) => ref.read(adminUsersFilterProvider.notifier).update((s) => s.copyWith(search: v, page: 1)),
+                  onChanged: (v) => ref
+                      .read(adminUsersFilterProvider.notifier)
+                      .update((s) => s.copyWith(search: v, page: 1)),
                 ),
               ),
               const SizedBox(height: 16),
               Expanded(
                 child: usersAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.redAccent))),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Center(
+                      child: Text('Error: $e',
+                          style: const TextStyle(color: Colors.redAccent))),
                   data: (page) => ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 32),
                     itemCount: page.users.length,
@@ -436,33 +604,72 @@ class _UsersTabState extends ConsumerState<_UsersTab> {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 6),
                         child: Material(
-                          color: isSelected ? AppColors.ink : (isDark ? AppColors.selectedDark : AppColors.white),
+                          color: isSelected
+                              ? AppColors.ink
+                              : (isDark
+                                  ? AppColors.selectedDark
+                                  : AppColors.white),
                           borderRadius: BorderRadius.circular(10),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(10),
-                            onTap: () => setState(() => _selected = isSelected ? null : u),
+                            onTap: () => setState(
+                                () => _selected = isSelected ? null : u),
                             child: Padding(
                               padding: const EdgeInsets.all(16),
                               child: Row(
                                 children: [
                                   CircleAvatar(
                                     radius: 16,
-                                    backgroundColor: isDark ? AppColors.borderDark : AppColors.fog,
-                                    child: Text(u.email[0].toUpperCase(), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isSelected ? AppColors.ink : (isDark ? AppColors.inkDark : AppColors.ink))),
+                                    backgroundColor: isDark
+                                        ? AppColors.borderDark
+                                        : AppColors.fog,
+                                    child: Text(u.email[0].toUpperCase(),
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: isSelected
+                                                ? AppColors.ink
+                                                : (isDark
+                                                    ? AppColors.inkDark
+                                                    : AppColors.ink))),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text(u.email, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: isSelected ? AppColors.inkDark : (isDark ? AppColors.inkDark : AppColors.ink))),
-                                        if (u.displayName != null) Text(u.displayName!, style: const TextStyle(fontSize: 12, color: AppColors.gray)),
+                                        Text(u.email,
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                                color: isSelected
+                                                    ? AppColors.inkDark
+                                                    : (isDark
+                                                        ? AppColors.inkDark
+                                                        : AppColors.ink))),
+                                        if (u.displayName != null)
+                                          Text(u.displayName!,
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: AppColors.gray)),
                                       ],
                                     ),
                                   ),
-                                  if (u.isSuspended) ...[_chip('SUSPENDED', Colors.red.shade900, Colors.redAccent), const SizedBox(width: 6)],
-                                  if (u.role == 'ADMIN') ...[_chip('ADMIN', const Color(0xFF2A2A28), AppColors.inkDark), const SizedBox(width: 8)],
-                                  Text('${u.documentCount}d  ${u.activeSessionCount}s', style: const TextStyle(fontSize: 11, color: AppColors.gray)),
+                                  if (u.isSuspended) ...[
+                                    _chip('SUSPENDED', Colors.red.shade900,
+                                        Colors.redAccent),
+                                    const SizedBox(width: 6)
+                                  ],
+                                  if (u.role == 'ADMIN') ...[
+                                    _chip('ADMIN', const Color(0xFF2A2A28),
+                                        AppColors.inkDark),
+                                    const SizedBox(width: 8)
+                                  ],
+                                  Text(
+                                      '${u.documentCount}d  ${u.activeSessionCount}s',
+                                      style: const TextStyle(
+                                          fontSize: 11, color: AppColors.gray)),
                                 ],
                               ),
                             ),
@@ -479,7 +686,9 @@ class _UsersTabState extends ConsumerState<_UsersTab> {
         if (_selected != null)
           SizedBox(
             width: 340,
-            child: _UserDetailPanel(user: _selected!, onClose: () => setState(() => _selected = null)),
+            child: _UserDetailPanel(
+                user: _selected!,
+                onClose: () => setState(() => _selected = null)),
           ),
       ],
     ).animate().fadeIn(duration: 300.ms);
@@ -502,25 +711,39 @@ class _UserDetailPanel extends ConsumerWidget {
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('Suspend Account'),
-          content: TextField(controller: ctrl, decoration: const InputDecoration(labelText: 'Reason (minimum 5 chars)'), maxLines: 3),
+          content: TextField(
+              controller: ctrl,
+              decoration:
+                  const InputDecoration(labelText: 'Reason (minimum 5 chars)'),
+              maxLines: 3),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Suspend')),
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel')),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Suspend')),
           ],
         ),
       );
-      if (ok == true && ctrl.text.trim().length >= 5) await actions.suspendUser(user.id, ctrl.text.trim());
+      if (ok == true && ctrl.text.trim().length >= 5)
+        await actions.suspendUser(user.id, ctrl.text.trim());
     }
 
-    Future<void> confirm(String title, String body, Future<void> Function() fn) async {
+    Future<void> confirm(
+        String title, String body, Future<void> Function() fn) async {
       final ok = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
           title: Text(title),
           content: Text(body),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Confirm')),
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel')),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Confirm')),
           ],
         ),
       );
@@ -530,7 +753,9 @@ class _UserDetailPanel extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF0F0F0D) : AppColors.white,
-        border: Border(left: BorderSide(color: isDark ? AppColors.borderDark : AppColors.border)),
+        border: Border(
+            left: BorderSide(
+                color: isDark ? AppColors.borderDark : AppColors.border)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -539,9 +764,15 @@ class _UserDetailPanel extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 24, 12, 0),
             child: Row(
               children: [
-                Text('User Detail', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: isDark ? AppColors.inkDark : AppColors.ink)),
+                Text('User Detail',
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? AppColors.inkDark : AppColors.ink)),
                 const Spacer(),
-                IconButton(icon: const Icon(Icons.close_rounded, size: 18), onPressed: onClose),
+                IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                    onPressed: onClose),
               ],
             ),
           ),
@@ -555,8 +786,12 @@ class _UserDetailPanel extends ConsumerWidget {
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: const Color(0xFF4C1415), borderRadius: BorderRadius.circular(8)),
-                      child: Text('SUSPENDED: ${user.suspendedReason ?? '—'}', style: const TextStyle(fontSize: 12, color: Colors.redAccent)),
+                      decoration: BoxDecoration(
+                          color: const Color(0xFF4C1415),
+                          borderRadius: BorderRadius.circular(8)),
+                      child: Text('SUSPENDED: ${user.suspendedReason ?? '—'}',
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.redAccent)),
                     ),
                     const SizedBox(height: 16),
                   ],
@@ -565,11 +800,23 @@ class _UserDetailPanel extends ConsumerWidget {
                   _DetailRow(label: 'Role', value: user.role),
                   _DetailRow(label: 'Timezone', value: user.timeZone),
                   _DetailRow(label: 'Joined', value: _fmtDate(user.createdAt)),
-                  _DetailRow(label: 'Documents', value: '${user.documentCount}'),
-                  _DetailRow(label: 'Active Sessions', value: '${user.activeSessionCount}'),
-                  _DetailRow(label: 'Email Reminders', value: user.emailNotificationsEnabled ? 'Enabled' : 'Disabled'),
+                  _DetailRow(
+                      label: 'Documents', value: '${user.documentCount}'),
+                  _DetailRow(
+                      label: 'Active Sessions',
+                      value: '${user.activeSessionCount}'),
+                  _DetailRow(
+                      label: 'Email Reminders',
+                      value: user.emailNotificationsEnabled
+                          ? 'Enabled'
+                          : 'Disabled'),
                   const SizedBox(height: 20),
-                  const Text('ACTIONS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.gray, letterSpacing: 1)),
+                  const Text('ACTIONS',
+                      style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.gray,
+                          letterSpacing: 1)),
                   const SizedBox(height: 12),
                   if (!user.isSuspended)
                     SizedBox(
@@ -584,8 +831,12 @@ class _UserDetailPanel extends ConsumerWidget {
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
-                        onPressed: () => confirm('Reactivate User', 'This will restore access to this account.', () => actions.reactivateUser(user.id)),
-                        icon: const Icon(Icons.check_circle_outline_rounded, size: 14),
+                        onPressed: () => confirm(
+                            'Reactivate User',
+                            'This will restore access to this account.',
+                            () => actions.reactivateUser(user.id)),
+                        icon: const Icon(Icons.check_circle_outline_rounded,
+                            size: 14),
                         label: const Text('Reactivate Account'),
                       ),
                     ),
@@ -593,7 +844,10 @@ class _UserDetailPanel extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () => confirm('Force Sign Out', 'Revoke all active sessions for ${user.email}?', () => actions.revokeUserSessions(user.id)),
+                      onPressed: () => confirm(
+                          'Force Sign Out',
+                          'Revoke all active sessions for ${user.email}?',
+                          () => actions.revokeUserSessions(user.id)),
                       icon: const Icon(Icons.logout_rounded, size: 14),
                       label: const Text('Force Sign Out'),
                     ),
@@ -602,14 +856,19 @@ class _UserDetailPanel extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () => confirm('Start Deletion Workflow', 'Open a privacy deletion ticket for ${user.email}?', () async {
+                      onPressed: () => confirm('Start Deletion Workflow',
+                          'Open a privacy deletion ticket for ${user.email}?',
+                          () async {
                         await actions.startDeletionWorkflow(user.id);
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deletion ticket created')));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Deletion ticket created')));
                         }
                       }),
                       icon: const Icon(Icons.delete_forever_rounded, size: 14),
-                      style: OutlinedButton.styleFrom(foregroundColor: Colors.redAccent),
+                      style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.redAccent),
                       label: const Text('Start Deletion Workflow'),
                     ),
                   ),
@@ -636,7 +895,9 @@ class _AuditLogsTab extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _TabHeader(title: 'Audit Logs', subtitle: 'Append-only — no admin can edit or delete entries'),
+        const _TabHeader(
+            title: 'Audit Logs',
+            subtitle: 'Append-only — no admin can edit or delete entries'),
         Padding(
           padding: const EdgeInsets.fromLTRB(32, 16, 32, 8),
           child: Row(
@@ -644,7 +905,16 @@ class _AuditLogsTab extends ConsumerWidget {
               final selected = filter.result == (r.isEmpty ? null : r);
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
-                child: FilterChip(label: Text(r.isEmpty ? 'All' : r), selected: selected, onSelected: (_) => ref.read(auditLogFilterProvider.notifier).update((s) => s.copyWith(result: r.isEmpty ? null : r, page: 1))),
+                child: FilterChip(
+                    label: Text(r.isEmpty ? 'All' : r),
+                    selected: selected,
+                    onSelected: (_) => ref
+                        .read(auditLogFilterProvider.notifier)
+                        .update((s) => AuditLogFilter(
+                              action: s.action,
+                              result: r.isEmpty ? null : r,
+                              page: 1,
+                            ))),
               );
             }).toList(),
           ),
@@ -652,7 +922,9 @@ class _AuditLogsTab extends ConsumerWidget {
         Expanded(
           child: logsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.redAccent))),
+            error: (e, _) => Center(
+                child: Text('Error: $e',
+                    style: const TextStyle(color: Colors.redAccent))),
             data: (page) => ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
               itemCount: page.logs.length,
@@ -666,7 +938,9 @@ class _AuditLogsTab extends ConsumerWidget {
                     decoration: BoxDecoration(
                       color: isDark ? AppColors.selectedDark : AppColors.white,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: isDark ? AppColors.borderDark : AppColors.border),
+                      border: Border.all(
+                          color:
+                              isDark ? AppColors.borderDark : AppColors.border),
                     ),
                     child: Row(
                       children: [
@@ -676,13 +950,27 @@ class _AuditLogsTab extends ConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(log.action, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? AppColors.inkDark : AppColors.ink)),
-                              Text('Actor: ${log.actorId}${log.targetId != null ? "  |  Target: ${log.targetId}" : ""}', style: const TextStyle(fontSize: 11, color: AppColors.gray)),
-                              if (log.reason != null) Text('Reason: ${log.reason}', style: const TextStyle(fontSize: 11, color: AppColors.gray)),
+                              Text(log.action,
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDark
+                                          ? AppColors.inkDark
+                                          : AppColors.ink)),
+                              Text(
+                                  'Actor: ${log.actorId}${log.targetId != null ? "  |  Target: ${log.targetId}" : ""}',
+                                  style: const TextStyle(
+                                      fontSize: 11, color: AppColors.gray)),
+                              if (log.reason != null)
+                                Text('Reason: ${log.reason}',
+                                    style: const TextStyle(
+                                        fontSize: 11, color: AppColors.gray)),
                             ],
                           ),
                         ),
-                        Text(_fmt(log.timestamp), style: const TextStyle(fontSize: 11, color: AppColors.gray)),
+                        Text(_fmt(log.timestamp),
+                            style: const TextStyle(
+                                fontSize: 11, color: AppColors.gray)),
                       ],
                     ),
                   ),
@@ -712,7 +1000,9 @@ class _RemindersTab extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _TabHeader(title: 'Reminder Operations', subtitle: 'Queue health, delivery history, and controls'),
+        const _TabHeader(
+            title: 'Reminder Operations',
+            subtitle: 'Queue health, delivery history, and controls'),
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(32, 24, 32, 32),
@@ -720,33 +1010,77 @@ class _RemindersTab extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 statsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Text('Error: $e', style: const TextStyle(color: Colors.redAccent)),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Text('Error: $e',
+                      style: const TextStyle(color: Colors.redAccent)),
                   data: (s) => Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _SectionCard(
                         child: Row(
                           children: [
-                            Icon(s.paused ? Icons.pause_circle_rounded : Icons.play_circle_rounded, color: s.paused ? Colors.orange : Colors.greenAccent, size: 20),
+                            Icon(
+                                s.paused
+                                    ? Icons.pause_circle_rounded
+                                    : Icons.play_circle_rounded,
+                                color: s.paused
+                                    ? Colors.orange
+                                    : Colors.greenAccent,
+                                size: 20),
                             const SizedBox(width: 12),
-                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text(s.paused ? 'Engine is PAUSED' : 'Engine is RUNNING', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: isDark ? AppColors.inkDark : AppColors.ink)),
-                              if (s.lastRun != null) Text('Last run: ${s.lastRun!.substring(0, 16).replaceAll('T', ' ')}', style: const TextStyle(fontSize: 11, color: AppColors.gray)),
-                            ])),
+                            Expanded(
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                  Text(
+                                      s.paused
+                                          ? 'Engine is PAUSED'
+                                          : 'Engine is RUNNING',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: isDark
+                                              ? AppColors.inkDark
+                                              : AppColors.ink)),
+                                  if (s.lastRun != null)
+                                    Text(
+                                        'Last run: ${s.lastRun!.substring(0, 16).replaceAll('T', ' ')}',
+                                        style: const TextStyle(
+                                            fontSize: 11,
+                                            color: AppColors.gray)),
+                                ])),
                             TextButton(
-                              onPressed: s.paused ? () => actions.resumeEngine() : () => actions.pauseEngine(),
-                              child: Text(s.paused ? 'Resume Engine' : 'Pause Engine'),
+                              onPressed: s.paused
+                                  ? () => actions.resumeEngine()
+                                  : () => actions.pauseEngine(),
+                              child: Text(
+                                  s.paused ? 'Resume Engine' : 'Pause Engine'),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 16),
                       _StatRow(children: [
-                        _StatCard(label: 'Pending', value: '${s.pending}', icon: Icons.hourglass_bottom_rounded),
-                        _StatCard(label: 'Processing', value: '${s.processing}', icon: Icons.sync_rounded),
-                        _StatCard(label: 'Sent', value: '${s.sent}', icon: Icons.check_circle_outline_rounded, color: Colors.greenAccent.shade400),
-                        _StatCard(label: 'Failed', value: '${s.failed}', icon: Icons.error_outline_rounded, color: s.failed > 0 ? Colors.redAccent : null),
+                        _StatCard(
+                            label: 'Pending',
+                            value: '${s.pending}',
+                            icon: Icons.hourglass_bottom_rounded),
+                        _StatCard(
+                            label: 'Processing',
+                            value: '${s.processing}',
+                            icon: Icons.sync_rounded),
+                        _StatCard(
+                            label: 'Sent',
+                            value: '${s.sent}',
+                            icon: Icons.check_circle_outline_rounded,
+                            color: Colors.greenAccent.shade400),
+                        _StatCard(
+                            label: 'Failed',
+                            value: '${s.failed}',
+                            icon: Icons.error_outline_rounded,
+                            color: s.failed > 0 ? Colors.redAccent : null),
                       ]),
                     ],
                   ),
@@ -754,18 +1088,30 @@ class _RemindersTab extends ConsumerWidget {
                 const SizedBox(height: 24),
                 Row(
                   children: [
-                    const Text('Delivery Log', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.gray, letterSpacing: 0.5)),
+                    const Text('Delivery Log',
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.gray,
+                            letterSpacing: 0.5)),
                     const SizedBox(width: 12),
                     ...['', 'PENDING', 'SENT', 'FAILED'].map((s) => Padding(
-                      padding: const EdgeInsets.only(right: 6),
-                      child: FilterChip(label: Text(s.isEmpty ? 'All' : s), selected: statusFilter == (s.isEmpty ? null : s), onSelected: (_) => ref.read(reminderLogFilterProvider.notifier).state = s.isEmpty ? null : s),
-                    )),
+                          padding: const EdgeInsets.only(right: 6),
+                          child: FilterChip(
+                              label: Text(s.isEmpty ? 'All' : s),
+                              selected: statusFilter == (s.isEmpty ? null : s),
+                              onSelected: (_) => ref
+                                  .read(reminderLogFilterProvider.notifier)
+                                  .state = s.isEmpty ? null : s),
+                        )),
                   ],
                 ),
                 const SizedBox(height: 12),
                 logsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Text('Error: $e', style: const TextStyle(color: Colors.redAccent)),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Text('Error: $e',
+                      style: const TextStyle(color: Colors.redAccent)),
                   data: (page) => Column(
                     children: page.logs.map((log) {
                       return Padding(
@@ -773,9 +1119,14 @@ class _RemindersTab extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: isDark ? AppColors.selectedDark : AppColors.white,
+                            color: isDark
+                                ? AppColors.selectedDark
+                                : AppColors.white,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: isDark ? AppColors.borderDark : AppColors.border),
+                            border: Border.all(
+                                color: isDark
+                                    ? AppColors.borderDark
+                                    : AppColors.border),
                           ),
                           child: Row(
                             children: [
@@ -785,14 +1136,34 @@ class _RemindersTab extends ConsumerWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('${log.documentTitle} (${log.documentType})', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: isDark ? AppColors.inkDark : AppColors.ink)),
-                                    Text('${log.userEmail}  |  ${log.daysBefore}d before  |  Retries: ${log.retryCount}', style: const TextStyle(fontSize: 11, color: AppColors.gray)),
-                                    if (log.error != null) Text('Error: ${log.error}', style: const TextStyle(fontSize: 11, color: Colors.redAccent)),
+                                    Text(
+                                        '${log.documentTitle} (${log.documentType})',
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                            color: isDark
+                                                ? AppColors.inkDark
+                                                : AppColors.ink)),
+                                    Text(
+                                        '${log.userEmail}  |  ${log.daysBefore}d before  |  Retries: ${log.retryCount}',
+                                        style: const TextStyle(
+                                            fontSize: 11,
+                                            color: AppColors.gray)),
+                                    if (log.error != null)
+                                      Text('Error: ${log.error}',
+                                          style: const TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.redAccent)),
                                   ],
                                 ),
                               ),
                               if (log.status == 'FAILED')
-                                TextButton.icon(onPressed: () => actions.retryReminder(log.id), icon: const Icon(Icons.refresh_rounded, size: 14), label: const Text('Retry')),
+                                TextButton.icon(
+                                    onPressed: () =>
+                                        actions.retryReminder(log.id),
+                                    icon: const Icon(Icons.refresh_rounded,
+                                        size: 14),
+                                    label: const Text('Retry')),
                             ],
                           ),
                         ),
@@ -824,37 +1195,74 @@ class _SecurityTab extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _TabHeader(title: 'Security Center', subtitle: 'Active admin sessions and recent security events'),
+          const _TabHeader(
+              title: 'Security Center',
+              subtitle: 'Active admin sessions and recent security events'),
           Padding(
             padding: const EdgeInsets.fromLTRB(32, 24, 32, 40),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('ACTIVE ADMIN SESSIONS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.gray, letterSpacing: 1)),
+                const Text('ACTIVE ADMIN SESSIONS',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.gray,
+                        letterSpacing: 1)),
                 const SizedBox(height: 12),
                 sessionsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Text('Error: $e', style: const TextStyle(color: Colors.redAccent)),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Text('Error: $e',
+                      style: const TextStyle(color: Colors.redAccent)),
                   data: (sessions) => _SectionCard(
                     padding: EdgeInsets.zero,
                     child: sessions.isEmpty
-                        ? const Padding(padding: EdgeInsets.all(20), child: Text('No active admin sessions', style: TextStyle(color: AppColors.gray)))
+                        ? const Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Text('No active admin sessions',
+                                style: TextStyle(color: AppColors.gray)))
                         : Column(
-                            children: sessions.map((s) => ListTile(
-                              leading: const Icon(Icons.computer_rounded, size: 16, color: AppColors.gray),
-                              title: Text(s.userEmail, style: TextStyle(fontSize: 13, color: isDark ? AppColors.inkDark : AppColors.ink)),
-                              subtitle: Text('${s.deviceName ?? s.deviceType ?? 'Web'}  |  Last seen: ${_fmt(s.lastUsedAt)}', style: const TextStyle(fontSize: 11, color: AppColors.gray)),
-                              trailing: Text('Exp ${_fmtDate(s.expiresAt)}', style: const TextStyle(fontSize: 11, color: AppColors.gray)),
-                            )).toList(),
+                            children: sessions
+                                .map((s) => ListTile(
+                                      leading: const Icon(
+                                          Icons.computer_rounded,
+                                          size: 16,
+                                          color: AppColors.gray),
+                                      title: Text(s.userEmail,
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              color: isDark
+                                                  ? AppColors.inkDark
+                                                  : AppColors.ink)),
+                                      subtitle: Text(
+                                          '${s.deviceName ?? s.deviceType ?? 'Web'}  |  Last seen: ${_fmt(s.lastUsedAt)}',
+                                          style: const TextStyle(
+                                              fontSize: 11,
+                                              color: AppColors.gray)),
+                                      trailing: Text(
+                                          'Exp ${_fmtDate(s.expiresAt)}',
+                                          style: const TextStyle(
+                                              fontSize: 11,
+                                              color: AppColors.gray)),
+                                    ))
+                                .toList(),
                           ),
                   ),
                 ),
                 const SizedBox(height: 28),
-                const Text('RECENT SECURITY EVENTS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.gray, letterSpacing: 1)),
+                const Text('RECENT SECURITY EVENTS',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.gray,
+                        letterSpacing: 1)),
                 const SizedBox(height: 12),
                 eventsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Text('Error: $e', style: const TextStyle(color: Colors.redAccent)),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Text('Error: $e',
+                      style: const TextStyle(color: Colors.redAccent)),
                   data: (events) => Column(
                     children: events.take(30).map((e) {
                       return Padding(
@@ -862,19 +1270,40 @@ class _SecurityTab extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: isDark ? AppColors.selectedDark : AppColors.white,
+                            color: isDark
+                                ? AppColors.selectedDark
+                                : AppColors.white,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: isDark ? AppColors.borderDark : AppColors.border),
+                            border: Border.all(
+                                color: isDark
+                                    ? AppColors.borderDark
+                                    : AppColors.border),
                           ),
                           child: Row(
                             children: [
                               _statusChip(e.result),
                               const SizedBox(width: 10),
-                              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Text(e.action, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? AppColors.inkDark : AppColors.ink)),
-                                Text('Actor: ${e.actorId}${e.targetId != null ? "  Target: ${e.targetId}" : ""}', style: const TextStyle(fontSize: 11, color: AppColors.gray)),
-                              ])),
-                              Text(_fmt(e.timestamp), style: const TextStyle(fontSize: 11, color: AppColors.gray)),
+                              Expanded(
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                    Text(e.action,
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: isDark
+                                                ? AppColors.inkDark
+                                                : AppColors.ink)),
+                                    Text(
+                                        'Actor: ${e.actorId}${e.targetId != null ? "  Target: ${e.targetId}" : ""}',
+                                        style: const TextStyle(
+                                            fontSize: 11,
+                                            color: AppColors.gray)),
+                                  ])),
+                              Text(_fmt(e.timestamp),
+                                  style: const TextStyle(
+                                      fontSize: 11, color: AppColors.gray)),
                             ],
                           ),
                         ),
@@ -915,22 +1344,38 @@ class _SupportTabState extends ConsumerState<_SupportTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _TabHeader(title: 'Support Inbox', subtitle: 'User requests and privacy workflows'),
+              const _TabHeader(
+                  title: 'Support Inbox',
+                  subtitle: 'User requests and privacy workflows'),
               Padding(
                 padding: const EdgeInsets.fromLTRB(32, 12, 32, 8),
                 child: Row(
-                  children: ['', 'OPEN', 'IN_PROGRESS', 'RESOLVED'].map((s) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(label: Text(s.isEmpty ? 'All' : s.replaceAll('_', ' ')), selected: statusFilter == (s.isEmpty ? null : s), onSelected: (_) => ref.read(ticketFilterProvider.notifier).state = s.isEmpty ? null : s),
-                  )).toList(),
+                  children: ['', 'OPEN', 'IN_PROGRESS', 'RESOLVED']
+                      .map((s) => Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: FilterChip(
+                                label: Text(
+                                    s.isEmpty ? 'All' : s.replaceAll('_', ' ')),
+                                selected:
+                                    statusFilter == (s.isEmpty ? null : s),
+                                onSelected: (_) => ref
+                                    .read(ticketFilterProvider.notifier)
+                                    .state = s.isEmpty ? null : s),
+                          ))
+                      .toList(),
                 ),
               ),
               Expanded(
                 child: ticketsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.redAccent))),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Center(
+                      child: Text('Error: $e',
+                          style: const TextStyle(color: Colors.redAccent))),
                   data: (page) => page.tickets.isEmpty
-                      ? const Center(child: Text('No tickets found', style: TextStyle(color: AppColors.gray)))
+                      ? const Center(
+                          child: Text('No tickets found',
+                              style: TextStyle(color: AppColors.gray)))
                       : ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 32),
                           itemCount: page.tickets.length,
@@ -940,22 +1385,49 @@ class _SupportTabState extends ConsumerState<_SupportTab> {
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 6),
                               child: Material(
-                                color: isSelected ? AppColors.ink : (isDark ? AppColors.selectedDark : AppColors.white),
+                                color: isSelected
+                                    ? AppColors.ink
+                                    : (isDark
+                                        ? AppColors.selectedDark
+                                        : AppColors.white),
                                 borderRadius: BorderRadius.circular(10),
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(10),
-                                  onTap: () => setState(() => _selected = isSelected ? null : t),
+                                  onTap: () => setState(
+                                      () => _selected = isSelected ? null : t),
                                   child: Padding(
                                     padding: const EdgeInsets.all(16),
                                     child: Row(
                                       children: [
                                         _statusChip(t.status),
                                         const SizedBox(width: 10),
-                                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                          Text(t.subject, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: isSelected ? AppColors.inkDark : (isDark ? AppColors.inkDark : AppColors.ink))),
-                                          Text('${t.requesterEmail}  |  ${t.category.replaceAll('_', ' ')}', style: const TextStyle(fontSize: 11, color: AppColors.gray)),
-                                        ])),
-                                        Text(_fmtDate(t.createdAt), style: const TextStyle(fontSize: 11, color: AppColors.gray)),
+                                        Expanded(
+                                            child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                              Text(t.subject,
+                                                  style: TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: isSelected
+                                                          ? AppColors.inkDark
+                                                          : (isDark
+                                                              ? AppColors
+                                                                  .inkDark
+                                                              : AppColors
+                                                                  .ink))),
+                                              Text(
+                                                  '${t.requesterEmail}  |  ${t.category.replaceAll('_', ' ')}',
+                                                  style: const TextStyle(
+                                                      fontSize: 11,
+                                                      color: AppColors.gray)),
+                                            ])),
+                                        Text(_fmtDate(t.createdAt),
+                                            style: const TextStyle(
+                                                fontSize: 11,
+                                                color: AppColors.gray)),
                                       ],
                                     ),
                                   ),
@@ -972,7 +1444,9 @@ class _SupportTabState extends ConsumerState<_SupportTab> {
         if (_selected != null)
           SizedBox(
             width: 360,
-            child: _TicketDetailPanel(ticket: _selected!, onClose: () => setState(() => _selected = null)),
+            child: _TicketDetailPanel(
+                ticket: _selected!,
+                onClose: () => setState(() => _selected = null)),
           ),
       ],
     ).animate().fadeIn(duration: 300.ms);
@@ -1010,7 +1484,9 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF0F0F0D) : AppColors.white,
-        border: Border(left: BorderSide(color: isDark ? AppColors.borderDark : AppColors.border)),
+        border: Border(
+            left: BorderSide(
+                color: isDark ? AppColors.borderDark : AppColors.border)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1019,9 +1495,15 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
             padding: const EdgeInsets.fromLTRB(20, 24, 12, 0),
             child: Row(
               children: [
-                Text('Ticket Detail', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: isDark ? AppColors.inkDark : AppColors.ink)),
+                Text('Ticket Detail',
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? AppColors.inkDark : AppColors.ink)),
                 const Spacer(),
-                IconButton(icon: const Icon(Icons.close_rounded, size: 18), onPressed: widget.onClose),
+                IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                    onPressed: widget.onClose),
               ],
             ),
           ),
@@ -1034,25 +1516,50 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
                   _statusChip(widget.ticket.status),
                   const SizedBox(height: 16),
                   _DetailRow(label: 'Subject', value: widget.ticket.subject),
-                  _DetailRow(label: 'Requester', value: widget.ticket.requesterEmail),
-                  _DetailRow(label: 'Category', value: widget.ticket.category.replaceAll('_', ' ')),
-                  _DetailRow(label: 'Created', value: _fmtDate(widget.ticket.createdAt)),
-                  _DetailRow(label: 'Assignee', value: widget.ticket.assigneeEmail ?? '—'),
+                  _DetailRow(
+                      label: 'Requester', value: widget.ticket.requesterEmail),
+                  _DetailRow(
+                      label: 'Category',
+                      value: widget.ticket.category.replaceAll('_', ' ')),
+                  _DetailRow(
+                      label: 'Created',
+                      value: _fmtDate(widget.ticket.createdAt)),
+                  _DetailRow(
+                      label: 'Assignee',
+                      value: widget.ticket.assigneeEmail ?? '—'),
                   const SizedBox(height: 16),
-                  const Text('Description', style: TextStyle(fontSize: 12, color: AppColors.gray)),
+                  const Text('Description',
+                      style: TextStyle(fontSize: 12, color: AppColors.gray)),
                   const SizedBox(height: 6),
-                  Text(widget.ticket.description, style: TextStyle(fontSize: 13, height: 1.5, color: isDark ? AppColors.inkDark : AppColors.ink)),
+                  Text(widget.ticket.description,
+                      style: TextStyle(
+                          fontSize: 13,
+                          height: 1.5,
+                          color: isDark ? AppColors.inkDark : AppColors.ink)),
                   const SizedBox(height: 20),
-                  const Text('Internal Notes', style: TextStyle(fontSize: 12, color: AppColors.gray)),
+                  const Text('Internal Notes',
+                      style: TextStyle(fontSize: 12, color: AppColors.gray)),
                   const SizedBox(height: 6),
-                  TextField(controller: _notesCtrl, maxLines: 5, decoration: const InputDecoration(hintText: 'Add internal notes…')),
+                  TextField(
+                      controller: _notesCtrl,
+                      maxLines: 5,
+                      decoration: const InputDecoration(
+                          hintText: 'Add internal notes…')),
                   const SizedBox(height: 16),
-                  const Text('Update Status', style: TextStyle(fontSize: 12, color: AppColors.gray)),
+                  const Text('Update Status',
+                      style: TextStyle(fontSize: 12, color: AppColors.gray)),
                   const SizedBox(height: 8),
-                  Wrap(spacing: 8, children: ['OPEN', 'IN_PROGRESS', 'RESOLVED'].map((s) => OutlinedButton(
-                    onPressed: () => actions.updateTicket(widget.ticket.id, status: s, notes: _notesCtrl.text.trim()),
-                    child: Text(s.replaceAll('_', ' ')),
-                  )).toList()),
+                  Wrap(
+                      spacing: 8,
+                      children: ['OPEN', 'IN_PROGRESS', 'RESOLVED']
+                          .map((s) => OutlinedButton(
+                                onPressed: () => actions.updateTicket(
+                                    widget.ticket.id,
+                                    status: s,
+                                    notes: _notesCtrl.text.trim()),
+                                child: Text(s.replaceAll('_', ' ')),
+                              ))
+                          .toList()),
                 ],
               ),
             ),
@@ -1075,19 +1582,32 @@ class _SystemTab extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _TabHeader(title: 'System Configuration', subtitle: 'All changes require a reason and are automatically audited'),
+        const _TabHeader(
+            title: 'System Configuration',
+            subtitle:
+                'All changes require a reason and are automatically audited'),
         Expanded(
           child: configAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.redAccent))),
+            error: (e, _) => Center(
+                child: Text('Error: $e',
+                    style: const TextStyle(color: Colors.redAccent))),
             data: (configs) => configs.isEmpty
-                ? const Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(Icons.settings_rounded, size: 40, color: AppColors.gray),
-                    SizedBox(height: 12),
-                    Text('No configuration entries yet.', style: TextStyle(color: AppColors.gray)),
-                    SizedBox(height: 4),
-                    Text('Pause/Resume the reminder engine to create the first entry.', style: TextStyle(fontSize: 12, color: AppColors.gray)),
-                  ]))
+                ? const Center(
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                        Icon(Icons.settings_rounded,
+                            size: 40, color: AppColors.gray),
+                        SizedBox(height: 12),
+                        Text('No configuration entries yet.',
+                            style: TextStyle(color: AppColors.gray)),
+                        SizedBox(height: 4),
+                        Text(
+                            'Pause/Resume the reminder engine to create the first entry.',
+                            style:
+                                TextStyle(fontSize: 12, color: AppColors.gray)),
+                      ]))
                 : ListView.builder(
                     padding: const EdgeInsets.fromLTRB(32, 16, 32, 32),
                     itemCount: configs.length,
@@ -1117,16 +1637,24 @@ class _ConfigTile extends ConsumerWidget {
         builder: (ctx) => AlertDialog(
           title: Text('Edit: ${entry.key}'),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextField(controller: valCtrl, decoration: const InputDecoration(labelText: 'New value')),
+            TextField(
+                controller: valCtrl,
+                decoration: const InputDecoration(labelText: 'New value')),
             const SizedBox(height: 12),
-            TextField(controller: reasonCtrl, decoration: const InputDecoration(labelText: 'Reason for change (required)')),
+            TextField(
+                controller: reasonCtrl,
+                decoration: const InputDecoration(
+                    labelText: 'Reason for change (required)')),
           ]),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel')),
             FilledButton(
               onPressed: () async {
                 if (reasonCtrl.text.trim().length >= 5) {
-                  await actions.updateConfig(entry.key, valCtrl.text.trim(), reasonCtrl.text.trim());
+                  await actions.updateConfig(
+                      entry.key, valCtrl.text.trim(), reasonCtrl.text.trim());
                   if (ctx.mounted) Navigator.pop(ctx);
                 }
               },
@@ -1142,13 +1670,28 @@ class _ConfigTile extends ConsumerWidget {
       child: _SectionCard(
         child: Row(
           children: [
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(entry.key, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? AppColors.inkDark : AppColors.ink)),
-              Text(entry.value, style: const TextStyle(fontSize: 13, color: AppColors.gray)),
-              const SizedBox(height: 4),
-              Text('Updated ${_fmtDate(entry.updatedAt)}  |  ${entry.reason}', style: const TextStyle(fontSize: 11, color: AppColors.gray)),
-            ])),
-            IconButton(icon: const Icon(Icons.edit_rounded, size: 16, color: AppColors.gray), onPressed: edit),
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  Text(entry.key,
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? AppColors.inkDark : AppColors.ink)),
+                  Text(entry.value,
+                      style:
+                          const TextStyle(fontSize: 13, color: AppColors.gray)),
+                  const SizedBox(height: 4),
+                  Text(
+                      'Updated ${_fmtDate(entry.updatedAt)}  |  ${entry.reason}',
+                      style:
+                          const TextStyle(fontSize: 11, color: AppColors.gray)),
+                ])),
+            IconButton(
+                icon: const Icon(Icons.edit_rounded,
+                    size: 16, color: AppColors.gray),
+                onPressed: edit),
           ],
         ),
       ),

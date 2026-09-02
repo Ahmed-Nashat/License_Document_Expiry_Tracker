@@ -347,7 +347,7 @@ export async function adminRoutes(app: FastifyInstance) {
 
     await prisma.notificationLog.update({
       where: { id: logId },
-      data: { status: 'PENDING', processingAt: null, error: null },
+      data: { status: 'PENDING', processingAt: null, error: null, retryCount: 0 },
     });
 
     await createAuditLog(app, {
