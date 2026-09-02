@@ -1,11 +1,12 @@
 ﻿class DeuNestUser {
-  const DeuNestUser(
-      {required this.id,
-      required this.email,
-      this.displayName,
-      this.role = 'USER',
-      this.ageRange,
-      this.gender});
+  const DeuNestUser({
+    required this.id,
+    required this.email,
+    this.displayName,
+    this.role = 'USER',
+    this.ageRange,
+    this.gender,
+  });
 
   final String id;
   final String email;
@@ -26,28 +27,19 @@
 
 class AuthSession {
   const AuthSession({required this.user, required this.accessToken});
-  final AuthUser user;
+  
+  final DeuNestUser user;
   final String accessToken;
 
   factory AuthSession.fromJson(Map<String, dynamic> json) => AuthSession(
-        user: AuthUser.fromJson(json['user'] as Map<String, dynamic>),
+        user: DeuNestUser.fromJson(json['user'] as Map<String, dynamic>),
         accessToken: json['accessToken'] as String,
       );
 
-  AuthSession copyWith({AuthUser? user, String? accessToken}) {
+  AuthSession copyWith({DeuNestUser? user, String? accessToken}) {
     return AuthSession(
       user: user ?? this.user,
       accessToken: accessToken ?? this.accessToken,
     );
   }
-});
-
-  final String accessToken;
-  final DeuNestUser user;
-
-  factory AuthSession.fromJson(Map<String, dynamic> json) => AuthSession(
-        accessToken: json['accessToken'] as String,
-        user: DeuNestUser.fromJson(json['user'] as Map<String, dynamic>),
-      );
 }
-

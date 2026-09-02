@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+﻿import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../../lib/prisma.js';
 import { requireAdmin } from '../../plugins/requireAdmin.js';
@@ -37,7 +37,7 @@ export async function adminRoutes(app: FastifyInstance) {
     await requireAdmin(request, reply);
   });
 
-  // ─── User Management ──────────────────────────────────────────────────────
+  // â”€â”€â”€ User Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   // GET /api/admin/users - Paginated user list with search and filters
   app.get('/api/admin/users', async (request, reply) => {
@@ -199,7 +199,7 @@ export async function adminRoutes(app: FastifyInstance) {
     return reply.status(201).send({ ticketId: ticket.id });
   });
 
-  // ─── Audit Logs ───────────────────────────────────────────────────────────
+  // â”€â”€â”€ Audit Logs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   // GET /api/admin/audit-logs - Paginated, filtered audit log
   app.get('/api/admin/audit-logs', async (request, reply) => {
@@ -228,7 +228,7 @@ export async function adminRoutes(app: FastifyInstance) {
     return reply.status(200).send({ logs, total, page, limit, pages: Math.ceil(total / limit) });
   });
 
-  // ─── Analytics / Metrics ──────────────────────────────────────────────────
+  // â”€â”€â”€ Analytics / Metrics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   // GET /api/admin/metrics - Extended analytics
   app.get('/api/admin/metrics', async (request, reply) => {
@@ -290,7 +290,7 @@ export async function adminRoutes(app: FastifyInstance) {
     });
   });
 
-  // ─── Reminder Operations ──────────────────────────────────────────────────
+  // â”€â”€â”€ Reminder Operations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   // GET /api/admin/reminders/stats
   app.get('/api/admin/reminders/stats', async (request, reply) => {
@@ -389,7 +389,7 @@ export async function adminRoutes(app: FastifyInstance) {
     return reply.status(200).send({ message: 'Reminder engine resumed.' });
   });
 
-  // ─── Security Center ──────────────────────────────────────────────────────
+  // â”€â”€â”€ Security Center â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   // GET /api/admin/security/sessions - Active admin sessions
   app.get('/api/admin/security/sessions', async (request, reply) => {
@@ -431,7 +431,7 @@ export async function adminRoutes(app: FastifyInstance) {
     return reply.status(200).send(events);
   });
 
-  // ─── Support Inbox ─────────────────────────────────────────────────────────
+  // â”€â”€â”€ Support Inbox â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   // GET /api/admin/support - Paginated ticket list
   app.get('/api/admin/support', async (request, reply) => {
@@ -513,7 +513,7 @@ export async function adminRoutes(app: FastifyInstance) {
     return reply.status(200).send(updated);
   });
 
-  // ─── System Configuration ─────────────────────────────────────────────────
+  // â”€â”€â”€ System Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   // GET /api/admin/config
   app.get('/api/admin/config', async (request, reply) => {
@@ -547,5 +547,28 @@ export async function adminRoutes(app: FastifyInstance) {
     });
 
     return reply.status(200).send(config);
+  });
+  app.post('/api/admin/support/:id/message', async (request, reply) => {
+    const params = z.object({ id: z.string().cuid() }).parse(request.params);
+    const input = z.object({ message: z.string().min(1) }).parse(request.body);
+
+    const ticket = await prisma.supportTicket.findUnique({ where: { id: params.id } });
+    if (!ticket) return reply.status(404).send({ error: 'NOT_FOUND', message: 'Ticket not found.' });
+
+    // Send email to requester
+    const { sendEmail } = await import('../../utils/mailer.js');
+    try {
+      await sendEmail({
+        to: ticket.requesterEmail,
+        subject: \Update on your DueNest Support Ticket: \\,
+        html: \<p>An admin has sent you a message regarding your ticket:</p><blockquote>\</blockquote>\,
+      });
+    } catch (err) {
+      request.log.error({ err }, 'Failed to send support email message');
+      return reply.status(500).send({ error: 'EMAIL_FAILED', message: 'Could not send the email.' });
+    }
+
+    await createAuditLog(prisma, (request.user as any).userId, 'SUPPORT_MESSAGE_SENT', { actorType: 'ADMIN', targetId: ticket.id, result: 'SUCCESS' });
+    return reply.status(200).send({ message: 'Message sent successfully.' });
   });
 }

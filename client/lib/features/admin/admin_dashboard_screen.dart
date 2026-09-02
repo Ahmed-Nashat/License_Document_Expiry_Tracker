@@ -1549,6 +1549,28 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
                       decoration: const InputDecoration(
                           hintText: 'Add internal notes…')),
                   const SizedBox(height: 16),
+                  const Text('Actions',
+                      style: TextStyle(fontSize: 12, color: AppColors.gray)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        FilledButton.icon(
+                          onPressed: () => _showEmailDialog(context, widget.ticket.id, actions),
+                          icon: const Icon(Icons.mail_outline_rounded, size: 16),
+                          label: const Text('Send Email to Requester'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () {
+                            actions.updateTicket(widget.ticket.id, notes: _notesCtrl.text.trim());
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notes saved.')));
+                          },
+                          icon: const Icon(Icons.save_rounded, size: 16),
+                          label: const Text('Save Notes'),
+                        ),
+                      ]),
+                  const SizedBox(height: 20),
                   const Text('Update Status',
                       style: TextStyle(fontSize: 12, color: AppColors.gray)),
                   const SizedBox(height: 8),
@@ -1721,7 +1743,7 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
     super.initState();
     final user = ref.read(authControllerProvider).value?.user;
     if (user != null) {
-      _nameCtrl.text = user.displayName;
+      _nameCtrl.text = user.displayName ?? '';
     }
   }
 
@@ -1733,7 +1755,7 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
       await ref.read(authControllerProvider.notifier).updateProfile(name);
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated.')));
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: \')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -1755,7 +1777,7 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password updated successfully.')));
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: \')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

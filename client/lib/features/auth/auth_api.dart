@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+﻿import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'api_client_platform.dart';
@@ -86,13 +86,13 @@ class AuthApi {
     }
   }
 
-  Future<AuthUser> updateProfile(String displayName) async {
+  Future<DeuNestUser> updateProfile(String displayName) async {
     try {
       final response = await _dio.patch<Map<String, dynamic>>(
         '/api/auth/profile',
         data: {'displayName': displayName},
       );
-      return AuthUser.fromJson(response.data!);
+      return DeuNestUser.fromJson(response.data!);
     } on DioException catch (error) {
       throw AuthException.fromDio(error);
     }

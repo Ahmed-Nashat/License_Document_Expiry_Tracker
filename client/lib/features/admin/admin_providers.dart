@@ -606,6 +606,11 @@ class AdminActions {
     _ref.invalidate(adminAuditLogsProvider);
   }
 
+  Future<void> sendTicketMessage(String id, String message) async {
+    await _client.post('/api/admin/support/$id/message', data: {'message': message});
+    _ref.invalidate(adminAuditLogsProvider);
+  }
+
   Future<void> updateConfig(String key, String value, String reason) async {
     await _client.put('/api/admin/config/$key',
         data: {'value': value, 'reason': reason});
