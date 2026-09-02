@@ -1103,9 +1103,10 @@ Future<void> _showSupportDialog(
                                   'Support ticket created. We will be in touch!')));
                         }
                       } catch (e) {
-                        if (ctx.mounted)
+                        if (ctx.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('Error: $e')));
+                        }
                       } finally {
                         if (ctx.mounted) {
                           setState(() => isLoading = false);
