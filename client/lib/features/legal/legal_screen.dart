@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../shared/design_tokens.dart';
 
 class LegalScreen extends StatelessWidget {
@@ -146,7 +147,7 @@ class LegalScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ),
+          ).animate().fadeIn(duration: 400.ms, curve: Curves.easeOut).slideY(begin: 0.04, end: 0, duration: 400.ms, curve: Curves.easeOutQuart),
         ),
       ),
     );
