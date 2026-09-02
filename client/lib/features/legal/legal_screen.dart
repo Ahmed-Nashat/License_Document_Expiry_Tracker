@@ -53,9 +53,11 @@ class LegalScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('DueNest Privacy Policy', style: _headingStyle(isDark).copyWith(fontSize: 24)),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 8),
+                  const Text('Last updated: September 2026', style: TextStyle(color: AppColors.gray, fontSize: 13)),
+                  const SizedBox(height: 32),
                   
-                  Text('Privacy Policy', style: _headingStyle(isDark)),
+                  Text('1. Data Collection', style: _headingStyle(isDark)),
                   const SizedBox(height: 12),
                   Text(
                     'DueNest is a privacy-first application. Your personal data, document names, '
@@ -64,9 +66,50 @@ class LegalScreen extends StatelessWidget {
                     style: _bodyStyle(isDark),
                   ),
                   
-                  const SizedBox(height: 36),
+                  const SizedBox(height: 32),
                   
-                  Text('Data Deletion', style: _headingStyle(isDark)),
+                  Text('2. Cookies & Sessions', style: _headingStyle(isDark)),
+                  const SizedBox(height: 12),
+                  Text(
+                    'DueNest uses secure, strictly-necessary cookies exclusively to keep you logged into your session. '
+                    'We do not use tracking, advertising, or third-party analytics cookies.',
+                    style: _bodyStyle(isDark),
+                  ),
+
+                  const SizedBox(height: 32),
+                  
+                  Text('3. Third-Party Services', style: _headingStyle(isDark)),
+                  const SizedBox(height: 12),
+                  Text(
+                    'To provide our service, your data is processed by trusted third-party infrastructure providers '
+                    '(such as our database hosts and email delivery services). These providers are contractually '
+                    'obligated to protect your data and may not use it for their own purposes.',
+                    style: _bodyStyle(isDark),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  Text('4. Security Measures', style: _headingStyle(isDark)),
+                  const SizedBox(height: 12),
+                  Text(
+                    'We take security seriously. All data transmitted between your device and our servers is encrypted using standard HTTPS. '
+                    'Your passwords are never stored in plain text; they are mathematically hashed before saving.',
+                    style: _bodyStyle(isDark),
+                  ),
+
+                  const SizedBox(height: 32),
+                  
+                  Text('5. Age Restrictions', style: _headingStyle(isDark)),
+                  const SizedBox(height: 12),
+                  Text(
+                    'DueNest is not intended for children under the age of 13 (or 16 in certain jurisdictions). '
+                    'We do not knowingly collect personal information from individuals under this age.',
+                    style: _bodyStyle(isDark),
+                  ),
+
+                  const SizedBox(height: 32),
+                  
+                  Text('6. Data Deletion', style: _headingStyle(isDark)),
                   const SizedBox(height: 12),
                   Text(
                     'You retain full ownership of your data. Deleting a document or your account '
@@ -74,10 +117,22 @@ class LegalScreen extends StatelessWidget {
                     style: _bodyStyle(isDark),
                   ),
                   
-                  const SizedBox(height: 36),
+                  const SizedBox(height: 32),
                   
-                  Text('Disclaimer', style: _headingStyle(isDark)),
+                  Text('7. Policy Updates', style: _headingStyle(isDark)),
                   const SizedBox(height: 12),
+                  Text(
+                    'We may update this policy occasionally as we add new features. '
+                    'We will notify you of any significant changes by updating the date at the top of this document.',
+                    style: _bodyStyle(isDark),
+                  ),
+
+                  const SizedBox(height: 48),
+                  const Divider(height: 1, color: AppColors.border),
+                  const SizedBox(height: 48),
+
+                  Text('Disclaimer', style: _headingStyle(isDark).copyWith(fontSize: 24)),
+                  const SizedBox(height: 16),
                   Text(
                     'DueNest is provided "as is" without any warranties. While we strive for 100% '
                     'reliability with our email reminders, you should not rely solely on this '
