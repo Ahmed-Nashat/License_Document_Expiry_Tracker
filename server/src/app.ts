@@ -4,6 +4,7 @@ import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import Fastify from 'fastify';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import { ZodError } from 'zod';
 import { timingSafeEqual } from 'node:crypto';
 import { env } from './config/env.js';
@@ -83,4 +84,14 @@ export function buildApp() {
 }
 
 const app = buildApp();
-export default app;
+const ready = app.ready();
+
+/**
+ * Vercel detects src/app.ts as the Fastify entrypoint.  Exporting a request
+ * handler lets the serverless runtime hand each request to the already-built
+ * Fastify application without starting a listening TCP server.
+ */
+export default async function handler(request: IncomingMessage, response: ServerResponse) {
+  await ready;
+  app.server.emit('request', request, response);
+}

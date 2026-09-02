@@ -1,8 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "fastify",
-  "buildCommand": "npm run prisma:generate && npm run prisma:migrate",
-  "rewrites": [
-    { "source": "/health/live", "destination": "/api/health/live" }
-  ]
+  "buildCommand": "npm run prisma:generate && npm run prisma:migrate"
 }
