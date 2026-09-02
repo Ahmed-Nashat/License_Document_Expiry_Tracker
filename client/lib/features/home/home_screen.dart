@@ -264,6 +264,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           children: [
                             FilterChip(
                               label: const Text('All'),
+                              labelStyle: TextStyle(
+                                color: (selectedType == null && !showArchived)
+                                    ? (isDark ? _inkDark : _white)
+                                    : (isDark ? _charcoalDark : _charcoal),
+                              ),
                               selected:
                                   selectedType == null && !showArchived,
                               onSelected: (_) {
@@ -285,11 +290,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                       size: 14,
                                       color: selectedType == type &&
                                               !showArchived
-                                          ? (isDark
-                                              ? _surfaceDark
-                                              : _white)
+                                          ? (isDark ? _inkDark : _white)
                                           : _gray),
                                   label: Text(type.label),
+                                  labelStyle: TextStyle(
+                                    color: (selectedType == type && !showArchived)
+                                        ? (isDark ? _inkDark : _white)
+                                        : (isDark ? _charcoalDark : _charcoal),
+                                  ),
                                   selected:
                                       selectedType == type && !showArchived,
                                   onSelected: (_) {
@@ -310,9 +318,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               avatar: Icon(Icons.archive_outlined,
                                   size: 14,
                                   color: showArchived
-                                      ? (isDark ? _surfaceDark : _white)
+                                      ? (isDark ? _inkDark : _white)
                                       : _gray),
                               label: const Text('Archived'),
+                              labelStyle: TextStyle(
+                                color: showArchived
+                                    ? (isDark ? _inkDark : _white)
+                                    : (isDark ? _charcoalDark : _charcoal),
+                              ),
                               selected: showArchived,
                               onSelected: (val) {
                                 ref

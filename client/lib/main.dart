@@ -131,6 +131,7 @@ class LicenseTrackerApp extends ConsumerWidget {
               color: _charcoal, fontSize: 13, fontWeight: FontWeight.w500),
           secondaryLabelStyle: const TextStyle(
               color: _white, fontSize: 13, fontWeight: FontWeight.w600),
+          checkmarkColor: _white,
           side: BorderSide.none,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -248,6 +249,7 @@ class LicenseTrackerApp extends ConsumerWidget {
               fontWeight: FontWeight.w500),
           secondaryLabelStyle: const TextStyle(
               color: _inkDark, fontSize: 13, fontWeight: FontWeight.w600),
+          checkmarkColor: _inkDark,
           side: BorderSide.none,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
