@@ -369,7 +369,7 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: isDark ? AppColors.fog : AppColors.fogDark,
+                      color: isDark ? AppColors.gray : AppColors.charcoal,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -398,13 +398,13 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                             }
                           });
                         },
-                        backgroundColor: isDark ? AppColors.ink : AppColors.fog,
+                        backgroundColor: isDark ? AppColors.surfaceDark : AppColors.fog,
                         selectedColor: AppColors.charcoal,
                         checkmarkColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                           side: BorderSide(
-                            color: isSelected ? Colors.transparent : (isDark ? AppColors.ink : AppColors.fogDark),
+                            color: isSelected ? Colors.transparent : (isDark ? AppColors.borderDark : AppColors.border),
                           ),
                         ),
                       );
