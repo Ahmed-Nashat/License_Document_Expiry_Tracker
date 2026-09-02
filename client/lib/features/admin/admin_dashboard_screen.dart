@@ -1448,7 +1448,7 @@ class _SupportTabState extends ConsumerState<_SupportTab> {
           SizedBox(
             width: 360,
             child: _TicketDetailPanel(
-                ticket: _selected!,
+                ticket: ticketsAsync.value?.tickets.where((t) => t.id == _selected!.id).firstOrNull ?? _selected!,
                 onClose: () => setState(() => _selected = null)),
           ),
       ],
@@ -1898,5 +1898,6 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
     );
   }
 }
+
 
 
