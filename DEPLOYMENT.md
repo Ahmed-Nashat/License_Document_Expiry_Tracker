@@ -5,19 +5,26 @@ This setup is designed for a protected public demo with no paid infrastructure. 
 ## Before deploying
 
 1. Create a Neon project and copy its **pooled** PostgreSQL connection string into `DATABASE_URL`. Keep it secret and do not add it to a repository file.
-2. Create a Brevo account, verify your sender email address, and create an API key. Set `BREVO_API_KEY` and `EMAIL_FROM`.
+2. Create a Google Cloud OAuth desktop client, add your Gmail account as a test user, and generate a refresh token with `server/scripts/gmail-authorize.ts`. Keep the downloaded client JSON and `server/.gmail-token.json` private.
 3. Generate three different random values of at least 32 characters for `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, and `REMINDER_CRON_SECRET`.
 
-## Render API
+## API deployment (Vercel, no card required)
 
-1. Create a Render Blueprint from `render.yaml`. The service is configured as a free Docker web service and does not provision a Render database.
-2. Set these Render values: `DATABASE_URL` (Neon pooled URL), `WEB_ORIGINS` (the exact Vercel HTTPS URL), `BREVO_API_KEY`, `EMAIL_FROM`, and `REMINDER_CRON_SECRET`. Leave `REMINDER_SCHEDULER_ENABLED=false`.
+1. Create a second Vercel project from the same repository and set **Root Directory** to `server`.
+2. Use the included `server/vercel.json`; it generates Prisma, applies migrations, and builds the Fastify function.
+3. Add the same API variables listed below to this Vercel project. Set `HOST=0.0.0.0`, `NODE_ENV=production`, and leave `REMINDER_SCHEDULER_ENABLED=false`.
+4. Deploy and copy the resulting API URL. Test `/health/live`.
+
+## Render API (alternative)
+
+1. Create a Render Blueprint from `render.yaml`. The service is configured as a free Docker web service and does not provision a Render database. Render may require account payment verification even for free services.
+2. Set these Render values: `DATABASE_URL` (Neon pooled URL), `WEB_ORIGINS` (the exact Vercel HTTPS URL), `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `EMAIL_FROM` (for example `DueNest <due.nest11@gmail.com>`), and `REMINDER_CRON_SECRET`. Leave `REMINDER_SCHEDULER_ENABLED=false`.
 3. The container applies Prisma migrations when it starts. Migrations must remain backward-compatible because the free service can restart.
 
 ## Vercel web app
 
 1. Import the repository into Vercel and set the **Root Directory** to `client`.
-2. Add `RENDER_API_URL` with the public HTTPS Render API URL, then deploy. Vercel automatically supplies its production URL to the build, so no `API_BASE_URL` value is needed there.
+2. Add `RENDER_API_URL` with the public HTTPS API URL (Render or the separate Vercel API project), then deploy. Vercel automatically supplies its production URL to the build, so no `API_BASE_URL` value is needed there.
 3. Update Render's `WEB_ORIGINS` if Vercel gives the project a different production URL, then redeploy Render.
 
 The Vercel API proxy keeps browser API calls and the HTTP-only refresh cookie first-party, even when Render uses its free `onrender.com` URL. Never move refresh tokens to local storage as a workaround.

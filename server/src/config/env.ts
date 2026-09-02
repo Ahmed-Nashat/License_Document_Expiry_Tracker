@@ -25,14 +25,16 @@ const schema = z.object({
   COOKIE_SECURE: booleanFromEnvironment,
   COOKIE_SAME_SITE: z.enum(['lax', 'none', 'strict']).default('lax'),
   COOKIE_DOMAIN: z.string().optional(),
-  BREVO_API_KEY: z.string().min(20).optional(),
+  GMAIL_CLIENT_ID: z.string().min(10).optional(),
+  GMAIL_CLIENT_SECRET: z.string().min(10).optional(),
+  GMAIL_REFRESH_TOKEN: z.string().min(10).optional(),
   EMAIL_FROM: senderAddress.optional(),
   REMINDER_CRON_SECRET: z.string().min(32).optional(),
   REMINDER_SCHEDULER_ENABLED: booleanFromEnvironment,
 }).superRefine((value, context) => {
   if (value.NODE_ENV !== 'production') return;
 
-  for (const key of ['BREVO_API_KEY', 'EMAIL_FROM', 'REMINDER_CRON_SECRET'] as const) {
+  for (const key of ['GMAIL_CLIENT_ID', 'GMAIL_CLIENT_SECRET', 'GMAIL_REFRESH_TOKEN', 'EMAIL_FROM', 'REMINDER_CRON_SECRET'] as const) {
     if (!value[key]) {
       context.addIssue({ code: z.ZodIssueCode.custom, path: [key], message: `${key} is required in production.` });
     }

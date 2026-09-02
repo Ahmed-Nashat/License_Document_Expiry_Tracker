@@ -26,3 +26,5 @@ client/.vscode/
 .DS_Store
 Thumbs.db
 .neon
+server/.gmail-token.json
+client_secret_*.json
