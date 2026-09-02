@@ -11,6 +11,7 @@ import 'admin_providers.dart';
 String _formatDate(DateTime date) {
   return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 }
+
 String _formatDateShort(DateTime date) {
   return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 }
@@ -19,7 +20,8 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  ConsumerState<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+  ConsumerState<AdminDashboardScreen> createState() =>
+      _AdminDashboardScreenState();
 }
 
 class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
@@ -31,8 +33,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       backgroundColor: const Color(0xFF111111),
       appBar: AppBar(
         backgroundColor: const Color(0xFF0A0A0A),
-        title: const Text('ADMINISTRATION', style: TextStyle(color: Colors.white, letterSpacing: 1.5, fontSize: 16))
-            .animate().fade(duration: 400.ms).slideX(begin: -0.1),
+        title: const Text('ADMINISTRATION',
+                style: TextStyle(
+                    color: Colors.white, letterSpacing: 1.5, fontSize: 16))
+            .animate()
+            .fade(duration: 400.ms)
+            .slideX(begin: -0.1),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white),
@@ -53,7 +59,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               }
             },
             icon: const Icon(Icons.logout, color: Colors.white70, size: 18),
-            label: const Text('SIGN OUT', style: TextStyle(color: Colors.white70)),
+            label:
+                const Text('SIGN OUT', style: TextStyle(color: Colors.white70)),
           ).animate().fade(delay: 300.ms),
           const SizedBox(width: 16),
         ],
@@ -68,7 +75,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               children: [
                 _buildNavItem(0, Icons.people_outline, 'User Accounts'),
                 _buildNavItem(1, Icons.security_outlined, 'Audit Logs'),
-                _buildNavItem(2, Icons.analytics_outlined, 'Analytics & Metrics'),
+                _buildNavItem(
+                    2, Icons.analytics_outlined, 'Analytics & Metrics'),
               ]
                   .animate(interval: 100.ms)
                   .fade(duration: 300.ms)
@@ -93,9 +101,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   ),
                 );
               },
-              child: _selectedIndex == 0 
-                  ? const _UsersView(key: ValueKey('users')) 
-                  : _selectedIndex == 1 
+              child: _selectedIndex == 0
+                  ? const _UsersView(key: ValueKey('users'))
+                  : _selectedIndex == 1
                       ? const _AuditLogsView(key: ValueKey('logs'))
                       : const _AnalyticsView(key: ValueKey('analytics')),
             ),
@@ -109,7 +117,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final isSelected = _selectedIndex == index;
     return ListTile(
       leading: Icon(icon, color: isSelected ? Colors.white : Colors.white54),
-      title: Text(title, style: TextStyle(color: isSelected ? Colors.white : Colors.white54)),
+      title: Text(title,
+          style: TextStyle(color: isSelected ? Colors.white : Colors.white54)),
       selected: isSelected,
       selectedTileColor: const Color(0xFF222222),
       onTap: () {
@@ -155,54 +164,80 @@ class _UsersView extends ConsumerWidget {
         ),
         Expanded(
           child: usersAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
-            error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+            loading: () => const Center(
+                child: CircularProgressIndicator(color: Colors.white)),
+            error: (err, stack) => Center(
+                child: Text('Error: $err',
+                    style: const TextStyle(color: Colors.red))),
             data: (users) {
               return ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 itemCount: users.length,
-                separatorBuilder: (context, index) => const Divider(color: Color(0xFF222222)),
+                separatorBuilder: (context, index) =>
+                    const Divider(color: Color(0xFF222222)),
                 itemBuilder: (context, index) {
                   final user = users[index];
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text(user.email, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                    title: Text(user.email,
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.w600)),
                     subtitle: Text(
                       'Joined ${_formatDateShort(user.createdAt)} • ${user.documentCount} docs • ${user.activeSessionCount} sessions',
                       style: const TextStyle(color: Colors.white54),
                     ),
                     trailing: user.role == 'ADMIN'
-                        ? const Chip(label: Text('ADMIN', style: TextStyle(fontSize: 10)), backgroundColor: Color(0xFF333333))
+                        ? const Chip(
+                            label:
+                                Text('ADMIN', style: TextStyle(fontSize: 10)),
+                            backgroundColor: Color(0xFF333333))
                         : TextButton(
                             onPressed: () async {
                               final confirm = await showDialog<bool>(
                                 context: context,
                                 builder: (ctx) => AlertDialog(
                                   backgroundColor: const Color(0xFF222222),
-                                  title: const Text('Revoke Sessions?', style: TextStyle(color: Colors.white)),
-                                  content: Text('Force sign out all active sessions for ${user.email}?', style: const TextStyle(color: Colors.white70)),
+                                  title: const Text('Revoke Sessions?',
+                                      style: TextStyle(color: Colors.white)),
+                                  content: Text(
+                                      'Force sign out all active sessions for ${user.email}?',
+                                      style: const TextStyle(
+                                          color: Colors.white70)),
                                   actions: [
-                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
+                                    TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(ctx, false),
+                                        child: const Text('Cancel',
+                                            style: TextStyle(
+                                                color: Colors.white54))),
                                     TextButton(
                                       onPressed: () => Navigator.pop(ctx, true),
-                                      child: const Text('Revoke', style: TextStyle(color: Colors.redAccent)),
+                                      child: const Text('Revoke',
+                                          style: TextStyle(
+                                              color: Colors.redAccent)),
                                     ),
                                   ],
                                 ),
                               );
                               if (confirm == true) {
-                                await ref.read(adminRevokeSessionsProvider)(user.id);
+                                await ref
+                                    .read(adminRevokeSessionsProvider)(user.id);
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Sessions revoked.')),
+                                    const SnackBar(
+                                        content: Text('Sessions revoked.')),
                                   );
                                 }
                               }
                             },
-                            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+                            style: TextButton.styleFrom(
+                                foregroundColor: Colors.redAccent),
                             child: const Text('REVOKE SESSIONS'),
                           ),
-                  ).animate().fade(duration: 300.ms, delay: (index * 50).ms).slideY(begin: 0.1);
+                  )
+                      .animate()
+                      .fade(duration: 300.ms, delay: (index * 50).ms)
+                      .slideY(begin: 0.1);
                 },
               );
             },
@@ -221,24 +256,33 @@ class _AuditLogsView extends ConsumerWidget {
     final logsAsync = ref.watch(adminAuditLogsProvider);
 
     return logsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
-      error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+      loading: () =>
+          const Center(child: CircularProgressIndicator(color: Colors.white)),
+      error: (err, stack) => Center(
+          child:
+              Text('Error: $err', style: const TextStyle(color: Colors.red))),
       data: (logs) {
         return ListView.separated(
           padding: const EdgeInsets.all(24),
           itemCount: logs.length,
-          separatorBuilder: (context, index) => const Divider(color: Color(0xFF222222)),
+          separatorBuilder: (context, index) =>
+              const Divider(color: Color(0xFF222222)),
           itemBuilder: (context, index) {
             final log = logs[index];
             return ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(log.action, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              title: Text(log.action,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
               subtitle: Text(
                 '${_formatDate(log.timestamp)}\nActor: ${log.actorId} • Target: ${log.targetId ?? 'N/A'}\nIP: ${log.ipAddress ?? 'N/A'} • Reason: ${log.reason ?? 'N/A'}',
                 style: const TextStyle(color: Colors.white54, height: 1.5),
               ),
               isThreeLine: true,
-            ).animate().fade(duration: 300.ms, delay: (index * 30).ms).slideY(begin: 0.1);
+            )
+                .animate()
+                .fade(duration: 300.ms, delay: (index * 30).ms)
+                .slideY(begin: 0.1);
           },
         );
       },
@@ -254,8 +298,11 @@ class _AnalyticsView extends ConsumerWidget {
     final metricsAsync = ref.watch(adminMetricsProvider);
 
     return metricsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
-      error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+      loading: () =>
+          const Center(child: CircularProgressIndicator(color: Colors.white)),
+      error: (err, stack) => Center(
+          child:
+              Text('Error: $err', style: const TextStyle(color: Colors.red))),
       data: (metrics) {
         return SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -265,27 +312,35 @@ class _AnalyticsView extends ConsumerWidget {
               _buildSectionTitle('Platform Overview'),
               Row(
                 children: [
-                  _buildStatCard('Total Users', metrics.usersTotal.toString(), Icons.people),
+                  _buildStatCard('Total Users', metrics.usersTotal.toString(),
+                      Icons.people),
                   const SizedBox(width: 16),
-                  _buildStatCard('Total Documents', metrics.docsTotal.toString(), Icons.folder_copy),
+                  _buildStatCard('Total Documents',
+                      metrics.docsTotal.toString(), Icons.folder_copy),
                 ],
               ),
               const SizedBox(height: 32),
-              
               _buildSectionTitle('Demographics'),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: _buildBreakdownCard('Age Distribution', metrics.ageBreakdown, metrics.usersTotal)),
+                  Expanded(
+                      child: _buildBreakdownCard('Age Distribution',
+                          metrics.ageBreakdown, metrics.usersTotal)),
                   const SizedBox(width: 16),
-                  Expanded(child: _buildBreakdownCard('Gender Ratio', metrics.genderBreakdown, metrics.usersTotal)),
+                  Expanded(
+                      child: _buildBreakdownCard('Gender Ratio',
+                          metrics.genderBreakdown, metrics.usersTotal)),
                 ],
               ),
               const SizedBox(height: 32),
-              
               _buildSectionTitle('Document Categories'),
-              _buildBreakdownCard('Documents by Type', metrics.documentBreakdown, metrics.docsTotal),
-            ].animate(interval: 100.ms).fade(duration: 400.ms).slideY(begin: 0.1),
+              _buildBreakdownCard('Documents by Type',
+                  metrics.documentBreakdown, metrics.docsTotal),
+            ]
+                .animate(interval: 100.ms)
+                .fade(duration: 400.ms)
+                .slideY(begin: 0.1),
           ),
         );
       },
@@ -321,16 +376,22 @@ class _AnalyticsView extends ConsumerWidget {
           children: [
             Icon(icon, color: Colors.white38, size: 28),
             const SizedBox(height: 16),
-            Text(value, style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w600)),
+            Text(value,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
-            Text(label, style: const TextStyle(color: Colors.white54, fontSize: 14)),
+            Text(label,
+                style: const TextStyle(color: Colors.white54, fontSize: 14)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBreakdownCard(String title, Map<String, int> breakdown, int total) {
+  Widget _buildBreakdownCard(
+      String title, Map<String, int> breakdown, int total) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -341,10 +402,15 @@ class _AnalyticsView extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500)),
+          Text(title,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500)),
           const SizedBox(height: 24),
           if (breakdown.isEmpty || total == 0)
-            const Text('No data available', style: TextStyle(color: Colors.white38))
+            const Text('No data available',
+                style: TextStyle(color: Colors.white38))
           else
             ...breakdown.entries.map((e) {
               final percentage = total > 0 ? (e.value / total) : 0.0;
@@ -356,15 +422,19 @@ class _AnalyticsView extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(e.key.replaceAll('_', ' '), style: const TextStyle(color: Colors.white70)),
-                        Text('${(percentage * 100).toStringAsFixed(1)}% (${e.value})', style: const TextStyle(color: Colors.white)),
+                        Text(e.key.replaceAll('_', ' '),
+                            style: const TextStyle(color: Colors.white70)),
+                        Text(
+                            '${(percentage * 100).toStringAsFixed(1)}% (${e.value})',
+                            style: const TextStyle(color: Colors.white)),
                       ],
                     ),
                     const SizedBox(height: 8),
                     LinearProgressIndicator(
                       value: percentage,
                       backgroundColor: const Color(0xFF222222),
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF444444)),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF444444)),
                       minHeight: 6,
                       borderRadius: BorderRadius.circular(3),
                     ),

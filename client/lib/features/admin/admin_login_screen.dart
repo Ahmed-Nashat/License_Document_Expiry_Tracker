@@ -37,7 +37,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
       );
 
       final session = ref.read(authControllerProvider).value;
-      
+
       if (session != null && session.user.role == 'ADMIN') {
         if (mounted) context.go('/admin/dashboard');
       } else {
@@ -93,7 +93,8 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                   margin: const EdgeInsets.only(bottom: 24),
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.1),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                    border:
+                        Border.all(color: Colors.red.withValues(alpha: 0.3)),
                   ),
                   child: Text(
                     _error!,
@@ -145,14 +146,18 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.black),
                       )
-                    : const Text('AUTHENTICATE', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                    : const Text('AUTHENTICATE',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, letterSpacing: 1)),
               ),
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () => context.go('/'),
-                child: const Text('Return to Consumer App', style: TextStyle(color: Color(0xFF666666))),
+                child: const Text('Return to Consumer App',
+                    style: TextStyle(color: Color(0xFF666666))),
               ),
             ],
           ),

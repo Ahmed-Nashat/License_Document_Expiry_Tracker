@@ -18,7 +18,7 @@ export async function requireAdmin(request: FastifyRequest, reply: FastifyReply)
     }
     // We attach the user to the request for subsequent handlers
     request.user = payload;
-  } catch (error) {
+  } catch {
     return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
   }
 }

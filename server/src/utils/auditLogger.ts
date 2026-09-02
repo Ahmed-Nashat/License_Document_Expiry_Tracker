@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { prisma } from '../lib/prisma.js';
 
 /**
  * Utility to write append-only audit logs to the database.
@@ -14,7 +15,7 @@ export async function createAuditLog(
   }
 ) {
   try {
-    await server.prisma.auditLog.create({
+    await prisma.auditLog.create({
       data: {
         actorId: params.actorId,
         action: params.action,

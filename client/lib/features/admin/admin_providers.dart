@@ -83,11 +83,13 @@ final adminDioProvider = Provider<Dio>((ref) {
 
 final adminSearchQueryProvider = StateProvider<String>((ref) => '');
 
-final adminUsersProvider = FutureProvider.autoDispose<List<AdminUser>>((ref) async {
+final adminUsersProvider =
+    FutureProvider.autoDispose<List<AdminUser>>((ref) async {
   final search = ref.watch(adminSearchQueryProvider);
   final client = ref.watch(adminDioProvider);
-  
-  final queryParams = search.isNotEmpty ? '?search=${Uri.encodeQueryComponent(search)}' : '';
+
+  final queryParams =
+      search.isNotEmpty ? '?search=${Uri.encodeQueryComponent(search)}' : '';
   final response = await client.get<List>('/api/admin/users$queryParams');
 
   if (response.statusCode == 200 && response.data != null) {
@@ -97,7 +99,8 @@ final adminUsersProvider = FutureProvider.autoDispose<List<AdminUser>>((ref) asy
   }
 });
 
-final adminAuditLogsProvider = FutureProvider.autoDispose<List<AuditLog>>((ref) async {
+final adminAuditLogsProvider =
+    FutureProvider.autoDispose<List<AuditLog>>((ref) async {
   final client = ref.watch(adminDioProvider);
   final response = await client.get<List>('/api/admin/audit-logs');
 
@@ -114,7 +117,7 @@ final adminRevokeSessionsProvider = Provider((ref) {
     final response = await client.post(
       '/api/admin/users/$targetUserId/sessions/revoke',
     );
-    
+
     if (response.statusCode == 200) {
       ref.invalidate(adminUsersProvider);
       ref.invalidate(adminAuditLogsProvider);
@@ -145,12 +148,14 @@ class AdminMetrics {
       ageBreakdown: Map<String, int>.from(json['ageBreakdown'] as Map),
       genderBreakdown: Map<String, int>.from(json['genderBreakdown'] as Map),
       docsTotal: json['docsTotal'] as int,
-      documentBreakdown: Map<String, int>.from(json['documentBreakdown'] as Map),
+      documentBreakdown:
+          Map<String, int>.from(json['documentBreakdown'] as Map),
     );
   }
 }
 
-final adminMetricsProvider = FutureProvider.autoDispose<AdminMetrics>((ref) async {
+final adminMetricsProvider =
+    FutureProvider.autoDispose<AdminMetrics>((ref) async {
   final client = ref.watch(adminDioProvider);
   final response = await client.get<Map<String, dynamic>>('/api/admin/metrics');
 
@@ -160,4 +165,3 @@ final adminMetricsProvider = FutureProvider.autoDispose<AdminMetrics>((ref) asyn
     throw Exception('Failed to load metrics: ${response.statusCode}');
   }
 });
-
