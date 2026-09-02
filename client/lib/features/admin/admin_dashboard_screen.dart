@@ -1504,24 +1504,31 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
               ),
               actions: [
                 TextButton(onPressed: isLoading ? null : () => Navigator.pop(ctx), child: const Text('Cancel')),
-                FilledButton(
+                FilledButton.icon(
                   onPressed: isLoading ? null : () async {
                     if (msgCtrl.text.trim().isEmpty) return;
-                  setState(() => isLoading = true);
-                  try {
-                    await actions.sendTicketMessage(ticketId, msgCtrl.text.trim());
-                    if (ctx.mounted) {
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email sent successfully.')));
+                    setState(() => isLoading = true);
+                    try {
+                      await actions.sendTicketMessage(ticketId, msgCtrl.text.trim());
+                      if (ctx.mounted) {
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email sent successfully.')));
+                      }
+                    } catch (e) {
+                      if (ctx.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                    } finally {
+                      if (ctx.mounted) setState(() => isLoading = false);
                     }
-                  } catch (e) {
-                    if (ctx.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                  } finally {
-                    if (ctx.mounted) setState(() => isLoading = false);
-                  }
-                },
-                child: isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Send Email'),
-              ),
+                  },
+                  icon: isLoading 
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.send_rounded, size: 16),
+                  label: Text(isLoading ? 'Sending...' : 'Send Email'),
+                  style: FilledButton.styleFrom(
+                    disabledBackgroundColor: isDark ? AppColors.charcoal : AppColors.gray,
+                    disabledForegroundColor: isDark ? AppColors.white : AppColors.ink,
+                  ),
+                ),
             ],
           );
         },
