@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/design_tokens.dart';
@@ -1848,15 +1848,24 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
               children: [
                 const Text('Profile', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 20),
-                TextFormField(
-                  enabled: false,
-                  initialValue: user.email,
-                  decoration: const InputDecoration(labelText: 'Email address', border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Display name', border: OutlineInputBorder()),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        enabled: false,
+                        initialValue: user.email,
+                        decoration: const InputDecoration(labelText: 'Email address', border: OutlineInputBorder()),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _nameCtrl,
+                        decoration: const InputDecoration(labelText: 'Display name', border: OutlineInputBorder()),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 FilledButton(
