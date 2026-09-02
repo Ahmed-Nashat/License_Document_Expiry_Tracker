@@ -184,10 +184,13 @@ export async function adminRoutes(app: FastifyInstance) {
     if (!user) return reply.status(404).send({ error: 'NOT_FOUND', message: 'User not found.' });
     if (user.role === role) return reply.status(200).send({ message: 'User already has this role.' });
 
-    await prisma.user.update({
-      where: { id: targetUserId },
-      data: { role },
-    });
+    await prisma.$transaction([
+      prisma.user.update({ where: { id: targetUserId }, data: { role } }),
+      prisma.userSession.updateMany({
+        where: { userId: targetUserId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      }),
+    ]);
 
     await createAuditLog(app, {
       actorId: admin.userId,
@@ -198,7 +201,7 @@ export async function adminRoutes(app: FastifyInstance) {
       requestId: request.id,
     });
 
-    return reply.status(200).send({ message: `User role updated to ${role}.` });
+    return reply.status(200).send({ message: `User role updated to ${role}; active sessions were revoked.` });
   });
 
   // POST /api/admin/users/:id/delete-workflow - Open a deletion support ticket

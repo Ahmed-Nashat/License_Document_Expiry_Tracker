@@ -5,6 +5,10 @@ dotenv.config({ path: resolve(process.cwd(), '../.env') });
 import { z } from 'zod';
 
 const booleanFromEnvironment = z.enum(['true', 'false']).default('false').transform((value) => value === 'true');
+const senderAddress = z.string().trim().min(3).max(320).refine(
+  (value) => /^[^<>\s@]+@[^<>\s@]+\.[^<>\s@]+$/.test(value) || /^[^<>\r\n]+<[^<>\s@]+@[^<>\s@]+\.[^<>\s@]+>$/.test(value),
+  'EMAIL_FROM must be an email address or a display name with an email address.',
+);
 
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'staging', 'production']).default('development'),
@@ -21,17 +25,29 @@ const schema = z.object({
   COOKIE_SECURE: booleanFromEnvironment,
   COOKIE_SAME_SITE: z.enum(['lax', 'none', 'strict']).default('lax'),
   COOKIE_DOMAIN: z.string().optional(),
-  SMTP_HOST: z.string().optional(),
-  SMTP_PORT: z.string().optional(),
-  SMTP_USER: z.string().optional(),
-  SMTP_PASS: z.string().optional(),
+  RESEND_API_KEY: z.string().min(20).optional(),
+  EMAIL_FROM: senderAddress.optional(),
+  REMINDER_CRON_SECRET: z.string().min(32).optional(),
+  REMINDER_SCHEDULER_ENABLED: booleanFromEnvironment,
 }).superRefine((value, context) => {
   if (value.NODE_ENV !== 'production') return;
 
-  for (const key of ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS'] as const) {
+  for (const key of ['RESEND_API_KEY', 'EMAIL_FROM', 'REMINDER_CRON_SECRET'] as const) {
     if (!value[key]) {
       context.addIssue({ code: z.ZodIssueCode.custom, path: [key], message: `${key} is required in production.` });
     }
+  }
+
+  const origins = value.WEB_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean);
+  if (!origins.length || origins.some((origin) => {
+    try {
+      const url = new URL(origin);
+      return url.protocol !== 'https:' || url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+    } catch {
+      return true;
+    }
+  })) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['WEB_ORIGINS'], message: 'Production WEB_ORIGINS must contain only HTTPS public origins.' });
   }
 });
 

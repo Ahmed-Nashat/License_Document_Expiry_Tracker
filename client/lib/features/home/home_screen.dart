@@ -233,7 +233,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 child: TextFormField(
                                   controller: _searchController,
                                   onChanged: (val) => ref
-                                      .read(documentSearchQueryProvider.notifier)
+                                      .read(
+                                          documentSearchQueryProvider.notifier)
                                       .state = val,
                                   style: TextStyle(
                                       fontSize: 14,
@@ -241,22 +242,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                           ? AppColors.inkDark
                                           : AppColors.ink),
                                   decoration: InputDecoration(
-                                    hintText: isMobile ? 'Search...' : 'Search documents, providers…',
+                                    hintText: isMobile
+                                        ? 'Search...'
+                                        : 'Search documents, providers…',
                                     prefixIcon: Icon(Icons.search_rounded,
                                         color: AppColors.gray),
-                                    suffixIcon: _searchController.text.isNotEmpty
-                                        ? IconButton(
-                                            icon: Icon(Icons.clear_rounded,
-                                                size: 16, color: AppColors.gray),
-                                            onPressed: () {
-                                              _searchController.clear();
-                                              ref
-                                                  .read(documentSearchQueryProvider
-                                                      .notifier)
-                                                  .state = '';
-                                            },
-                                          )
-                                        : null,
+                                    suffixIcon:
+                                        _searchController.text.isNotEmpty
+                                            ? IconButton(
+                                                icon: Icon(Icons.clear_rounded,
+                                                    size: 16,
+                                                    color: AppColors.gray),
+                                                onPressed: () {
+                                                  _searchController.clear();
+                                                  ref
+                                                      .read(
+                                                          documentSearchQueryProvider
+                                                              .notifier)
+                                                      .state = '';
+                                                },
+                                              )
+                                            : null,
                                     contentPadding: const EdgeInsets.symmetric(
                                         vertical: 12, horizontal: 16),
                                   ),
@@ -268,11 +274,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                   width: 48,
                                   height: 48,
                                   child: FilledButton(
-                                    onPressed: () => showDocumentDialog(context),
+                                    onPressed: () =>
+                                        showDocumentDialog(context),
                                     style: FilledButton.styleFrom(
                                       padding: EdgeInsets.zero,
                                     ),
-                                    child: const Icon(Icons.add_rounded, size: 20),
+                                    child:
+                                        const Icon(Icons.add_rounded, size: 20),
                                   ),
                                 )
                               else
@@ -1111,7 +1119,7 @@ Future<void> _showSupportDialog(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DropdownButtonFormField<String>(
-                  value: category,
+                  initialValue: category,
                   decoration: const InputDecoration(
                       labelText: 'Category', border: OutlineInputBorder()),
                   items: const [

@@ -17,6 +17,7 @@ const mockPrisma = {
   passwordReset: {
     upsert: vi.fn().mockResolvedValue({}),
     findUnique: vi.fn(),
+    update: vi.fn().mockResolvedValue({}),
     delete: vi.fn().mockResolvedValue({}),
   },
 };
@@ -108,6 +109,7 @@ describe('password reset endpoints', async () => {
     mockPrisma.passwordReset.findUnique.mockResolvedValue({
       userId: 'user-1',
       codeHash,
+      attemptCount: 0,
       expiresAt: new Date(Date.now() + 60_000),
     });
 
@@ -172,9 +174,32 @@ describe('password reset endpoints', async () => {
     });
 
     expect(response.statusCode).toBe(200);
+    expect(verifyPassword).toHaveBeenCalledWith('a-secure-password', 'password-hash');
     expect(mockPrisma.userSession.updateMany).toHaveBeenCalledWith({
       where: { userId: 'user-1', revokedAt: null },
       data: { revokedAt: expect.any(Date) },
+    });
+  });
+
+  it('counts invalid reset-code attempts without disclosing whether the account exists', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-1', email: 'person@example.com' });
+    mockPrisma.passwordReset.findUnique.mockResolvedValue({
+      userId: 'user-1',
+      codeHash: 'wrong-hash',
+      attemptCount: 0,
+      expiresAt: new Date(Date.now() + 60_000),
+    });
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/auth/reset-password',
+      payload: { email: 'person@example.com', code: '123456', newPassword: 'a-new-secure-password' },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(mockPrisma.passwordReset.update).toHaveBeenCalledWith({
+      where: { userId: 'user-1' },
+      data: { attemptCount: { increment: 1 } },
     });
   });
 });

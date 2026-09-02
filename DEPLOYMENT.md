@@ -1,52 +1,42 @@
-# Deployment guide
+# Free demo deployment: Vercel, Render, and Neon
 
-This repository deploys the API, PostgreSQL database, and Flutter Web client as separate services. It includes authentication, document tracking, email reminders, and the supporting production safeguards described below.
+This setup is designed for a protected public demo with no paid infrastructure. It uses Vercel for Flutter Web, Render Free for the API, Neon Free for PostgreSQL, and an HTTPS email provider for password resets and reminders.
 
-## Required production services
+## Before deploying
 
-- Managed PostgreSQL 16 or later, with automated backups and TLS enabled.
-- A container runtime or managed container host for `server/Dockerfile`.
-- Static hosting or a container host for `client/Dockerfile`.
-- A secrets manager for all environment variables.
-- A transactional email provider for password-reset and reminder emails.
+1. Create a Neon project and copy its **pooled** PostgreSQL connection string into `DATABASE_URL`. Keep it secret and do not add it to a repository file.
+2. Create an HTTPS email-provider account (the app uses Resend's API) and verify a sender address. Set `RESEND_API_KEY` and `EMAIL_FROM`.
+3. Generate three different random values of at least 32 characters for `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, and `REMINDER_CRON_SECRET`.
 
-## Environment setup
+## Render API
 
-1. Copy `.env.example` to `.env`; never commit it.
-2. Use distinct, random `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` values of at least 32 characters.
-3. Set `NODE_ENV=production`, a real `COOKIE_DOMAIN` where needed, and only the permitted HTTPS address in `WEB_ORIGINS`. Secure cookies and `SameSite=None` are enforced automatically in production so a Vercel web app can use the Render API.
-4. Configure the managed PostgreSQL URL in `DATABASE_URL`.
-5. Apply migrations as a release step using `npm run prisma:migrate`; the Render Blueprint runs this before each paid-service deployment.
-6. Set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, and `SMTP_PASS` for the transactional email provider.
-7. Build the web image with the public HTTPS API address: `docker build --build-arg API_BASE_URL=https://api.example.com -t deunest-web client`.
+1. Create a Render Blueprint from `render.yaml`. The service is configured as a free Docker web service and does not provision a Render database.
+2. Set these Render values: `DATABASE_URL` (Neon pooled URL), `WEB_ORIGINS` (the exact Vercel HTTPS URL), `RESEND_API_KEY`, `EMAIL_FROM`, and `REMINDER_CRON_SECRET`. Leave `REMINDER_SCHEDULER_ENABLED=false`.
+3. The container applies Prisma migrations when it starts. Migrations must remain backward-compatible because the free service can restart.
 
-## Vercel and Render release setup
+## Vercel web app
 
-1. In Render, create a Blueprint from `render.yaml`. It provisions the API and PostgreSQL in Frankfurt, runs migrations in Render's pre-deploy phase, and creates the JWT secrets.
-2. In the Render API service, set `WEB_ORIGINS` to the exact Vercel production URL (for example, `https://your-app.vercel.app`) and add the SMTP credentials. For the most reliable sign-in experience, use related custom domains such as `app.example.com` on Vercel and `api.example.com` on Render. Do not set `COOKIE_DOMAIN` unless you intentionally need a shared cookie domain.
-3. In Vercel, import the repository and set `API_BASE_URL` to the public HTTPS Render API URL. The build fails immediately if it is missing.
-4. Redeploy the Render API after setting `WEB_ORIGINS`, then deploy Vercel. Verify sign-in, page refresh, sign-out, password reset, and `/health/ready` using a staging account.
+1. Import the repository into Vercel and set the **Root Directory** to `client`.
+2. Add `API_BASE_URL` with the public HTTPS Render API URL, then deploy.
+3. Update Render's `WEB_ORIGINS` if Vercel gives the project a different production URL, then redeploy Render.
 
-## Local container smoke test
+The API uses a secure HTTP-only refresh cookie. The most reliable setup is same-site subdomains such as `app.example.com` and `api.example.com`. Without a custom domain, configure a Vercel dashboard rewrite from `/api/(.*)` to `https://your-api.onrender.com/api/$1` and use the Vercel URL as `API_BASE_URL`; this keeps browser API calls same-origin. Never move refresh tokens to local storage as a workaround.
 
-Docker Desktop's command-line executable is installed at `C:\Program Files\Docker\Docker\resources\bin\docker.exe` on this machine. After adding a local `.env` with a strong database password and auth secrets, run:
+## Free-tier reminder trigger
 
-```powershell
-& 'C:\Program Files\Docker\Docker\resources\bin\docker.exe' compose up --build
-```
+Render Free services can sleep when idle, so the built-in scheduler remains disabled. The repository includes `.github/workflows/reminder-cron.yml`, which calls the protected endpoint hourly. Add these GitHub repository secrets:
 
-Then check:
+- `REMINDER_CRON_URL`: `https://your-api.onrender.com/api/internal/reminders/run`
+- `REMINDER_CRON_SECRET`: exactly the same value configured in Render.
 
-```powershell
-Invoke-WebRequest http://localhost:3000/health/live
-Invoke-WebRequest http://localhost:3000/health/ready
-```
+The workflow is suitable for a demo; free hosting and scheduled workflows are not a precise, always-on job system. Reminder delivery is best-effort. Use a dedicated scheduler/worker before relying on reminders operationally.
 
-## Release safeguards
+## Final public checks
 
-- Run CI on every pull request; it builds and tests both deployable artifacts.
-- Use rolling releases with backward-compatible database migrations.
-- Add uptime monitoring against `/health/live` and alert on failures.
-- Restrict CORS to the deployed web origins.
-- Keep logs free of session cookies, authorization headers, passwords, document numbers, and OAuth tokens.
-- Before public release, verify a password reset email and a reminder email using a staging account. The deployment must set `API_BASE_URL`; Vercel builds fail fast when it is absent.
+1. Open the deployed Vercel site and register a test account.
+2. Refresh the page, sign out, and sign back in.
+3. Complete a password-reset email flow.
+4. Create a document and confirm a reminder is queued after manually running the GitHub workflow.
+5. Visit `https://your-api.onrender.com/health/live`; it should report `ok`.
+
+Do not publish any secret in Vercel variables, Render variables, screenshots, PR descriptions, or commits.

@@ -5,17 +5,18 @@ import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import Fastify from 'fastify';
 import { ZodError } from 'zod';
+import { timingSafeEqual } from 'node:crypto';
 import { env } from './config/env.js';
 import { prisma } from './lib/prisma.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { documentRoutes } from './modules/documents/routes.js';
 import { adminRoutes } from './modules/admin/routes.js';
 import { supportRoutes } from './modules/support/routes.js';
-import { startReminderEngine } from './modules/reminders/engine.js';
+import { runReminderCycle, startReminderEngine } from './modules/reminders/engine.js';
 
 export function buildApp() {
   // Start background engine
-  if (env.NODE_ENV !== 'test') {
+  if (env.NODE_ENV !== 'test' && env.REMINDER_SCHEDULER_ENABLED) {
     startReminderEngine();
   }
 
@@ -49,6 +50,16 @@ export function buildApp() {
     } catch {
       return reply.status(503).send({ status: 'unavailable', database: 'unavailable' });
     }
+  });
+
+  app.post('/api/internal/reminders/run', async (request, reply) => {
+    const supplied = request.headers['x-reminder-cron-secret'];
+    const expected = env.REMINDER_CRON_SECRET;
+    if (typeof supplied !== 'string' || !expected || supplied.length !== expected.length || !timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))) {
+      return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Invalid scheduler credentials.' });
+    }
+    await runReminderCycle();
+    return reply.status(202).send({ message: 'Reminder cycle completed.' });
   });
 
   app.register(authRoutes);

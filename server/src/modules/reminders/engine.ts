@@ -202,11 +202,15 @@ async function dispatchReminders() {
   }
 }
 
+export async function runReminderCycle() {
+  await generateReminders();
+  await dispatchReminders();
+}
+
 export function startReminderEngine() {
   cron.schedule('0 * * * *', async () => {
     try {
-      await generateReminders();
-      await dispatchReminders();
+      await runReminderCycle();
     } catch (error) {
       console.error('[Reminder Engine] Scheduled run failed:', error);
     }

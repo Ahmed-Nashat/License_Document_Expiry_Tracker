@@ -885,7 +885,9 @@ class _UserDetailPanel extends ConsumerWidget {
                               await actions.changeUserRole(user.id, newRole);
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Role changed to \$newRole')));
+                                    SnackBar(
+                                        content:
+                                            Text('Role changed to \$newRole')));
                               }
                             } catch (e) {
                               if (context.mounted) {
@@ -896,8 +898,11 @@ class _UserDetailPanel extends ConsumerWidget {
                           },
                         );
                       },
-                      icon: const Icon(Icons.admin_panel_settings_rounded, size: 14),
-                      label: Text(user.role == 'ADMIN' ? 'Revoke Admin Access' : 'Make Admin'),
+                      icon: const Icon(Icons.admin_panel_settings_rounded,
+                          size: 14),
+                      label: Text(user.role == 'ADMIN'
+                          ? 'Revoke Admin Access'
+                          : 'Make Admin'),
                     ),
                   ),
                   const SizedBox(height: 8),

@@ -36,6 +36,8 @@ const hashesMatch = (left: string, right: string) => {
   const rightValue = Buffer.from(right);
   return leftValue.length === rightValue.length && timingSafeEqual(leftValue, rightValue);
 };
+const hasAllowedCookieOrigin = (origin: string | undefined) =>
+  env.NODE_ENV === 'test' || Boolean(origin && env.webOrigins.includes(origin));
 const publicUser = (user: { id: string; email: string; displayName: string | null; role: string; ageRange: string | null; gender: string | null }) => ({ id: user.id, email: user.email, displayName: user.displayName, role: user.role, ageRange: user.ageRange, gender: user.gender });
 
 async function createSession(app: FastifyInstance, userId: string, deviceName?: string) {
@@ -83,6 +85,9 @@ export async function authRoutes(app: FastifyInstance) {
   });
 
   app.post('/api/auth/refresh', async (request, reply) => {
+    if (!hasAllowedCookieOrigin(request.headers.origin)) {
+      return reply.status(403).send({ error: 'FORBIDDEN_ORIGIN', message: 'Request origin is not allowed.' });
+    }
     const rawToken = request.cookies[cookieName];
     if (!rawToken) return reply.status(401).send({ error: 'SESSION_EXPIRED', message: 'Please sign in again.' });
     const session = await prisma.userSession.findUnique({
@@ -99,6 +104,9 @@ export async function authRoutes(app: FastifyInstance) {
     return { accessToken: issue(session.userId, session.user.role, session.id), user: publicUser(session.user) };
   });
   app.post('/api/auth/logout', async (request, reply) => {
+    if (!hasAllowedCookieOrigin(request.headers.origin)) {
+      return reply.status(403).send({ error: 'FORBIDDEN_ORIGIN', message: 'Request origin is not allowed.' });
+    }
     const rawToken = request.cookies[cookieName];
     if (rawToken) await prisma.userSession.updateMany({ where: { refreshTokenHash: refreshHash(rawToken), revokedAt: null }, data: { revokedAt: new Date() } });
     reply.clearCookie(cookieName, cookieOptions);
@@ -118,8 +126,8 @@ export async function authRoutes(app: FastifyInstance) {
     if (user) {
       await prisma.passwordReset.upsert({
         where: { userId: user.id },
-        create: { userId: user.id, codeHash: passwordResetHash(email, code), expiresAt: passwordResetExpiry() },
-        update: { codeHash: passwordResetHash(email, code), expiresAt: passwordResetExpiry() },
+        create: { userId: user.id, codeHash: passwordResetHash(email, code), attemptCount: 0, expiresAt: passwordResetExpiry() },
+        update: { codeHash: passwordResetHash(email, code), attemptCount: 0, expiresAt: passwordResetExpiry() },
       });
       try {
         await sendEmail({
@@ -152,7 +160,11 @@ export async function authRoutes(app: FastifyInstance) {
     const reset = user
       ? await prisma.passwordReset.findUnique({ where: { userId: user.id } })
       : null;
-    if (!user || !reset || reset.expiresAt <= new Date() || !hashesMatch(reset.codeHash, passwordResetHash(input.email, input.code))) {
+    const validCode = Boolean(user && reset && reset.expiresAt > new Date() && reset.attemptCount < 5 && hashesMatch(reset.codeHash, passwordResetHash(input.email, input.code)));
+    if (!validCode || !user) {
+      if (user && reset && reset.expiresAt > new Date() && reset.attemptCount < 5) {
+        await prisma.passwordReset.update({ where: { userId: user.id }, data: { attemptCount: { increment: 1 } } });
+      }
       return reply.status(400).send({ error: 'INVALID_CODE', message: 'The reset code is invalid or has expired.' });
     }
 
@@ -202,7 +214,7 @@ export async function authRoutes(app: FastifyInstance) {
     const userId = (request.user as JwtPayload).userId;
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user || !(await verifyPassword(user.passwordHash, input.currentPassword))) {
+    if (!user || !(await verifyPassword(input.currentPassword, user.passwordHash))) {
       return reply.status(400).send({ error: 'INVALID_CREDENTIALS', message: 'Current password is incorrect.' });
     }
 
