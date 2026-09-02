@@ -337,6 +337,18 @@ class _OverviewTab extends ConsumerWidget {
                       ),
                     ]),
                   ),
+                  const SizedBox(height: 24),
+                  const Text('System Health', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.gray, letterSpacing: 0.5)),
+                  const SizedBox(height: 12),
+                  ref.watch(adminHealthProvider).when(
+                    loading: () => const CircularProgressIndicator(),
+                    error: (e, _) => Text('Health check failed: $e', style: const TextStyle(color: Colors.redAccent)),
+                    data: (h) => Wrap(spacing: 12, runSpacing: 12, children: [
+                      _StatCard(label: 'API Server', value: h['status'] == 'ok' ? 'ONLINE' : 'DOWN', icon: Icons.api_rounded, color: h['status'] == 'ok' ? Colors.greenAccent.shade400 : Colors.redAccent),
+                      _StatCard(label: 'Database', value: h['database'] == 'ok' ? 'CONNECTED' : 'DOWN', icon: Icons.storage_rounded, color: h['database'] == 'ok' ? Colors.greenAccent.shade400 : Colors.redAccent),
+                      _StatCard(label: 'Version', value: h['version'] ?? 'Unknown', icon: Icons.verified_rounded),
+                    ]),
+                  ),
                 ],
               ),
             ),
@@ -570,6 +582,21 @@ class _UserDetailPanel extends ConsumerWidget {
                       onPressed: () => confirm('Force Sign Out', 'Revoke all active sessions for ${user.email}?', () => actions.revokeUserSessions(user.id)),
                       icon: const Icon(Icons.logout_rounded, size: 14),
                       label: const Text('Force Sign Out'),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => confirm('Start Deletion Workflow', 'Open a privacy deletion ticket for ${user.email}?', () async {
+                        await actions.startDeletionWorkflow(user.id);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deletion ticket created')));
+                        }
+                      }),
+                      icon: const Icon(Icons.delete_forever_rounded, size: 14),
+                      style: OutlinedButton.styleFrom(foregroundColor: Colors.redAccent),
+                      label: const Text('Start Deletion Workflow'),
                     ),
                   ),
                 ],

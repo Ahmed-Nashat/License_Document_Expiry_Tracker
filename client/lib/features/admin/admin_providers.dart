@@ -1,4 +1,4 @@
-﻿import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../auth/api_client_platform.dart';
 import '../auth/auth_controller.dart';
@@ -556,4 +556,15 @@ class AdminActions {
     _ref.invalidate(adminSystemConfigProvider);
     _ref.invalidate(adminAuditLogsProvider);
   }
+
+  Future<void> startDeletionWorkflow(String userId) async {
+    await _client.post('/api/admin/users/$userId/delete-workflow');
+    _ref.invalidate(adminSupportTicketsProvider);
+    _ref.invalidate(adminAuditLogsProvider);
+  }
 }
+final adminHealthProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
+  final client = ref.watch(adminDioProvider);
+  final response = await client.get<Map<String, dynamic>>('/health/ready');
+  return response.data!;
+});

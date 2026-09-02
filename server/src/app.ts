@@ -10,6 +10,7 @@ import { prisma } from './lib/prisma.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { documentRoutes } from './modules/documents/routes.js';
 import { adminRoutes } from './modules/admin/routes.js';
+import { supportRoutes } from './modules/support/routes.js';
 import { startReminderEngine } from './modules/reminders/engine.js';
 
 export function buildApp() {
@@ -52,8 +53,7 @@ export function buildApp() {
   app.register(authRoutes);
   app.register(documentRoutes);
   app.register(adminRoutes);
-
-
+  app.register(supportRoutes);
   app.setErrorHandler((error, request, reply) => {
     if (error instanceof ZodError) {
       return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Request validation failed', details: error.flatten() });
