@@ -53,6 +53,7 @@ model User {
   sessions                  UserSession[]
   documents                 Document[]
   notifications             NotificationLog[]
+  passwordReset             PasswordReset?
   createdAt                 DateTime      @default(now())
   updatedAt                 DateTime      @updatedAt
 }
@@ -147,4 +148,13 @@ model NotificationLog {
   @@unique([documentId, daysBefore, targetExpiryDate])
   @@index([status, retryCount])
   @@index([userId])
+}
+model PasswordReset {
+  userId    String   @id
+  codeHash  String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
 }

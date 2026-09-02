@@ -8,6 +8,9 @@ export async function getMailer() {
 
   // For development, we'll use Ethereal Email which intercepts emails and provides a preview URL
   if (env.NODE_ENV === 'production') {
+    if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS) {
+      throw new Error('SMTP_HOST, SMTP_USER, and SMTP_PASS are required in production.');
+    }
     transporter = nodemailer.createTransport({
       host: env.SMTP_HOST,
       port: env.SMTP_PORT ? parseInt(env.SMTP_PORT) : 587,

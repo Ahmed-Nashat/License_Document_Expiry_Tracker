@@ -8,6 +8,7 @@ import '../../shared/design_tokens.dart';
 import '../../shared/glass.dart';
 import '../../shared/glass_dropdown.dart';
 import '../../shared/theme_mode.dart';
+import '../legal/legal_screen.dart';
 import 'auth_api.dart';
 import 'auth_controller.dart';
 
@@ -727,6 +728,44 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                     fontSize: 12,
                     height: 1.45,
                     color: isDark ? AppColors.charcoalDark : AppColors.gray),
+              ),
+              const SizedBox(height: 16),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          const LegalScreen(),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(
+                          opacity: CurveTween(curve: Curves.easeOut)
+                              .animate(animation),
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0, 0.05),
+                              end: Offset.zero,
+                            ).animate(CurvedAnimation(
+                                parent: animation, curve: Curves.easeOutCubic)),
+                            child: child,
+                          ),
+                        );
+                      },
+                      transitionDuration: const Duration(milliseconds: 300),
+                      reverseTransitionDuration:
+                          const Duration(milliseconds: 250),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Privacy Policy & Terms',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    decoration: TextDecoration.underline,
+                    color: isDark ? AppColors.charcoalDark : AppColors.gray,
+                  ),
+                ),
               ),
             ],
           ),
