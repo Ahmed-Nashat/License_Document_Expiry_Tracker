@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/design_tokens.dart';
@@ -1499,7 +1499,7 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email sent successfully.')));
                     }
                   } catch (e) {
-                    if (ctx.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: \')));
+                    if (ctx.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
                   } finally {
                     if (ctx.mounted) setState(() => isLoading = false);
                   }
