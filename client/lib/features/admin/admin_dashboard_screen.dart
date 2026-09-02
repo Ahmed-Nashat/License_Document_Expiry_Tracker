@@ -1617,8 +1617,9 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
                   TextField(
                       controller: _notesCtrl,
                       maxLines: 5,
+                      enabled: widget.ticket.status != 'RESOLVED',
                       decoration: const InputDecoration(
-                          hintText: 'Add internal notesÃ¢â‚¬Â¦')),
+                          hintText: 'Add internal notes...')),
                   const SizedBox(height: 16),
                   const Text('Actions',
                       style: TextStyle(fontSize: 12, color: AppColors.gray)),
@@ -1628,12 +1629,12 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
                       runSpacing: 8,
                       children: [
                         FilledButton.icon(
-                          onPressed: () => _showEmailDialog(context, widget.ticket.id, actions),
+                          onPressed: widget.ticket.status == 'RESOLVED' ? null : () => _showEmailDialog(context, widget.ticket.id, actions),
                           icon: const Icon(Icons.mail_outline_rounded, size: 16),
                           label: const Text('Send Email to Requester'),
                         ),
                         OutlinedButton.icon(
-                          onPressed: () async {
+                          onPressed: widget.ticket.status == 'RESOLVED' ? null : () async {
                             try {
                               await actions.updateTicket(widget.ticket.id, notes: _notesCtrl.text.trim());
                               if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notes saved.')));
@@ -1652,20 +1653,40 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
                   Wrap(
                       spacing: 8,
                       children: ['OPEN', 'IN_PROGRESS', 'RESOLVED']
-                          .map((s) => OutlinedButton(
-                                onPressed: () async {
-                                  try {
-                                    await actions.updateTicket(
-                                        widget.ticket.id,
-                                        status: s,
-                                        notes: _notesCtrl.text.trim());
-                                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Status updated to $s')));
-                                  } catch (e) {
-                                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                                  }
-                                },
-                                child: Text(s.replaceAll('_', ' ')),
-                              ))
+                          .map((s) {
+                            final isActive = widget.ticket.status == s;
+                            final isResolved = widget.ticket.status == 'RESOLVED';
+                            
+                            final onPressed = (isActive || isResolved) ? null : () async {
+                              try {
+                                await actions.updateTicket(
+                                    widget.ticket.id,
+                                    status: s,
+                                    notes: _notesCtrl.text.trim());
+                                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Status updated to $s')));
+                              } catch (e) {
+                                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                              }
+                            };
+
+                            final child = Text(s.replaceAll('_', ' '));
+
+                            if (isActive) {
+                              return FilledButton.tonal(
+                                onPressed: onPressed,
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: isDark ? AppColors.charcoal : AppColors.fog,
+                                  foregroundColor: isDark ? AppColors.inkDark : AppColors.ink,
+                                ),
+                                child: child,
+                              );
+                            }
+
+                            return OutlinedButton(
+                              onPressed: onPressed,
+                              child: child,
+                            );
+                          })
                           .toList()),
                 ],
               ),
