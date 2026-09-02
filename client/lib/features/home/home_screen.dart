@@ -1039,7 +1039,7 @@ Future<void> _showSupportDialog(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DropdownButtonFormField<String>(
-                  initialValue: category,
+                  value: category,
                   decoration: const InputDecoration(
                       labelText: 'Category', border: OutlineInputBorder()),
                   items: const [
@@ -1107,7 +1107,9 @@ Future<void> _showSupportDialog(
                           ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('Error: $e')));
                       } finally {
-                        if (ctx.mounted) setState(() => isLoading = false);
+                        if (ctx.mounted) {
+                          setState(() => isLoading = false);
+                        }
                       }
                     },
               child: isLoading

@@ -58,9 +58,6 @@ class _TabHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final session = ref.watch(authControllerProvider).value;
-    if (session?.user.role != 'ADMIN') return const AdminLoginScreen();
-
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(32, 32, 32, 0),
@@ -238,6 +235,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(authControllerProvider).value;
+    if (session?.user.role != 'ADMIN') return const AdminLoginScreen();
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final sidebarBg = isDark ? const Color(0xFF0F0F0D) : AppColors.ink;
 
@@ -726,8 +726,9 @@ class _UserDetailPanel extends ConsumerWidget {
           ],
         ),
       );
-      if (ok == true && ctrl.text.trim().length >= 5)
+      if (ok == true && ctrl.text.trim().length >= 5) {
         await actions.suspendUser(user.id, ctrl.text.trim());
+      }
     }
 
     Future<void> confirm(

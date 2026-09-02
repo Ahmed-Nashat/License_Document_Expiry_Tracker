@@ -477,8 +477,9 @@ final adminAuditLogsProvider =
     'page': filter.page.toString(),
     'limit': '50'
   };
-  if (filter.action != null && filter.action!.isNotEmpty)
+  if (filter.action != null && filter.action!.isNotEmpty) {
     params['action'] = filter.action!;
+  }
   if (filter.result != null) params['result'] = filter.result!;
   final response = await client.get<Map<String, dynamic>>(
       '/api/admin/audit-logs',
