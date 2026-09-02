@@ -31,10 +31,11 @@ class LegalScreen extends StatelessWidget {
       ),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
+          constraints: const BoxConstraints(maxWidth: 900),
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(40),
               decoration: BoxDecoration(
                 color: cardColor,
