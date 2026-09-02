@@ -1,4 +1,4 @@
-class DeuNestUser {
+﻿class DeuNestUser {
   const DeuNestUser(
       {required this.id,
       required this.email,
@@ -25,7 +25,22 @@ class DeuNestUser {
 }
 
 class AuthSession {
-  const AuthSession({required this.accessToken, required this.user});
+  const AuthSession({required this.user, required this.accessToken});
+  final AuthUser user;
+  final String accessToken;
+
+  factory AuthSession.fromJson(Map<String, dynamic> json) => AuthSession(
+        user: AuthUser.fromJson(json['user'] as Map<String, dynamic>),
+        accessToken: json['accessToken'] as String,
+      );
+
+  AuthSession copyWith({AuthUser? user, String? accessToken}) {
+    return AuthSession(
+      user: user ?? this.user,
+      accessToken: accessToken ?? this.accessToken,
+    );
+  }
+});
 
   final String accessToken;
   final DeuNestUser user;
@@ -35,3 +50,4 @@ class AuthSession {
         user: DeuNestUser.fromJson(json['user'] as Map<String, dynamic>),
       );
 }
+

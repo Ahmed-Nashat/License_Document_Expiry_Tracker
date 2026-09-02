@@ -41,4 +41,15 @@ class AuthController extends AsyncNotifier<AuthSession?> {
       state = const AsyncData(null);
     }
   }
+
+  Future<void> updateProfile(String displayName) async {
+    final updatedUser = await ref.read(authApiProvider).updateProfile(displayName);
+    if (state.value != null) {
+      state = AsyncData(state.value!.copyWith(user: updatedUser));
+    }
+  }
+
+  Future<void> updatePassword(String currentPassword, String newPassword) async {
+    await ref.read(authApiProvider).updatePassword(currentPassword, newPassword);
+  }
 }

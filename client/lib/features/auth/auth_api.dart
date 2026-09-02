@@ -86,6 +86,32 @@ class AuthApi {
     }
   }
 
+  Future<AuthUser> updateProfile(String displayName) async {
+    try {
+      final response = await _dio.patch<Map<String, dynamic>>(
+        '/api/auth/profile',
+        data: {'displayName': displayName},
+      );
+      return AuthUser.fromJson(response.data!);
+    } on DioException catch (error) {
+      throw AuthException.fromDio(error);
+    }
+  }
+
+  Future<void> updatePassword(String currentPassword, String newPassword) async {
+    try {
+      await _dio.patch<Map<String, dynamic>>(
+        '/api/auth/password',
+        data: {
+          'currentPassword': currentPassword,
+          'newPassword': newPassword,
+        },
+      );
+    } on DioException catch (error) {
+      throw AuthException.fromDio(error);
+    }
+  }
+
   Future<AuthSession> _submit(String path, Map<String, dynamic> body) async {
     try {
       final response = await _dio.post<Map<String, dynamic>>(path, data: body);

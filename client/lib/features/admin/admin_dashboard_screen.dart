@@ -219,6 +219,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     (icon: Icons.shield_rounded, label: 'Security'),
     (icon: Icons.support_agent_rounded, label: 'Support'),
     (icon: Icons.settings_rounded, label: 'System'),
+    (icon: Icons.account_circle_rounded, label: 'My Account'),
   ];
 
   void _refresh() {
@@ -364,6 +365,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       4 => const _SecurityTab(key: ValueKey('security')),
       5 => const _SupportTab(key: ValueKey('support')),
       6 => const _SystemTab(key: ValueKey('system')),
+      7 => const _MyAccountTab(key: ValueKey('account')),
       _ => const SizedBox.shrink(),
     };
   }
@@ -1695,6 +1697,135 @@ class _ConfigTile extends ConsumerWidget {
                 onPressed: edit),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─── Tab 7: My Account ──────────────────────────────────────────────────────────
+
+class _MyAccountTab extends ConsumerStatefulWidget {
+  const _MyAccountTab({super.key});
+  @override
+  ConsumerState<_MyAccountTab> createState() => _MyAccountTabState();
+}
+
+class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
+  final _nameCtrl = TextEditingController();
+  final _curPassCtrl = TextEditingController();
+  final _newPassCtrl = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = ref.read(authControllerProvider).value?.user;
+    if (user != null) {
+      _nameCtrl.text = user.displayName;
+    }
+  }
+
+  Future<void> _updateProfile() async {
+    final name = _nameCtrl.text.trim();
+    if (name.isEmpty) return;
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authControllerProvider.notifier).updateProfile(name);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated.')));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: \')));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _updatePassword() async {
+    final cur = _curPassCtrl.text;
+    final newP = _newPassCtrl.text;
+    if (cur.isEmpty || newP.length < 12) {
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter current password and new password (min 12 chars).')));
+       return;
+    }
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authControllerProvider.notifier).updatePassword(cur, newP);
+      if (mounted) {
+        _curPassCtrl.clear();
+        _newPassCtrl.clear();
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password updated successfully.')));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: \')));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = ref.watch(authControllerProvider).value?.user;
+    if (user == null) return const SizedBox.shrink();
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _TabHeader(title: 'My Account', subtitle: 'Manage your admin profile and security'),
+          const SizedBox(height: 32),
+          _SectionCard(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Profile', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 20),
+                TextFormField(
+                  enabled: false,
+                  initialValue: user.email,
+                  decoration: const InputDecoration(labelText: 'Email address', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _nameCtrl,
+                  decoration: const InputDecoration(labelText: 'Display name', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: _isLoading ? null : _updateProfile,
+                  child: const Text('Save Profile'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          _SectionCard(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Change Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _curPassCtrl,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'Current password', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _newPassCtrl,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'New password', helperText: 'At least 12 characters.', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: _isLoading ? null : _updatePassword,
+                  child: const Text('Update Password'),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
