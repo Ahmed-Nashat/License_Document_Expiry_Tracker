@@ -1444,13 +1444,28 @@ class _SupportTabState extends ConsumerState<_SupportTab> {
             ],
           ),
         ),
-        if (_selected != null)
-          SizedBox(
-            width: 360,
-            child: _TicketDetailPanel(
-                ticket: ticketsAsync.value?.tickets.where((t) => t.id == _selected!.id).firstOrNull ?? _selected!,
-                onClose: () => setState(() => _selected = null)),
-          ),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 350),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (child, animation) {
+            return SizeTransition(
+              sizeFactor: animation,
+              axis: Axis.horizontal,
+              axisAlignment: 1.0,
+              child: child,
+            );
+          },
+          child: _selected == null
+              ? const SizedBox.shrink(key: ValueKey('empty'))
+              : SizedBox(
+                  key: ValueKey(_selected!.id),
+                  width: 360,
+                  child: _TicketDetailPanel(
+                      ticket: ticketsAsync.value?.tickets.where((t) => t.id == _selected!.id).firstOrNull ?? _selected!,
+                      onClose: () => setState(() => _selected = null)),
+                ),
+        ),
       ],
     ).animate().fadeIn(duration: 300.ms);
   }
