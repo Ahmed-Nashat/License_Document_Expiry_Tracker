@@ -82,8 +82,8 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
             gender: _selectedGender,
           );
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Profile updated successfully.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile updated successfully.')));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -98,13 +98,13 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
     final newPass = _newPassCtrl.text;
 
     if (current.isEmpty || newPass.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please fill in both password fields.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Please fill in both password fields.')));
       return;
     }
     if (newPass.length < 12) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('New password must be at least 12 characters.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('New password must be at least 12 characters.')));
       return;
     }
 
@@ -129,7 +129,7 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return AlertDialog(
       backgroundColor: isDark ? AppColors.surfaceDark : AppColors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -195,7 +195,8 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
                             initialValue: _selectedAgeRange,
                             labelText: 'Age Range',
                             items: _ageRanges,
-                            onChanged: (val) => setState(() => _selectedAgeRange = val),
+                            onChanged: (val) =>
+                                setState(() => _selectedAgeRange = val),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -204,7 +205,8 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
                             initialValue: _selectedGender,
                             labelText: 'Gender',
                             items: _genders,
-                            onChanged: (val) => setState(() => _selectedGender = val),
+                            onChanged: (val) =>
+                                setState(() => _selectedGender = val),
                           ),
                         ),
                       ],
@@ -218,7 +220,8 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
                             ? const SizedBox(
                                 width: 16,
                                 height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2))
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2))
                             : const Text('Save Profile'),
                       ),
                     ),
@@ -266,7 +269,8 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
                             ? const SizedBox(
                                 width: 16,
                                 height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2))
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2))
                             : const Text('Update Password'),
                       ),
                     ),
@@ -284,7 +288,8 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
                       Navigator.of(context).pop();
                       await ref.read(authControllerProvider.notifier).signOut();
                     },
-                    icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+                    icon: const Icon(Icons.logout_rounded,
+                        color: Colors.redAccent),
                     label: const Text('Sign Out',
                         style: TextStyle(color: Colors.redAccent)),
                   ),

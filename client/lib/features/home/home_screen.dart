@@ -198,15 +198,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               borderRadius: BorderRadius.circular(20),
                               onTap: () => showDialog(
                                 context: context,
-                                builder: (context) => UserProfileDialog(user: widget.session.user),
+                                builder: (context) => UserProfileDialog(
+                                    user: widget.session.user),
                               ),
                               child: CircleAvatar(
                                 radius: 18,
-                                backgroundColor: isDark ? AppColors.charcoal : AppColors.fog,
-                                foregroundColor: isDark ? AppColors.white : AppColors.ink,
+                                backgroundColor:
+                                    isDark ? AppColors.charcoal : AppColors.fog,
+                                foregroundColor:
+                                    isDark ? AppColors.white : AppColors.ink,
                                 child: Text(
                                   name.isNotEmpty ? name[0].toUpperCase() : '?',
-                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600),
                                 ),
                               ),
                             ),
@@ -402,7 +407,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 const SizedBox(height: 12),
                                 FilledButton(
                                   onPressed: () => ref
-                                      .read(documentsControllerProvider.notifier)
+                                      .read(
+                                          documentsControllerProvider.notifier)
                                       .reload(),
                                   child: const Text('Retry'),
                                 ),
@@ -416,7 +422,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             }
 
                             return Column(
-                              key: ValueKey('data_${docs.length}_$selectedType'),
+                              key:
+                                  ValueKey('data_${docs.length}_$selectedType'),
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 _MetricsRow(docs: docs, isDark: isDark),
