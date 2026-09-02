@@ -25,3 +25,4 @@ client/.vscode/
 # OS and IDE files
 .DS_Store
 Thumbs.db
+.neon
