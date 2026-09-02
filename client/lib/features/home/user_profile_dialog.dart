@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/design_tokens.dart';
+import '../../shared/glass_dropdown.dart';
 import '../auth/auth_controller.dart';
 import '../auth/auth_models.dart';
 
@@ -178,22 +179,22 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
                     Row(
                       children: [
                         Expanded(
-                          child: DropdownButtonFormField<String>(
+                          child: GlassDropdownField<String>(
                             initialValue: _selectedAgeRange,
-                            decoration: const InputDecoration(labelText: 'Age Range'),
+                            labelText: 'Age Range',
                             items: _ageRanges
-                                .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                                .map((r) => GlassDropdownItem(value: r, label: r))
                                 .toList(),
                             onChanged: (val) => setState(() => _selectedAgeRange = val),
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: DropdownButtonFormField<String>(
+                          child: GlassDropdownField<String>(
                             initialValue: _selectedGender,
-                            decoration: const InputDecoration(labelText: 'Gender'),
+                            labelText: 'Gender',
                             items: _genders
-                                .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                                .map((g) => GlassDropdownItem(value: g, label: g))
                                 .toList(),
                             onChanged: (val) => setState(() => _selectedGender = val),
                           ),
