@@ -29,14 +29,19 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
     GlassDropdownItem(value: 'UNDER_18', label: 'Under 18'),
     GlassDropdownItem(value: 'AGE_18_24', label: '18–24'),
     GlassDropdownItem(value: 'AGE_25_34', label: '25–34'),
-    GlassDropdownItem(value: 'AGE_35_44', label: '35–44'),
-    GlassDropdownItem(value: 'AGE_45_PLUS', label: '45+'),
-  ];
-  static const _genders = [
-    GlassDropdownItem(value: 'MALE', label: 'Male'),
-    GlassDropdownItem(value: 'FEMALE', label: 'Female'),
-    GlassDropdownItem(value: 'PREFER_NOT_TO_SAY', label: 'Prefer not to say'),
-  ];
+  final _ageRanges = {
+    'UNDER_18': 'Under 18',
+    'AGE_18_24': '18–24',
+    'AGE_25_34': '25–34',
+    'AGE_35_44': '35–44',
+    'AGE_45_PLUS': '45+',
+  };
+
+  final _genders = {
+    'MALE': 'Male',
+    'FEMALE': 'Female',
+    'PREFER_NOT_TO_SAY': 'Prefer not to say',
+  };
 
   @override
   void initState() {
@@ -46,14 +51,12 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
     _newPassCtrl = TextEditingController();
 
     _selectedAgeRange = widget.user.ageRange;
-    if (_selectedAgeRange != null &&
-        !_ageRanges.any((item) => item.value == _selectedAgeRange)) {
+    if (_selectedAgeRange != null && !_ageRanges.containsKey(_selectedAgeRange)) {
       _selectedAgeRange = null;
     }
 
     _selectedGender = widget.user.gender;
-    if (_selectedGender != null &&
-        !_genders.any((item) => item.value == _selectedGender)) {
+    if (_selectedGender != null && !_genders.containsKey(_selectedGender)) {
       _selectedGender = null;
     }
   }
@@ -194,7 +197,9 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
                           child: GlassDropdownField<String>(
                             initialValue: _selectedAgeRange,
                             labelText: 'Age Range',
-                            items: _ageRanges,
+                            items: _ageRanges.entries
+                                .map((e) => GlassDropdownItem(value: e.key, label: e.value))
+                                .toList(),
                             onChanged: (val) =>
                                 setState(() => _selectedAgeRange = val),
                           ),
@@ -204,7 +209,9 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
                           child: GlassDropdownField<String>(
                             initialValue: _selectedGender,
                             labelText: 'Gender',
-                            items: _genders,
+                            items: _genders.entries
+                                .map((e) => GlassDropdownItem(value: e.key, label: e.value))
+                                .toList(),
                             onChanged: (val) =>
                                 setState(() => _selectedGender = val),
                           ),

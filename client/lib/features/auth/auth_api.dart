@@ -87,6 +87,7 @@ class AuthApi {
   }
 
   Future<DeuNestUser> updateProfile({
+    required String token,
     required String displayName,
     String? ageRange,
     String? gender,
@@ -94,6 +95,7 @@ class AuthApi {
     try {
       final response = await _dio.patch<Map<String, dynamic>>(
         '/api/auth/profile',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
         data: {
           'displayName': displayName,
           if (ageRange != null) 'ageRange': ageRange,
@@ -107,10 +109,11 @@ class AuthApi {
   }
 
   Future<void> updatePassword(
-      String currentPassword, String newPassword) async {
+      String token, String currentPassword, String newPassword) async {
     try {
       await _dio.patch<Map<String, dynamic>>(
         '/api/auth/password',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
         data: {
           'currentPassword': currentPassword,
           'newPassword': newPassword,

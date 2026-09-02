@@ -47,7 +47,11 @@ class AuthController extends AsyncNotifier<AuthSession?> {
     String? ageRange,
     String? gender,
   }) async {
+    final token = state.value?.accessToken;
+    if (token == null) throw StateError('No active session.');
+
     final updatedUser = await ref.read(authApiProvider).updateProfile(
+          token: token,
           displayName: displayName,
           ageRange: ageRange,
           gender: gender,
@@ -59,9 +63,12 @@ class AuthController extends AsyncNotifier<AuthSession?> {
 
   Future<void> updatePassword(
       String currentPassword, String newPassword) async {
+    final token = state.value?.accessToken;
+    if (token == null) throw StateError('No active session.');
+
     await ref
         .read(authApiProvider)
-        .updatePassword(currentPassword, newPassword);
+        .updatePassword(token, currentPassword, newPassword);
     await signOut();
   }
 }
