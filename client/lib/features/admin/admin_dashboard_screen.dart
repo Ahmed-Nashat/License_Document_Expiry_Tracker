@@ -1585,7 +1585,7 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
                       value: _fmtDate(widget.ticket.createdAt)),
                   _DetailRow(
                       label: 'Assignee',
-                      value: widget.ticket.assigneeEmail ?? 'Ã¢â‚¬â€'),
+                      value: widget.ticket.assigneeEmail ?? 'Unassigned'),
                   const SizedBox(height: 16),
                   const Text('Description',
                       style: TextStyle(fontSize: 12, color: AppColors.gray)),
