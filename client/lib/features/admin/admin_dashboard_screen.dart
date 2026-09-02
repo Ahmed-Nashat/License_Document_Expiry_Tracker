@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/design_tokens.dart';
@@ -6,7 +6,7 @@ import '../auth/auth_controller.dart';
 import 'admin_login_screen.dart';
 import 'admin_providers.dart';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 String _fmt(DateTime dt) {
   final local = dt.toLocal();
@@ -49,7 +49,7 @@ Widget _statusChip(String status) {
   };
 }
 
-// ─── Shared Widgets ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Shared Widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _TabHeader extends StatelessWidget {
   const _TabHeader({required this.title, this.subtitle});
@@ -199,7 +199,7 @@ class _DetailRow extends StatelessWidget {
   }
 }
 
-// ─── Dashboard Shell ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Dashboard Shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -371,7 +371,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 }
 
-// ─── Tab 0: Overview ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Tab 0: Overview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _OverviewTab extends ConsumerWidget {
   const _OverviewTab({super.key});
@@ -534,7 +534,7 @@ class _OverviewTab extends ConsumerWidget {
   }
 }
 
-// ─── Tab 1: Users ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Tab 1: Users â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _UsersTab extends ConsumerStatefulWidget {
   const _UsersTab({super.key});
@@ -571,7 +571,7 @@ class _UsersTabState extends ConsumerState<_UsersTab> {
                 child: TextField(
                   controller: _searchCtrl,
                   decoration: InputDecoration(
-                    hintText: 'Search by email or name…',
+                    hintText: 'Search by email or nameâ€¦',
                     prefixIcon: const Icon(Icons.search_rounded, size: 18),
                     suffixIcon: _searchCtrl.text.isNotEmpty
                         ? IconButton(
@@ -792,14 +792,14 @@ class _UserDetailPanel extends ConsumerWidget {
                       decoration: BoxDecoration(
                           color: const Color(0xFF4C1415),
                           borderRadius: BorderRadius.circular(8)),
-                      child: Text('SUSPENDED: ${user.suspendedReason ?? '—'}',
+                      child: Text('SUSPENDED: ${user.suspendedReason ?? 'â€”'}',
                           style: const TextStyle(
                               fontSize: 12, color: Colors.redAccent)),
                     ),
                     const SizedBox(height: 16),
                   ],
                   _DetailRow(label: 'Email', value: user.email),
-                  _DetailRow(label: 'Name', value: user.displayName ?? '—'),
+                  _DetailRow(label: 'Name', value: user.displayName ?? 'â€”'),
                   _DetailRow(label: 'Role', value: user.role),
                   _DetailRow(label: 'Timezone', value: user.timeZone),
                   _DetailRow(label: 'Joined', value: _fmtDate(user.createdAt)),
@@ -885,7 +885,7 @@ class _UserDetailPanel extends ConsumerWidget {
   }
 }
 
-// ─── Tab 2: Audit Logs ────────────────────────────────────────────────────────
+// â”€â”€â”€ Tab 2: Audit Logs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _AuditLogsTab extends ConsumerWidget {
   const _AuditLogsTab({super.key});
@@ -900,7 +900,7 @@ class _AuditLogsTab extends ConsumerWidget {
       children: [
         const _TabHeader(
             title: 'Audit Logs',
-            subtitle: 'Append-only — no admin can edit or delete entries'),
+            subtitle: 'Append-only â€” no admin can edit or delete entries'),
         Padding(
           padding: const EdgeInsets.fromLTRB(32, 16, 32, 8),
           child: Row(
@@ -987,7 +987,7 @@ class _AuditLogsTab extends ConsumerWidget {
   }
 }
 
-// ─── Tab 3: Reminders ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Tab 3: Reminders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _RemindersTab extends ConsumerWidget {
   const _RemindersTab({super.key});
@@ -1183,7 +1183,7 @@ class _RemindersTab extends ConsumerWidget {
   }
 }
 
-// ─── Tab 4: Security ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Tab 4: Security â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SecurityTab extends ConsumerWidget {
   const _SecurityTab({super.key});
@@ -1323,7 +1323,7 @@ class _SecurityTab extends ConsumerWidget {
   }
 }
 
-// ─── Tab 5: Support ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Tab 5: Support â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SupportTab extends ConsumerStatefulWidget {
   const _SupportTab({super.key});
@@ -1466,6 +1466,52 @@ class _TicketDetailPanel extends ConsumerStatefulWidget {
 
 class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
   late TextEditingController _notesCtrl;
+  Future<void> _showEmailDialog(BuildContext context, String ticketId, AdminActions actions) async {
+    final msgCtrl = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          bool isLoading = false;
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          
+          return AlertDialog(
+            backgroundColor: isDark ? AppColors.surfaceDark : AppColors.white,
+            title: Text('Send Email to Requester', style: TextStyle(color: isDark ? AppColors.inkDark : AppColors.ink)),
+            content: SizedBox(
+              width: 400,
+              child: TextField(
+                controller: msgCtrl,
+                maxLines: 6,
+                decoration: const InputDecoration(labelText: 'Message content', border: OutlineInputBorder()),
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: isLoading ? null : () => Navigator.pop(ctx), child: const Text('Cancel')),
+              FilledButton(
+                onPressed: isLoading ? null : () async {
+                  if (msgCtrl.text.trim().isEmpty) return;
+                  setState(() => isLoading = true);
+                  try {
+                    await actions.sendTicketMessage(ticketId, msgCtrl.text.trim());
+                    if (ctx.mounted) {
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email sent successfully.')));
+                    }
+                  } catch (e) {
+                    if (ctx.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: \')));
+                  } finally {
+                    if (ctx.mounted) setState(() => isLoading = false);
+                  }
+                },
+                child: isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Send Email'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -1529,7 +1575,7 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
                       value: _fmtDate(widget.ticket.createdAt)),
                   _DetailRow(
                       label: 'Assignee',
-                      value: widget.ticket.assigneeEmail ?? '—'),
+                      value: widget.ticket.assigneeEmail ?? 'â€”'),
                   const SizedBox(height: 16),
                   const Text('Description',
                       style: TextStyle(fontSize: 12, color: AppColors.gray)),
@@ -1547,7 +1593,7 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
                       controller: _notesCtrl,
                       maxLines: 5,
                       decoration: const InputDecoration(
-                          hintText: 'Add internal notes…')),
+                          hintText: 'Add internal notesâ€¦')),
                   const SizedBox(height: 16),
                   const Text('Actions',
                       style: TextStyle(fontSize: 12, color: AppColors.gray)),
@@ -1595,7 +1641,7 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
   }
 }
 
-// ─── Tab 6: System Config ─────────────────────────────────────────────────────
+// â”€â”€â”€ Tab 6: System Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SystemTab extends ConsumerWidget {
   const _SystemTab({super.key});
@@ -1724,7 +1770,7 @@ class _ConfigTile extends ConsumerWidget {
   }
 }
 
-// ─── Tab 7: My Account ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Tab 7: My Account â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _MyAccountTab extends ConsumerStatefulWidget {
   const _MyAccountTab({super.key});
@@ -1852,3 +1898,4 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
     );
   }
 }
+
