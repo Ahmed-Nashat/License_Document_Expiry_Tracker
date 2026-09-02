@@ -118,7 +118,6 @@ model AuditLog {
   @@index([actorId])
   @@index([action])
 }
-
 enum NotificationStatus {
   PENDING
   PROCESSING
