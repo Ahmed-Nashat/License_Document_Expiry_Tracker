@@ -86,11 +86,19 @@ class AuthApi {
     }
   }
 
-  Future<DeuNestUser> updateProfile(String displayName) async {
+  Future<DeuNestUser> updateProfile({
+    required String displayName,
+    String? ageRange,
+    String? gender,
+  }) async {
     try {
       final response = await _dio.patch<Map<String, dynamic>>(
         '/api/auth/profile',
-        data: {'displayName': displayName},
+        data: {
+          'displayName': displayName,
+          if (ageRange != null) 'ageRange': ageRange,
+          if (gender != null) 'gender': gender,
+        },
       );
       return DeuNestUser.fromJson(response.data!);
     } on DioException catch (error) {

@@ -1920,7 +1920,7 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
     }
     setState(() => _isLoading = true);
     try {
-      await ref.read(authControllerProvider.notifier).updateProfile(name);
+      await ref.read(authControllerProvider.notifier).updateProfile(displayName: name);
       if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Profile updated.')));

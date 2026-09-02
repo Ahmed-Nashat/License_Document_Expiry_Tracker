@@ -172,12 +172,18 @@ export async function authRoutes(app: FastifyInstance) {
   }, async (request, reply) => {
     const input = z.object({
       displayName: z.string().trim().min(2).max(100),
+      ageRange: z.string().optional(),
+      gender: z.string().optional(),
     }).parse(request.body);
     const userId = (request.user as JwtPayload).userId;
 
     const updated = await prisma.user.update({
       where: { id: userId },
-      data: { displayName: input.displayName },
+      data: { 
+        displayName: input.displayName,
+        ...(input.ageRange !== undefined && { ageRange: input.ageRange }),
+        ...(input.gender !== undefined && { gender: input.gender }),
+      },
       select: { id: true, email: true, displayName: true, role: true, ageRange: true, gender: true }
     });
 

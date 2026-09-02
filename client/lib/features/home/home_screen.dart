@@ -5,12 +5,12 @@ import '../../shared/brand_mark.dart';
 import '../../shared/design_tokens.dart';
 import '../../shared/glass.dart';
 import '../../shared/theme_mode.dart';
-import '../auth/auth_controller.dart';
 import '../auth/auth_models.dart';
 import '../auth/api_client_platform.dart';
 import '../documents/document_dialog.dart';
 import '../documents/document_models.dart';
 import '../documents/documents_controller.dart';
+import 'user_profile_dialog.dart';
 
 // ─── Resting card shadow ───────────────────────────────────────────────────────
 List<BoxShadow> _cardShadowRest(bool isDark) => [
@@ -194,16 +194,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                       : AppColors.charcoal),
                             ),
                             const SizedBox(width: 8),
-                            IconButton.outlined(
-                              tooltip: 'Sign out',
-                              onPressed: () => ref
-                                  .read(authControllerProvider.notifier)
-                                  .signOut(),
-                              icon: Icon(Icons.logout_rounded,
-                                  size: 17,
-                                  color: isDark
-                                      ? AppColors.charcoalDark
-                                      : AppColors.charcoal),
+                            InkWell(
+                              borderRadius: BorderRadius.circular(20),
+                              onTap: () => showDialog(
+                                context: context,
+                                builder: (context) => UserProfileDialog(user: widget.session.user),
+                              ),
+                              child: CircleAvatar(
+                                radius: 18,
+                                backgroundColor: isDark ? AppColors.charcoal : AppColors.fog,
+                                foregroundColor: isDark ? AppColors.white : AppColors.ink,
+                                child: Text(
+                                  name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -1039,7 +1044,7 @@ Future<void> _showSupportDialog(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DropdownButtonFormField<String>(
-                  value: category,
+                  initialValue: category,
                   decoration: const InputDecoration(
                       labelText: 'Category', border: OutlineInputBorder()),
                   items: const [
