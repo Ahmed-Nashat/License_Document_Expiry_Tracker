@@ -42,15 +42,17 @@ enum BillingCycle {
 ///   upcoming     → green badge (#DCFCE7 / #16A34A)  — 31–90 d
 ///   valid        → green badge (#DCFCE7 / #16A34A)  — >90 d
 enum ExpiryUrgency {
-  expired('Expired',      Color(0xFFFEE2E2), Color(0xFFDC2626)),
-  critical('Expires soon',Color(0xFFFEF3C7), Color(0xFFD97706)),
-  expiringSoon('Expiring',Color(0xFFFFEDD5), Color(0xFFEA580C)),
-  upcoming('Upcoming',    Color(0xFF86EFAC), Color(0xFF166534)),
-  valid('Valid',          Color(0xFF86EFAC), Color(0xFF166534));
+  expired('Expired', Color(0xFFFEE2E2), Color(0xFFDC2626)),
+  critical('Expires soon', Color(0xFFFEF3C7), Color(0xFFD97706)),
+  expiringSoon('Expiring', Color(0xFFFFEDD5), Color(0xFFEA580C)),
+  upcoming('Upcoming', Color(0xFF86EFAC), Color(0xFF166534)),
+  valid('Valid', Color(0xFF86EFAC), Color(0xFF166534));
 
   final String label;
+
   /// Badge background color.
   final Color badgeBg;
+
   /// Badge text color.
   final Color badgeText;
 

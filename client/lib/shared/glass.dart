@@ -1,10 +1,9 @@
 import 'dart:math' as math;
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
-// ─── Monochromatic design tokens ──────────────────────────────────────────────
-const _white = Color(0xFFFFFFFF);
-const _surfaceDark = Color(0xFF1A1A18);
+import 'design_tokens.dart';
 
 enum GlassBlurLevel {
   subtle(8.0),
@@ -27,7 +26,7 @@ class _NumberBackgroundPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final base = isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111);
+    final base = isDark ? AppColors.white : AppColors.ink;
 
     final now = DateTime.now();
     final seed = now.year * 12 + now.month;
@@ -38,7 +37,7 @@ class _NumberBackgroundPainter extends CustomPainter {
       final x = rng.nextDouble() * size.width;
       final y = rng.nextDouble() * size.height;
       final fontSize = 48.0 + rng.nextDouble() * 82.0; // 48–130px
-      final alpha = 0.035 + rng.nextDouble() * 0.045;  // 3.5–8%
+      final alpha = 0.035 + rng.nextDouble() * 0.045; // 3.5–8%
 
       final tp = TextPainter(
         text: TextSpan(
@@ -63,7 +62,6 @@ class _NumberBackgroundPainter extends CustomPainter {
   bool shouldRepaint(_NumberBackgroundPainter old) => old.isDark != isDark;
 }
 
-
 // ─── App background ────────────────────────────────────────────────────────────
 /// Flat monochromatic canvas with scattered day-number typographic texture.
 class GlassBackground extends StatelessWidget {
@@ -74,14 +72,13 @@ class GlassBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF0E0E0C) : const Color(0xFFF1EFE8);
+    final bgColor = isDark ? const Color(0xFF0E0E0C) : AppColors.fog;
 
     return Stack(
       children: [
         Positioned.fill(child: ColoredBox(color: bgColor)),
         Positioned.fill(
-          child: CustomPaint(
-              painter: _NumberBackgroundPainter(isDark: isDark)),
+          child: CustomPaint(painter: _NumberBackgroundPainter(isDark: isDark)),
         ),
         Positioned.fill(child: child),
       ],
@@ -118,9 +115,9 @@ class AdvancedGlassPanel extends StatelessWidget {
     if (tint != null) {
       surface = tint!.withValues(alpha: isDark ? 0.72 : 0.90);
     } else if (isDark) {
-      surface = _surfaceDark.withValues(alpha: 0.82);
+      surface = AppColors.surfaceDark.withValues(alpha: 0.82);
     } else {
-      surface = _white.withValues(alpha: 0.92);
+      surface = AppColors.white.withValues(alpha: 0.92);
     }
 
     return Container(
@@ -172,16 +169,19 @@ class LayeredGlassStack extends StatelessWidget {
         Positioned.fill(
           child: AdvancedGlassPanel(
             blurLevel: GlassBlurLevel.maximum,
-            tint: isDark ? _surfaceDark : _white,
+            tint: isDark ? AppColors.surfaceDark : AppColors.white,
             radius: 24,
             child: const SizedBox.expand(),
           ),
         ),
         Positioned.fill(
-          top: 10, bottom: 10, left: 10, right: 10,
+          top: 10,
+          bottom: 10,
+          left: 10,
+          right: 10,
           child: AdvancedGlassPanel(
             blurLevel: GlassBlurLevel.strong,
-            tint: isDark ? const Color(0xFF222220) : _white,
+            tint: isDark ? const Color(0xFF222220) : AppColors.white,
             radius: 20,
             child: const SizedBox.expand(),
           ),
@@ -190,7 +190,7 @@ class LayeredGlassStack extends StatelessWidget {
           padding: const EdgeInsets.all(20.0),
           child: AdvancedGlassPanel(
             blurLevel: GlassBlurLevel.medium,
-            tint: isDark ? const Color(0xFF111110) : _white,
+            tint: isDark ? const Color(0xFF111110) : AppColors.white,
             radius: 16,
             padding: const EdgeInsets.all(24.0),
             child: child,

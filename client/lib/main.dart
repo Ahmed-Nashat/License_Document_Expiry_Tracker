@@ -5,20 +5,9 @@ import 'features/auth/auth_controller.dart';
 import 'features/auth/auth_screen.dart';
 import 'features/home/home_screen.dart';
 import 'shared/brand_mark.dart';
+import 'shared/design_tokens.dart';
 import 'shared/glass.dart';
 import 'shared/theme_mode.dart';
-
-// ─── Design tokens ──────────────────────────────────────────────────────────
-const _ink = Color(0xFF111111);       // primary text & solid buttons
-const _charcoal = Color(0xFF444441);  // secondary text
-const _gray = Color(0xFFB4B2A9);      // muted text / icons
-const _fog = Color(0xFFF1EFE8);       // subtle backgrounds & borders
-const _white = Color(0xFFFFFFFF);     // card surfaces
-
-// Dark-mode equivalents
-const _inkDark = Color(0xFFFAFAFA);
-const _charcoalDark = Color(0xFFB4B2A9);
-const _surfaceDark = Color(0xFF1A1A18);
 
 void main() {
   runApp(const ProviderScope(child: LicenseTrackerApp()));
@@ -38,30 +27,31 @@ class LicenseTrackerApp extends ConsumerWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: _ink,
+          seedColor: AppColors.ink,
           brightness: Brightness.light,
-          primary: _ink,
-          onPrimary: _white,
-          surface: _white,
-          onSurface: _ink,
+          primary: AppColors.ink,
+          onPrimary: AppColors.white,
+          surface: AppColors.white,
+          onSurface: AppColors.ink,
         ),
         scaffoldBackgroundColor: Colors.transparent,
 
         // Typography — Inter with tabular figures for numbers
         textTheme: ThemeData.light().textTheme.apply(
-              bodyColor: _ink,
-              displayColor: _ink,
+              bodyColor: AppColors.ink,
+              displayColor: AppColors.ink,
               fontFamily: 'Inter',
             ),
 
         // Input fields — filled, no border stroke
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: _white,
-          labelStyle: TextStyle(color: _charcoal, fontWeight: FontWeight.w500),
-          floatingLabelStyle:
-              const TextStyle(color: _ink, fontWeight: FontWeight.w600),
-          hintStyle: TextStyle(color: _gray),
+          fillColor: AppColors.white,
+          labelStyle:
+              TextStyle(color: AppColors.charcoal, fontWeight: FontWeight.w500),
+          floatingLabelStyle: const TextStyle(
+              color: AppColors.ink, fontWeight: FontWeight.w600),
+          hintStyle: TextStyle(color: AppColors.gray),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           border: OutlineInputBorder(
@@ -89,10 +79,10 @@ class LicenseTrackerApp extends ConsumerWidget {
         // FilledButton — no changes needed (already no border)
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
-            backgroundColor: _ink,
-            foregroundColor: _white,
-            disabledBackgroundColor: const Color(0xFFD3D1C7),
-            disabledForegroundColor: _gray,
+            backgroundColor: AppColors.ink,
+            foregroundColor: AppColors.white,
+            disabledBackgroundColor: AppColors.border,
+            disabledForegroundColor: AppColors.gray,
             textStyle:
                 const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             shape: RoundedRectangleBorder(
@@ -104,7 +94,7 @@ class LicenseTrackerApp extends ConsumerWidget {
         // OutlinedButton — ghost style, no stroke border
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
-            foregroundColor: _ink,
+            foregroundColor: AppColors.ink,
             side: BorderSide.none,
             textStyle:
                 const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
@@ -117,7 +107,7 @@ class LicenseTrackerApp extends ConsumerWidget {
         // TextButton — charcoal, no color
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
-            foregroundColor: _charcoal,
+            foregroundColor: AppColors.charcoal,
             textStyle:
                 const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
           ),
@@ -125,23 +115,27 @@ class LicenseTrackerApp extends ConsumerWidget {
 
         // FilterChip — no border stroke
         chipTheme: ChipThemeData(
-          backgroundColor: _fog,
-          selectedColor: _charcoal,
+          backgroundColor: AppColors.fog,
+          selectedColor: AppColors.charcoal,
           labelStyle: const TextStyle(
-              color: _charcoal, fontSize: 13, fontWeight: FontWeight.w500),
+              color: AppColors.charcoal,
+              fontSize: 13,
+              fontWeight: FontWeight.w500),
           secondaryLabelStyle: const TextStyle(
-              color: _white, fontSize: 13, fontWeight: FontWeight.w600),
-          checkmarkColor: _white,
+              color: AppColors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w600),
+          checkmarkColor: AppColors.white,
           side: BorderSide.none,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          iconTheme: const IconThemeData(color: _gray, size: 16),
+          iconTheme: const IconThemeData(color: AppColors.gray, size: 16),
         ),
 
         // IconButton — no outline border
         iconButtonTheme: IconButtonThemeData(
           style: IconButton.styleFrom(
-            foregroundColor: _charcoal,
+            foregroundColor: AppColors.charcoal,
             side: BorderSide.none,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -159,29 +153,27 @@ class LicenseTrackerApp extends ConsumerWidget {
       darkTheme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: _inkDark,
+          seedColor: AppColors.inkDark,
           brightness: Brightness.dark,
-          primary: _inkDark,
-          onPrimary: _ink,
-          surface: _surfaceDark,
-          onSurface: _inkDark,
+          primary: AppColors.inkDark,
+          onPrimary: AppColors.ink,
+          surface: AppColors.surfaceDark,
+          onSurface: AppColors.inkDark,
         ),
         scaffoldBackgroundColor: Colors.transparent,
-
         textTheme: ThemeData.dark().textTheme.apply(
-              bodyColor: _inkDark,
-              displayColor: _inkDark,
+              bodyColor: AppColors.inkDark,
+              displayColor: AppColors.inkDark,
               fontFamily: 'Inter',
             ),
-
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: const Color(0xFF222220),
-          labelStyle:
-              TextStyle(color: _charcoalDark, fontWeight: FontWeight.w500),
-          floatingLabelStyle:
-              const TextStyle(color: _inkDark, fontWeight: FontWeight.w600),
-          hintStyle: TextStyle(color: _gray),
+          labelStyle: TextStyle(
+              color: AppColors.charcoalDark, fontWeight: FontWeight.w500),
+          floatingLabelStyle: const TextStyle(
+              color: AppColors.inkDark, fontWeight: FontWeight.w600),
+          hintStyle: TextStyle(color: AppColors.gray),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           border: OutlineInputBorder(
@@ -205,13 +197,12 @@ class LicenseTrackerApp extends ConsumerWidget {
             borderSide: BorderSide.none,
           ),
         ),
-
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
-            backgroundColor: _inkDark,
-            foregroundColor: _ink,
-            disabledBackgroundColor: const Color(0xFF3A3A38),
-            disabledForegroundColor: _gray,
+            backgroundColor: AppColors.inkDark,
+            foregroundColor: AppColors.ink,
+            disabledBackgroundColor: AppColors.borderDark,
+            disabledForegroundColor: AppColors.gray,
             textStyle:
                 const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             shape: RoundedRectangleBorder(
@@ -219,10 +210,9 @@ class LicenseTrackerApp extends ConsumerWidget {
             ),
           ),
         ),
-
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
-            foregroundColor: _inkDark,
+            foregroundColor: AppColors.inkDark,
             side: BorderSide.none,
             textStyle:
                 const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
@@ -231,41 +221,39 @@ class LicenseTrackerApp extends ConsumerWidget {
             ),
           ),
         ),
-
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
-            foregroundColor: _charcoalDark,
+            foregroundColor: AppColors.charcoalDark,
             textStyle:
                 const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
           ),
         ),
-
         chipTheme: ChipThemeData(
-          backgroundColor: const Color(0xFF2A2A28),
+          backgroundColor: AppColors.selectedDark,
           selectedColor: const Color(0xFF4A4A48), // elevated dark, not white
           labelStyle: const TextStyle(
-              color: _charcoalDark,
+              color: AppColors.charcoalDark,
               fontSize: 13,
               fontWeight: FontWeight.w500),
           secondaryLabelStyle: const TextStyle(
-              color: _inkDark, fontSize: 13, fontWeight: FontWeight.w600),
-          checkmarkColor: _inkDark,
+              color: AppColors.inkDark,
+              fontSize: 13,
+              fontWeight: FontWeight.w600),
+          checkmarkColor: AppColors.inkDark,
           side: BorderSide.none,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          iconTheme: const IconThemeData(color: _gray, size: 16),
+          iconTheme: const IconThemeData(color: AppColors.gray, size: 16),
         ),
-
         iconButtonTheme: IconButtonThemeData(
           style: IconButton.styleFrom(
-            foregroundColor: _charcoalDark,
+            foregroundColor: AppColors.charcoalDark,
             side: BorderSide.none,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
           ),
         ),
-
         dividerColor: Colors.transparent,
         dividerTheme:
             const DividerThemeData(color: Colors.transparent, thickness: 0),
@@ -314,8 +302,7 @@ class _LoadingScreen extends StatelessWidget {
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Color(0xFF111111))),
+                      strokeWidth: 2, color: AppColors.ink)),
             ],
           ),
         ),

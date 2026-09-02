@@ -1,22 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/brand_mark.dart';
+import '../../shared/design_tokens.dart';
 import '../../shared/glass.dart';
 import '../../shared/glass_dropdown.dart';
 import '../../shared/theme_mode.dart';
 import 'auth_api.dart';
 import 'auth_controller.dart';
-
-// ─── Monochromatic tokens ─────────────────────────────────────────────────────
-const _ink = Color(0xFF111111);
-const _charcoal = Color(0xFF444441);
-const _gray = Color(0xFFB4B2A9);
-const _white = Color(0xFFFFFFFF);
-
-const _inkDark = Color(0xFFFAFAFA);
-const _charcoalDark = Color(0xFFB4B2A9);
-const _surfaceDark = Color(0xFF1A1A18);
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key, this.connectionError});
@@ -52,6 +45,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   late final AnimationController _entryAnim;
   late final Animation<double> _entryFade;
   late final Animation<Offset> _entrySlide;
+  late final Timer _entryTimer;
 
   @override
   void initState() {
@@ -60,19 +54,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       vsync: this,
       duration: const Duration(milliseconds: 520),
     );
-    _entryFade =
-        CurvedAnimation(parent: _entryAnim, curve: Curves.easeOut);
+    _entryFade = CurvedAnimation(parent: _entryAnim, curve: Curves.easeOut);
     _entrySlide = Tween<Offset>(
       begin: const Offset(0, 0.08),
       end: Offset.zero,
-    ).animate(
-        CurvedAnimation(parent: _entryAnim, curve: Curves.easeOutCubic));
-    Future.delayed(const Duration(milliseconds: 80),
-        () => mounted ? _entryAnim.forward() : null);
+    ).animate(CurvedAnimation(parent: _entryAnim, curve: Curves.easeOutCubic));
+    _entryTimer = Timer(const Duration(milliseconds: 80), () {
+      if (mounted) _entryAnim.forward();
+    });
   }
 
   @override
   void dispose() {
+    _entryTimer.cancel();
     _entryAnim.dispose();
     _nameController.dispose();
     _emailController.dispose();
@@ -199,8 +193,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           _newPasswordController.clear();
           _resetCodeController.clear();
           _message = null;
-          _successMessage =
-              'Password updated. Sign in with your new password.';
+          _successMessage = 'Password updated. Sign in with your new password.';
         });
       }
     } on AuthException catch (error) {
@@ -242,8 +235,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1100),
                 child: FadeTransition(
@@ -291,7 +283,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                     letterSpacing: -0.4,
-                    color: isDark ? _inkDark : _ink,
+                    color: isDark ? AppColors.inkDark : AppColors.ink,
                   )),
               const Spacer(),
               const ThemeToggleButton(),
@@ -304,7 +296,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                 height: 1.08,
                 letterSpacing: -2,
                 fontWeight: FontWeight.w600,
-                color: isDark ? _inkDark : _ink,
+                color: isDark ? AppColors.inkDark : AppColors.ink,
               ),
             ),
             const SizedBox(height: 20),
@@ -313,7 +305,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               style: TextStyle(
                 fontSize: 17,
                 height: 1.55,
-                color: isDark ? _charcoalDark : _charcoal,
+                color: isDark ? AppColors.charcoalDark : AppColors.charcoal,
               ),
             ),
             const SizedBox(height: 36),
@@ -339,7 +331,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
   Widget _formCard(bool isDark) => Container(
         decoration: BoxDecoration(
-          color: isDark ? _surfaceDark : _white,
+          color: isDark ? AppColors.surfaceDark : AppColors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -384,7 +376,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: isDark ? _inkDark : _ink,
+                    color: isDark ? AppColors.inkDark : AppColors.ink,
                   )),
               const Spacer(),
               const ThemeToggleButton(),
@@ -397,7 +389,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               fontSize: 22,
               letterSpacing: -0.6,
               fontWeight: FontWeight.w600,
-              color: isDark ? _inkDark : _ink,
+              color: isDark ? AppColors.inkDark : AppColors.ink,
             ),
           ),
           const SizedBox(height: 8),
@@ -406,7 +398,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                 ? '5 failed sign-in attempts detected. Enter your email to recover access.'
                 : 'Enter the 6-digit code and your new password below.',
             style: TextStyle(
-                color: isDark ? _charcoalDark : _charcoal, height: 1.4, fontSize: 14),
+                color: isDark ? AppColors.charcoalDark : AppColors.charcoal,
+                height: 1.4,
+                fontSize: 14),
           ),
           const SizedBox(height: 22),
           if (_message != null) _MessageBox(message: _message!),
@@ -450,8 +444,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               decoration: InputDecoration(
                 labelText: 'New password',
                 helperText: 'Use at least 12 characters.',
-                helperStyle:
-                    TextStyle(color: isDark ? _charcoalDark : _charcoal),
+                helperStyle: TextStyle(
+                    color:
+                        isDark ? AppColors.charcoalDark : AppColors.charcoal),
                 prefixIcon: const Icon(Icons.lock_outline_rounded),
                 suffixIcon: IconButton(
                   tooltip:
@@ -492,7 +487,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             style: TextStyle(
                 fontSize: 12,
                 height: 1.45,
-                color: isDark ? _charcoalDark : _gray),
+                color: isDark ? AppColors.charcoalDark : AppColors.gray),
           ),
         ],
       );
@@ -514,7 +509,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? _inkDark : _ink,
+                        color: isDark ? AppColors.inkDark : AppColors.ink,
                       )),
                   const Spacer(),
                   const ThemeToggleButton(),
@@ -544,7 +539,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                           fontSize: 22,
                           letterSpacing: -0.6,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? _inkDark : _ink,
+                          color: isDark ? AppColors.inkDark : AppColors.ink,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -553,7 +548,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                             ? 'Start with a secure DueNest account.'
                             : 'Sign in to see what\u2019s coming due.',
                         style: TextStyle(
-                            color: isDark ? _charcoalDark : _charcoal,
+                            color: isDark
+                                ? AppColors.charcoalDark
+                                : AppColors.charcoal,
                             height: 1.4,
                             fontSize: 14),
                       ),
@@ -585,11 +582,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         decoration: const InputDecoration(
                             labelText: 'Your name',
                             prefixIcon: Icon(Icons.person_outline_rounded)),
-                        validator: (value) =>
-                            _isRegistering &&
-                                    (value == null || value.trim().isEmpty)
-                                ? 'Enter your name.'
-                                : null,
+                        validator: (value) => _isRegistering &&
+                                (value == null || value.trim().isEmpty)
+                            ? 'Enter your name.'
+                            : null,
                       ),
                       const SizedBox(height: 14),
                       GlassDropdownField<String>(
@@ -599,21 +595,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         items: const [
                           GlassDropdownItem(
                               value: 'UNDER_18', label: 'Under 18'),
-                          GlassDropdownItem(
-                              value: 'AGE_18_24', label: '18–24'),
-                          GlassDropdownItem(
-                              value: 'AGE_25_34', label: '25–34'),
-                          GlassDropdownItem(
-                              value: 'AGE_35_44', label: '35–44'),
-                          GlassDropdownItem(
-                              value: 'AGE_45_PLUS', label: '45+'),
+                          GlassDropdownItem(value: 'AGE_18_24', label: '18–24'),
+                          GlassDropdownItem(value: 'AGE_25_34', label: '25–34'),
+                          GlassDropdownItem(value: 'AGE_35_44', label: '35–44'),
+                          GlassDropdownItem(value: 'AGE_45_PLUS', label: '45+'),
                         ],
-                        onChanged: (value) =>
-                            setState(() => _ageRange = value),
-                        validator: (value) =>
-                            _isRegistering && value == null
-                                ? 'Select your age range.'
-                                : null,
+                        onChanged: (value) => setState(() => _ageRange = value),
+                        validator: (value) => _isRegistering && value == null
+                            ? 'Select your age range.'
+                            : null,
                       ),
                       const SizedBox(height: 14),
                       GlassDropdownField<String>(
@@ -631,8 +621,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                               label: 'Female',
                               icon: Icons.female_rounded),
                         ],
-                        onChanged: (value) =>
-                            setState(() => _gender = value),
+                        onChanged: (value) => setState(() => _gender = value),
                       ),
                       const SizedBox(height: 14),
                     ],
@@ -674,8 +663,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                   labelText: 'Password',
                   helperText:
                       _isRegistering ? 'Use at least 12 characters.' : null,
-                  helperStyle:
-                      TextStyle(color: isDark ? _charcoalDark : _charcoal),
+                  helperStyle: TextStyle(
+                      color:
+                          isDark ? AppColors.charcoalDark : AppColors.charcoal),
                   prefixIcon: const Icon(Icons.lock_outline_rounded),
                   suffixIcon: IconButton(
                     tooltip:
@@ -736,7 +726,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                 style: TextStyle(
                     fontSize: 12,
                     height: 1.45,
-                    color: isDark ? _charcoalDark : _gray),
+                    color: isDark ? AppColors.charcoalDark : AppColors.gray),
               ),
             ],
           ),
@@ -757,14 +747,16 @@ class _Benefit extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
         children: [
-          Icon(icon, color: isDark ? _charcoalDark : _charcoal, size: 22),
+          Icon(icon,
+              color: isDark ? AppColors.charcoalDark : AppColors.charcoal,
+              size: 22),
           const SizedBox(width: 14),
           Expanded(
             child: Text(label,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: isDark ? _inkDark : _ink,
+                  color: isDark ? AppColors.inkDark : AppColors.ink,
                 )),
           ),
         ],

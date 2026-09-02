@@ -1,14 +1,7 @@
 import 'package:flutter/material.dart';
-import 'glass.dart';
 
-// ─── Monochromatic tokens ─────────────────────────────────────────────────────
-const _ink = Color(0xFF111111);
-const _fog = Color(0xFFF1EFE8);
-const _border = Color(0xFFD3D1C7);
-const _borderDark = Color(0xFF3A3A38);
-const _gray = Color(0xFFB4B2A9);
-const _inkDark = Color(0xFFFAFAFA);
-const _selectedDark = Color(0xFF2A2A28);
+import 'design_tokens.dart';
+import 'glass.dart';
 
 class GlassDropdownItem<T> {
   const GlassDropdownItem({
@@ -66,8 +59,7 @@ class _GlassDropdownTrigger<T> extends StatefulWidget {
       _GlassDropdownTriggerState<T>();
 }
 
-class _GlassDropdownTriggerState<T>
-    extends State<_GlassDropdownTrigger<T>> {
+class _GlassDropdownTriggerState<T> extends State<_GlassDropdownTrigger<T>> {
   final _fieldKey = GlobalKey();
   OverlayEntry? _overlayEntry;
   bool _isOpen = false;
@@ -152,7 +144,9 @@ class _GlassDropdownTriggerState<T>
                                 horizontal: 14, vertical: 12),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? (isDark ? _selectedDark : _fog)
+                                  ? (isDark
+                                      ? AppColors.selectedDark
+                                      : AppColors.fog)
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -163,8 +157,10 @@ class _GlassDropdownTriggerState<T>
                                     item.icon,
                                     size: 17,
                                     color: isSelected
-                                        ? (isDark ? _inkDark : _ink)
-                                        : _gray,
+                                        ? (isDark
+                                            ? AppColors.inkDark
+                                            : AppColors.ink)
+                                        : AppColors.gray,
                                   ),
                                   const SizedBox(width: 10),
                                 ],
@@ -175,7 +171,9 @@ class _GlassDropdownTriggerState<T>
                                       fontWeight: isSelected
                                           ? FontWeight.w600
                                           : FontWeight.w500,
-                                      color: isDark ? _inkDark : _ink,
+                                      color: isDark
+                                          ? AppColors.inkDark
+                                          : AppColors.ink,
                                       fontSize: 14,
                                     ),
                                   ),
@@ -184,7 +182,9 @@ class _GlassDropdownTriggerState<T>
                                   Icon(
                                     Icons.check_rounded,
                                     size: 16,
-                                    color: isDark ? _inkDark : _ink,
+                                    color: isDark
+                                        ? AppColors.inkDark
+                                        : AppColors.ink,
                                   ),
                               ],
                             ),
@@ -213,9 +213,10 @@ class _GlassDropdownTriggerState<T>
         .firstOrNull;
 
     final hasError = widget.state.hasError;
-    final activeBorderColor = hasError ? const Color(0xFF791F1F) : _ink;
+    final activeBorderColor =
+        hasError ? const Color(0xFF791F1F) : AppColors.ink;
     final activeBorderColorDark =
-        hasError ? const Color(0xFFFCA5A5) : _inkDark;
+        hasError ? const Color(0xFFFCA5A5) : AppColors.inkDark;
 
     return Column(
       key: _fieldKey,
@@ -232,7 +233,7 @@ class _GlassDropdownTriggerState<T>
               hintText: widget.hintText,
               prefixIcon: widget.prefixIcon != null
                   ? IconTheme(
-                      data: IconThemeData(color: _gray, size: 20),
+                      data: IconThemeData(color: AppColors.gray, size: 20),
                       child: widget.prefixIcon!,
                     )
                   : null,
@@ -240,14 +241,14 @@ class _GlassDropdownTriggerState<T>
                 turns: _isOpen ? 0.5 : 0.0,
                 duration: const Duration(milliseconds: 180),
                 child: Icon(Icons.keyboard_arrow_down_rounded,
-                    color: _gray, size: 20),
+                    color: AppColors.gray, size: 20),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(
                   color: hasError
                       ? const Color(0xFF791F1F)
-                      : (isDark ? _borderDark : _border),
+                      : (isDark ? AppColors.borderDark : AppColors.border),
                   width: 1,
                 ),
               ),
@@ -263,8 +264,8 @@ class _GlassDropdownTriggerState<T>
               selectedItem?.label ?? widget.hintText ?? '',
               style: TextStyle(
                 color: selectedItem == null
-                    ? _gray
-                    : (isDark ? _inkDark : _ink),
+                    ? AppColors.gray
+                    : (isDark ? AppColors.inkDark : AppColors.ink),
                 fontSize: 14,
                 fontWeight:
                     selectedItem != null ? FontWeight.w500 : FontWeight.w400,

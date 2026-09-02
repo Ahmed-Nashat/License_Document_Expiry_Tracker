@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/brand_mark.dart';
+import '../../shared/design_tokens.dart';
 import '../../shared/glass.dart';
 import '../../shared/theme_mode.dart';
 import '../auth/auth_controller.dart';
@@ -9,17 +10,6 @@ import '../auth/auth_models.dart';
 import '../documents/document_dialog.dart';
 import '../documents/document_models.dart';
 import '../documents/documents_controller.dart';
-
-// ─── Monochromatic tokens ─────────────────────────────────────────────────────
-const _ink = Color(0xFF111111);
-const _charcoal = Color(0xFF444441);
-const _gray = Color(0xFFB4B2A9);
-const _fog = Color(0xFFF1EFE8);
-const _white = Color(0xFFFFFFFF);
-
-const _inkDark = Color(0xFFFAFAFA);
-const _charcoalDark = Color(0xFFB4B2A9);
-const _surfaceDark = Color(0xFF1A1A18);
 
 // ─── Resting card shadow ───────────────────────────────────────────────────────
 List<BoxShadow> _cardShadowRest(bool isDark) => [
@@ -98,7 +88,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: _white,
+        backgroundColor: AppColors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -106,7 +96,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
         content: Text(
           'Are you sure you want to delete "${doc.title}"? This cannot be undone.',
-          style: const TextStyle(fontSize: 14, color: _charcoal, height: 1.4),
+          style: const TextStyle(
+              fontSize: 14, color: AppColors.charcoal, height: 1.4),
         ),
         actions: [
           OutlinedButton(
@@ -116,7 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF791F1F),
-              foregroundColor: _white,
+              foregroundColor: AppColors.white,
             ),
             onPressed: () {
               Navigator.of(context).pop();
@@ -172,14 +163,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
                                     letterSpacing: -0.4,
-                                    color: isDark ? _inkDark : _ink,
+                                    color: isDark
+                                        ? AppColors.inkDark
+                                        : AppColors.ink,
                                   ),
                                 ),
                                 Text(
                                   'Welcome back, $name',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: isDark ? _charcoalDark : _charcoal,
+                                    color: isDark
+                                        ? AppColors.charcoalDark
+                                        : AppColors.charcoal,
                                   ),
                                 ),
                               ],
@@ -194,8 +189,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                   .signOut(),
                               icon: Icon(Icons.logout_rounded,
                                   size: 17,
-                                  color:
-                                      isDark ? _charcoalDark : _charcoal),
+                                  color: isDark
+                                      ? AppColors.charcoalDark
+                                      : AppColors.charcoal),
                             ),
                           ],
                         ),
@@ -216,21 +212,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                   .state = val,
                               style: TextStyle(
                                   fontSize: 14,
-                                  color: isDark ? _inkDark : _ink),
+                                  color: isDark
+                                      ? AppColors.inkDark
+                                      : AppColors.ink),
                               decoration: InputDecoration(
                                 hintText: 'Search documents, providers…',
-                                prefixIcon:
-                                    Icon(Icons.search_rounded, color: _gray),
+                                prefixIcon: Icon(Icons.search_rounded,
+                                    color: AppColors.gray),
                                 suffixIcon: _searchController.text.isNotEmpty
                                     ? IconButton(
                                         icon: Icon(Icons.clear_rounded,
-                                            size: 16, color: _gray),
+                                            size: 16, color: AppColors.gray),
                                         onPressed: () {
                                           _searchController.clear();
                                           ref
-                                              .read(
-                                                  documentSearchQueryProvider
-                                                      .notifier)
+                                              .read(documentSearchQueryProvider
+                                                  .notifier)
                                               .state = '';
                                         },
                                       )
@@ -266,18 +263,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               label: const Text('All'),
                               labelStyle: TextStyle(
                                 color: (selectedType == null && !showArchived)
-                                    ? (isDark ? _inkDark : _white)
-                                    : (isDark ? _charcoalDark : _charcoal),
+                                    ? (isDark
+                                        ? AppColors.inkDark
+                                        : AppColors.white)
+                                    : (isDark
+                                        ? AppColors.charcoalDark
+                                        : AppColors.charcoal),
                               ),
-                              selected:
-                                  selectedType == null && !showArchived,
+                              selected: selectedType == null && !showArchived,
                               onSelected: (_) {
                                 ref
                                     .read(documentTypeFilterProvider.notifier)
                                     .state = null;
                                 ref
-                                    .read(
-                                        documentShowArchivedProvider.notifier)
+                                    .read(documentShowArchivedProvider.notifier)
                                     .state = false;
                               },
                             ),
@@ -288,23 +287,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 child: FilterChip(
                                   avatar: Icon(type.icon,
                                       size: 14,
-                                      color: selectedType == type &&
-                                              !showArchived
-                                          ? (isDark ? _inkDark : _white)
-                                          : _gray),
+                                      color:
+                                          selectedType == type && !showArchived
+                                              ? (isDark
+                                                  ? AppColors.inkDark
+                                                  : AppColors.white)
+                                              : AppColors.gray),
                                   label: Text(type.label),
                                   labelStyle: TextStyle(
-                                    color: (selectedType == type && !showArchived)
-                                        ? (isDark ? _inkDark : _white)
-                                        : (isDark ? _charcoalDark : _charcoal),
+                                    color:
+                                        (selectedType == type && !showArchived)
+                                            ? (isDark
+                                                ? AppColors.inkDark
+                                                : AppColors.white)
+                                            : (isDark
+                                                ? AppColors.charcoalDark
+                                                : AppColors.charcoal),
                                   ),
                                   selected:
                                       selectedType == type && !showArchived,
                                   onSelected: (_) {
                                     ref
                                         .read(
-                                            documentTypeFilterProvider
-                                                .notifier)
+                                            documentTypeFilterProvider.notifier)
                                         .state = type;
                                     ref
                                         .read(documentShowArchivedProvider
@@ -318,19 +323,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               avatar: Icon(Icons.archive_outlined,
                                   size: 14,
                                   color: showArchived
-                                      ? (isDark ? _inkDark : _white)
-                                      : _gray),
+                                      ? (isDark
+                                          ? AppColors.inkDark
+                                          : AppColors.white)
+                                      : AppColors.gray),
                               label: const Text('Archived'),
                               labelStyle: TextStyle(
                                 color: showArchived
-                                    ? (isDark ? _inkDark : _white)
-                                    : (isDark ? _charcoalDark : _charcoal),
+                                    ? (isDark
+                                        ? AppColors.inkDark
+                                        : AppColors.white)
+                                    : (isDark
+                                        ? AppColors.charcoalDark
+                                        : AppColors.charcoal),
                               ),
                               selected: showArchived,
                               onSelected: (val) {
                                 ref
-                                    .read(
-                                        documentShowArchivedProvider.notifier)
+                                    .read(documentShowArchivedProvider.notifier)
                                     .state = val;
                                 if (val) {
                                   ref
@@ -351,7 +361,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         loading: () => Center(
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: isDark ? _inkDark : _ink,
+                            color: isDark ? AppColors.inkDark : AppColors.ink,
                           ),
                         ),
                         error: (err, stack) => Center(
@@ -360,8 +370,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             children: [
                               Icon(Icons.error_outline_rounded,
                                   size: 32,
-                                  color:
-                                      isDark ? _charcoalDark : _charcoal),
+                                  color: isDark
+                                      ? AppColors.charcoalDark
+                                      : AppColors.charcoal),
                               const SizedBox(height: 12),
                               const Text('Failed to load documents.',
                                   style: TextStyle(fontSize: 14)),
@@ -408,9 +419,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                           child: _DocumentCard(
                                             doc: doc,
                                             isDark: isDark,
-                                            onEdit: () =>
-                                                showDocumentDialog(context,
-                                                    document: doc),
+                                            onEdit: () => showDocumentDialog(
+                                                context,
+                                                document: doc),
                                             onToggleArchive: () => ref
                                                 .read(
                                                     documentsControllerProvider
@@ -609,8 +620,8 @@ class _MetricTile extends StatelessWidget {
               transitionBuilder: (child, animation) => FadeTransition(
                 opacity: animation,
                 child: ScaleTransition(
-                  scale: Tween<double>(begin: 0.75, end: 1.0)
-                      .animate(animation),
+                  scale:
+                      Tween<double>(begin: 0.75, end: 1.0).animate(animation),
                   child: child,
                 ),
               ),
@@ -643,7 +654,6 @@ class _MetricTile extends StatelessWidget {
     );
   }
 }
-
 
 // ─── Document card ────────────────────────────────────────────────────────────
 /// Hover-reactive card with animated shadow depth and scale lift.
@@ -712,11 +722,10 @@ class _DocumentCardState extends State<_DocumentCard> {
               ? Matrix4.translationValues(0, -2, 0)
               : Matrix4.identity(),
           decoration: BoxDecoration(
-            color: isDark ? _surfaceDark : _white,
+            color: isDark ? AppColors.surfaceDark : AppColors.white,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: _hovered
-                ? _cardShadowHover(isDark)
-                : _cardShadowRest(isDark),
+            boxShadow:
+                _hovered ? _cardShadowHover(isDark) : _cardShadowRest(isDark),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -732,10 +741,10 @@ class _DocumentCardState extends State<_DocumentCard> {
                           ? (isDark
                               ? const Color(0xFF303030)
                               : const Color(0xFFE8E6DF))
-                          : (isDark ? const Color(0xFF252523) : _fog),
+                          : (isDark ? const Color(0xFF252523) : AppColors.fog),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(doc.type.icon, size: 17, color: _gray),
+                    child: Icon(doc.type.icon, size: 17, color: AppColors.gray),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -746,7 +755,7 @@ class _DocumentCardState extends State<_DocumentCard> {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
-                        color: isDark ? _inkDark : _ink,
+                        color: isDark ? AppColors.inkDark : AppColors.ink,
                       ),
                     ),
                   ),
@@ -757,8 +766,10 @@ class _DocumentCardState extends State<_DocumentCard> {
                     child: PopupMenuButton<String>(
                       icon: Icon(Icons.more_vert_rounded,
                           size: 17,
-                          color: isDark ? _charcoalDark : _charcoal),
-                      color: isDark ? _surfaceDark : _white,
+                          color: isDark
+                              ? AppColors.charcoalDark
+                              : AppColors.charcoal),
+                      color: isDark ? AppColors.surfaceDark : AppColors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10)),
                       onSelected: (val) {
@@ -797,8 +808,7 @@ class _DocumentCardState extends State<_DocumentCard> {
                             SizedBox(width: 10),
                             Text('Delete',
                                 style: TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFF791F1F))),
+                                    fontSize: 14, color: Color(0xFF791F1F))),
                           ]),
                         ),
                       ],
@@ -816,7 +826,7 @@ class _DocumentCardState extends State<_DocumentCard> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: isDark ? _charcoalDark : _charcoal,
+                    color: isDark ? AppColors.charcoalDark : AppColors.charcoal,
                   ),
                 ),
                 if (doc.renewalAmount != null)
@@ -825,7 +835,9 @@ class _DocumentCardState extends State<_DocumentCard> {
                     '${doc.billingCycle != null ? " / ${doc.billingCycle!.label}" : ""}',
                     style: TextStyle(
                         fontSize: 12,
-                        color: isDark ? _charcoalDark : _charcoal,
+                        color: isDark
+                            ? AppColors.charcoalDark
+                            : AppColors.charcoal,
                         fontFeatures: const [FontFeature.tabularFigures()]),
                   ),
                 const SizedBox(height: 5),
@@ -841,7 +853,8 @@ class _DocumentCardState extends State<_DocumentCard> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         fontSize: 12,
-                        color: isDark ? _charcoalDark : _gray),
+                        color:
+                            isDark ? AppColors.charcoalDark : AppColors.gray),
                   ),
                 ),
 
@@ -853,7 +866,8 @@ class _DocumentCardState extends State<_DocumentCard> {
                     dateFormatted,
                     style: TextStyle(
                       fontSize: 12,
-                      color: isDark ? _charcoalDark : _charcoal,
+                      color:
+                          isDark ? AppColors.charcoalDark : AppColors.charcoal,
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
@@ -861,8 +875,7 @@ class _DocumentCardState extends State<_DocumentCard> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(badgeIcon,
-                          size: 12, color: urgency.badgeText),
+                      Icon(badgeIcon, size: 12, color: urgency.badgeText),
                       const SizedBox(width: 4),
                       Text(
                         daysText,
@@ -870,9 +883,7 @@ class _DocumentCardState extends State<_DocumentCard> {
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: urgency.badgeText,
-                          fontFeatures: const [
-                            FontFeature.tabularFigures()
-                          ],
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                     ],
@@ -936,7 +947,7 @@ class _EmptyDashboardState extends State<_EmptyDashboard>
             child: Container(
               padding: const EdgeInsets.all(36),
               decoration: BoxDecoration(
-                color: isDark ? _surfaceDark : _white,
+                color: isDark ? AppColors.surfaceDark : AppColors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: _cardShadowRest(isDark),
               ),
@@ -946,7 +957,7 @@ class _EmptyDashboardState extends State<_EmptyDashboard>
                   Icon(
                     Icons.calendar_today_outlined,
                     size: 48,
-                    color: isDark ? _charcoalDark : _gray,
+                    color: isDark ? AppColors.charcoalDark : AppColors.gray,
                   ),
                   const SizedBox(height: 18),
                   Text(
@@ -955,7 +966,7 @@ class _EmptyDashboardState extends State<_EmptyDashboard>
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: isDark ? _inkDark : _ink,
+                      color: isDark ? AppColors.inkDark : AppColors.ink,
                       letterSpacing: -0.3,
                     ),
                   ),
@@ -964,7 +975,8 @@ class _EmptyDashboardState extends State<_EmptyDashboard>
                     'Add your national IDs, driving licences, passports, and subscriptions to see expiry dates at a glance.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: isDark ? _charcoalDark : _charcoal,
+                      color:
+                          isDark ? AppColors.charcoalDark : AppColors.charcoal,
                       fontSize: 14,
                       height: 1.45,
                     ),

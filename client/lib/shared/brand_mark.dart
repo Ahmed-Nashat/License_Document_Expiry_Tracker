@@ -1,5 +1,8 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+
+import 'design_tokens.dart';
 
 /// Brand mark: a shield with a checkmark, with a small bell badge on the
 /// top-right corner. Single-color — ink (#111111) on light, white on dark.
@@ -12,7 +15,7 @@ class BrandMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final color = isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111111);
+    final color = isDark ? AppColors.white : AppColors.ink;
 
     return SizedBox(
       width: size,
@@ -43,27 +46,23 @@ class _BrandMarkPainter extends CustomPainter {
     // ── Shield body (rounded pentagon) ──────────────────────────────────────
     // Shield takes up roughly the bottom 88% of the icon; top-right leaves
     // room for the bell badge overlay.
-    final shieldLeft   = w * 0.04;
-    final shieldRight  = w * 0.80;
-    final shieldTop    = h * 0.12;
+    final shieldLeft = w * 0.04;
+    final shieldRight = w * 0.80;
+    final shieldTop = h * 0.12;
     final shieldBottom = h * 0.96;
-    final shieldMidX   = (shieldLeft + shieldRight) / 2;
+    final shieldMidX = (shieldLeft + shieldRight) / 2;
     final r = w * 0.12; // corner radius
 
     final shieldPath = Path()
-      ..moveTo(shieldMidX, shieldTop)          // top-center (peak)
+      ..moveTo(shieldMidX, shieldTop) // top-center (peak)
       ..lineTo(shieldRight - r, shieldTop)
       ..quadraticBezierTo(shieldRight, shieldTop, shieldRight, shieldTop + r)
       ..lineTo(shieldRight, h * 0.58)
       // Curve inward to bottom tip
+      ..cubicTo(shieldRight, h * 0.80, shieldMidX, shieldBottom, shieldMidX,
+          shieldBottom)
       ..cubicTo(
-          shieldRight,     h * 0.80,
-          shieldMidX,      shieldBottom,
-          shieldMidX,      shieldBottom)
-      ..cubicTo(
-          shieldMidX,      shieldBottom,
-          shieldLeft,      h * 0.80,
-          shieldLeft,      h * 0.58)
+          shieldMidX, shieldBottom, shieldLeft, h * 0.80, shieldLeft, h * 0.58)
       ..lineTo(shieldLeft, shieldTop + r)
       ..quadraticBezierTo(shieldLeft, shieldTop, shieldLeft + r, shieldTop)
       ..close();
@@ -72,9 +71,8 @@ class _BrandMarkPainter extends CustomPainter {
 
     // ── Checkmark (cut-out / contrasting color) ──────────────────────────
     final checkPaint = Paint()
-      ..color = color == const Color(0xFF111111)
-          ? const Color(0xFFFFFFFF)
-          : const Color(0xFF0E0E0C)
+      ..color =
+          color == AppColors.ink ? AppColors.white : const Color(0xFF0E0E0C)
       ..style = PaintingStyle.stroke
       ..strokeWidth = w * 0.095
       ..strokeCap = StrokeCap.round
@@ -82,8 +80,8 @@ class _BrandMarkPainter extends CustomPainter {
 
     final checkPath = Path()
       ..moveTo(shieldMidX - w * 0.195, h * 0.50)
-      ..lineTo(shieldMidX - w * 0.04,  h * 0.63)
-      ..lineTo(shieldMidX + w * 0.19,  h * 0.37);
+      ..lineTo(shieldMidX - w * 0.04, h * 0.63)
+      ..lineTo(shieldMidX + w * 0.19, h * 0.37);
 
     canvas.drawPath(checkPath, checkPaint);
 
@@ -92,16 +90,15 @@ class _BrandMarkPainter extends CustomPainter {
     // at the top-right corner of the bounding box to overlap the shield.
     final bellCx = w * 0.875;
     final bellCy = h * 0.175;
-    final bellR  = w * 0.175;
+    final bellR = w * 0.175;
 
     // Badge background — same color as the foreground (solid pill)
     canvas.drawCircle(Offset(bellCx, bellCy), bellR, paint);
 
     // Bell silhouette (contrasting cutout)
     final bellBody = Paint()
-      ..color = color == const Color(0xFF111111)
-          ? const Color(0xFFFFFFFF)
-          : const Color(0xFF0E0E0C)
+      ..color =
+          color == AppColors.ink ? AppColors.white : const Color(0xFF0E0E0C)
       ..style = PaintingStyle.fill;
 
     final bs = bellR * 0.55; // bell scale factor relative to badge
@@ -111,7 +108,8 @@ class _BrandMarkPainter extends CustomPainter {
     // Bell dome (arc + sides)
     final bellPath = Path();
     bellPath.addArc(
-      Rect.fromCenter(center: Offset(bx, by - bs * 0.1), width: bs * 1.6, height: bs * 1.4),
+      Rect.fromCenter(
+          center: Offset(bx, by - bs * 0.1), width: bs * 1.6, height: bs * 1.4),
       math.pi,
       math.pi,
     );

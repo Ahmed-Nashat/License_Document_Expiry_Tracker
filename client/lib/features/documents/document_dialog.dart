@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../shared/design_tokens.dart';
 import '../../shared/glass_dropdown.dart';
 import 'document_models.dart';
 import 'documents_controller.dart';
-
-// ─── Monochromatic tokens ─────────────────────────────────────────────────────
-const _ink = Color(0xFF111111);
-const _charcoal = Color(0xFF444441);
-const _gray = Color(0xFFB4B2A9);
-const _white = Color(0xFFFFFFFF);
-
-const _inkDark = Color(0xFFFAFAFA);
-const _surfaceDark = Color(0xFF1A1A18);
 
 Future<void> showDocumentDialog(
   BuildContext context, {
@@ -68,8 +61,7 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
     _selectedType = doc?.type ?? DocumentType.nationalId;
     _titleController = TextEditingController(text: doc?.title ?? '');
     _notesController = TextEditingController(text: doc?.notes ?? '');
-    _providerController =
-        TextEditingController(text: doc?.providerName ?? '');
+    _providerController = TextEditingController(text: doc?.providerName ?? '');
     _amountController = TextEditingController(
       text: doc?.renewalAmount != null ? doc!.renewalAmount.toString() : '',
     );
@@ -176,13 +168,12 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
 
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 500),
         child: Container(
           decoration: BoxDecoration(
-            color: isDark ? _surfaceDark : _white,
+            color: isDark ? AppColors.surfaceDark : AppColors.white,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -207,7 +198,7 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                         isEditing
                             ? Icons.edit_note_rounded
                             : Icons.add_circle_outline_rounded,
-                        color: isDark ? _gray : _charcoal,
+                        color: isDark ? AppColors.gray : AppColors.charcoal,
                         size: 24,
                       ),
                       const SizedBox(width: 10),
@@ -217,14 +208,17 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           letterSpacing: -0.4,
-                          color: isDark ? _inkDark : _ink,
+                          color: isDark ? AppColors.inkDark : AppColors.ink,
                         ),
                       ),
                       const Spacer(),
                       IconButton(
                         onPressed: () => Navigator.of(context).pop(),
                         icon: Icon(Icons.close_rounded,
-                            color: isDark ? _charcoal : _charcoal, size: 20),
+                            color: isDark
+                                ? AppColors.charcoal
+                                : AppColors.charcoal,
+                            size: 20),
                         tooltip: 'Close',
                         style: IconButton.styleFrom(
                           side: BorderSide.none,
@@ -268,11 +262,10 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                         hintText: 'e.g. Gym Membership, Insurance Policy',
                         prefixIcon: Icon(Icons.title_rounded),
                       ),
-                      validator: (v) =>
-                          _selectedType == DocumentType.other &&
-                                  (v == null || v.trim().isEmpty)
-                              ? 'Enter a title.'
-                              : null,
+                      validator: (v) => _selectedType == DocumentType.other &&
+                              (v == null || v.trim().isEmpty)
+                          ? 'Enter a title.'
+                          : null,
                     ),
                   ],
                   const SizedBox(height: 14),
@@ -291,7 +284,7 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                         dateLabel,
                         style: TextStyle(
                           fontSize: 14,
-                          color: isDark ? _inkDark : _ink,
+                          color: isDark ? AppColors.inkDark : AppColors.ink,
                         ),
                       ),
                     ),
@@ -336,8 +329,8 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                             initialValue: _billingCycle,
                             labelText: 'Cycle',
                             items: BillingCycle.values
-                                .map((b) => GlassDropdownItem(
-                                    value: b, label: b.label))
+                                .map((b) =>
+                                    GlassDropdownItem(value: b, label: b.label))
                                 .toList(),
                             onChanged: (val) =>
                                 setState(() => _billingCycle = val),
