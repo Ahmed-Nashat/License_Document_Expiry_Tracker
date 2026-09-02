@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/brand_mark.dart';
+import '../../shared/design_tokens.dart';
 import '../../shared/glass.dart';
 import '../../shared/theme_mode.dart';
 import '../auth/auth_controller.dart';
@@ -9,6 +10,35 @@ import '../auth/auth_models.dart';
 import '../documents/document_dialog.dart';
 import '../documents/document_models.dart';
 import '../documents/documents_controller.dart';
+
+// ─── Resting card shadow ───────────────────────────────────────────────────────
+List<BoxShadow> _cardShadowRest(bool isDark) => [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.05),
+        blurRadius: 4,
+        offset: const Offset(0, 1),
+      ),
+      BoxShadow(
+        color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.08),
+        blurRadius: 12,
+        offset: const Offset(0, 4),
+      ),
+    ];
+
+// ─── Hover card shadow — deeper ────────────────────────────────────────────────
+List<BoxShadow> _cardShadowHover(bool isDark) => [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.07),
+        blurRadius: 6,
+        offset: const Offset(0, 2),
+      ),
+      BoxShadow(
+        color: Colors.black.withValues(alpha: isDark ? 0.30 : 0.12),
+        blurRadius: 24,
+        offset: const Offset(0, 10),
+        spreadRadius: -2,
+      ),
+    ];
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key, required this.session});
@@ -19,11 +49,37 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
   final _searchController = TextEditingController();
+
+  // Nav-bar slide-down reveal on mount
+  late final AnimationController _navAnim;
+  late final Animation<double> _navFade;
+  late final Animation<Offset> _navSlide;
+
+  @override
+  void initState() {
+    super.initState();
+    _navAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 480),
+    );
+    _navFade = CurvedAnimation(parent: _navAnim, curve: Curves.easeOut);
+    _navSlide = Tween<Offset>(
+      begin: const Offset(0, -0.25),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _navAnim, curve: Curves.easeOutCubic));
+
+    // Small delay so the page settles before animating in
+    Future.delayed(const Duration(milliseconds: 60), () {
+      if (mounted) _navAnim.forward();
+    });
+  }
 
   @override
   void dispose() {
+    _navAnim.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -32,17 +88,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete tracked item?'),
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        title: const Text('Delete tracked item?',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
         content: Text(
-            'Are you sure you want to delete "${doc.title}"? This cannot be undone.'),
+          'Are you sure you want to delete "${doc.title}"? This cannot be undone.',
+          style: const TextStyle(
+              fontSize: 14, color: AppColors.charcoal, height: 1.4),
+        ),
         actions: [
-          TextButton(
+          OutlinedButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Cancel'),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444)),
+              backgroundColor: const Color(0xFF791F1F),
+              foregroundColor: AppColors.white,
+            ),
             onPressed: () {
               Navigator.of(context).pop();
               ref
@@ -75,166 +141,241 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               constraints: const BoxConstraints(maxWidth: 1180),
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Navigation Bar
-                    Row(
-                      children: [
-                        const BrandMark(size: 38),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    // ── Animated nav bar ────────────────────────────────
+                    FadeTransition(
+                      opacity: _navFade,
+                      child: SlideTransition(
+                        position: _navSlide,
+                        child: Row(
                           children: [
-                            const Text(
-                              'DueNest',
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.w900),
+                            const BrandMark(size: 36),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'DueNest',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: -0.4,
+                                    color: isDark
+                                        ? AppColors.inkDark
+                                        : AppColors.ink,
+                                  ),
+                                ),
+                                Text(
+                                  'Welcome back, $name',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark
+                                        ? AppColors.charcoalDark
+                                        : AppColors.charcoal,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              'Welcome back, $name',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isDark
-                                    ? const Color(0xFF94A3B8)
-                                    : const Color(0xFF64748B),
-                              ),
+                            const Spacer(),
+                            const ThemeToggleButton(),
+                            const SizedBox(width: 8),
+                            IconButton.outlined(
+                              tooltip: 'Sign out',
+                              onPressed: () => ref
+                                  .read(authControllerProvider.notifier)
+                                  .signOut(),
+                              icon: Icon(Icons.logout_rounded,
+                                  size: 17,
+                                  color: isDark
+                                      ? AppColors.charcoalDark
+                                      : AppColors.charcoal),
                             ),
                           ],
                         ),
-                        const Spacer(),
-                        const ThemeToggleButton(),
-                        const SizedBox(width: 8),
-                        IconButton.outlined(
-                          tooltip: 'Sign out',
-                          onPressed: () => ref
-                              .read(authControllerProvider.notifier)
-                              .signOut(),
-                          icon: const Icon(Icons.logout_rounded, size: 18),
-                        ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 20),
 
-                    // Top Action & Search Bar
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _searchController,
-                            onChanged: (val) => ref
-                                .read(documentSearchQueryProvider.notifier)
-                                .state = val,
-                            decoration: InputDecoration(
-                              hintText: 'Search documents, providers, notes...',
-                              prefixIcon: const Icon(Icons.search_rounded),
-                              suffixIcon: _searchController.text.isNotEmpty
-                                  ? IconButton(
-                                      icon: const Icon(Icons.clear_rounded,
-                                          size: 18),
-                                      onPressed: () {
-                                        _searchController.clear();
-                                        ref
-                                            .read(documentSearchQueryProvider
-                                                .notifier)
-                                            .state = '';
-                                      },
-                                    )
-                                  : null,
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        FilledButton.icon(
-                          onPressed: () => showDocumentDialog(context),
-                          icon: const Icon(Icons.add_rounded),
-                          label: const Text('Add item'),
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 18),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Filter category pills
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
+                    // ── Search + Add ─────────────────────────────────────
+                    FadeTransition(
+                      opacity: _navFade,
                       child: Row(
                         children: [
-                          FilterChip(
-                            label: const Text('All items'),
-                            selected: selectedType == null && !showArchived,
-                            onSelected: (_) {
-                              ref
-                                  .read(documentTypeFilterProvider.notifier)
-                                  .state = null;
-                              ref
-                                  .read(documentShowArchivedProvider.notifier)
-                                  .state = false;
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          ...DocumentType.values.map(
-                            (type) => Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: FilterChip(
-                                avatar: Icon(type.icon, size: 16),
-                                label: Text(type.label),
-                                selected: selectedType == type && !showArchived,
-                                onSelected: (_) {
-                                  ref
-                                      .read(documentTypeFilterProvider.notifier)
-                                      .state = type;
-                                  ref
-                                      .read(
-                                          documentShowArchivedProvider.notifier)
-                                      .state = false;
-                                },
+                          Expanded(
+                            child: TextFormField(
+                              controller: _searchController,
+                              onChanged: (val) => ref
+                                  .read(documentSearchQueryProvider.notifier)
+                                  .state = val,
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: isDark
+                                      ? AppColors.inkDark
+                                      : AppColors.ink),
+                              decoration: InputDecoration(
+                                hintText: 'Search documents, providers…',
+                                prefixIcon: Icon(Icons.search_rounded,
+                                    color: AppColors.gray),
+                                suffixIcon: _searchController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: Icon(Icons.clear_rounded,
+                                            size: 16, color: AppColors.gray),
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          ref
+                                              .read(documentSearchQueryProvider
+                                                  .notifier)
+                                              .state = '';
+                                        },
+                                      )
+                                    : null,
+                                contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 12, horizontal: 16),
                               ),
                             ),
                           ),
-                          FilterChip(
-                            avatar:
-                                const Icon(Icons.archive_outlined, size: 16),
-                            label: const Text('Archived'),
-                            selected: showArchived,
-                            onSelected: (val) {
-                              ref
-                                  .read(documentShowArchivedProvider.notifier)
-                                  .state = val;
-                              if (val) {
-                                ref
-                                    .read(documentTypeFilterProvider.notifier)
-                                    .state = null;
-                              }
-                            },
+                          const SizedBox(width: 12),
+                          FilledButton.icon(
+                            onPressed: () => showDocumentDialog(context),
+                            icon: const Icon(Icons.add_rounded, size: 18),
+                            label: const Text('Add item'),
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 18),
+                            ),
                           ),
                         ],
                       ),
                     ),
+                    const SizedBox(height: 12),
+
+                    // ── Filter chips ────────────────────────────────────
+                    FadeTransition(
+                      opacity: _navFade,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            FilterChip(
+                              label: const Text('All'),
+                              labelStyle: TextStyle(
+                                color: (selectedType == null && !showArchived)
+                                    ? (isDark
+                                        ? AppColors.inkDark
+                                        : AppColors.white)
+                                    : (isDark
+                                        ? AppColors.charcoalDark
+                                        : AppColors.charcoal),
+                              ),
+                              selected: selectedType == null && !showArchived,
+                              onSelected: (_) {
+                                ref
+                                    .read(documentTypeFilterProvider.notifier)
+                                    .state = null;
+                                ref
+                                    .read(documentShowArchivedProvider.notifier)
+                                    .state = false;
+                              },
+                            ),
+                            const SizedBox(width: 8),
+                            ...DocumentType.values.map(
+                              (type) => Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: FilterChip(
+                                  avatar: Icon(type.icon,
+                                      size: 14,
+                                      color:
+                                          selectedType == type && !showArchived
+                                              ? (isDark
+                                                  ? AppColors.inkDark
+                                                  : AppColors.white)
+                                              : AppColors.gray),
+                                  label: Text(type.label),
+                                  labelStyle: TextStyle(
+                                    color:
+                                        (selectedType == type && !showArchived)
+                                            ? (isDark
+                                                ? AppColors.inkDark
+                                                : AppColors.white)
+                                            : (isDark
+                                                ? AppColors.charcoalDark
+                                                : AppColors.charcoal),
+                                  ),
+                                  selected:
+                                      selectedType == type && !showArchived,
+                                  onSelected: (_) {
+                                    ref
+                                        .read(
+                                            documentTypeFilterProvider.notifier)
+                                        .state = type;
+                                    ref
+                                        .read(documentShowArchivedProvider
+                                            .notifier)
+                                        .state = false;
+                                  },
+                                ),
+                              ),
+                            ),
+                            FilterChip(
+                              avatar: Icon(Icons.archive_outlined,
+                                  size: 14,
+                                  color: showArchived
+                                      ? (isDark
+                                          ? AppColors.inkDark
+                                          : AppColors.white)
+                                      : AppColors.gray),
+                              label: const Text('Archived'),
+                              labelStyle: TextStyle(
+                                color: showArchived
+                                    ? (isDark
+                                        ? AppColors.inkDark
+                                        : AppColors.white)
+                                    : (isDark
+                                        ? AppColors.charcoalDark
+                                        : AppColors.charcoal),
+                              ),
+                              selected: showArchived,
+                              onSelected: (val) {
+                                ref
+                                    .read(documentShowArchivedProvider.notifier)
+                                    .state = val;
+                                if (val) {
+                                  ref
+                                      .read(documentTypeFilterProvider.notifier)
+                                      .state = null;
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 16),
 
-                    // Document List & Status Breakdown
+                    // ── Document list ────────────────────────────────────
                     Expanded(
                       child: docsAsync.when(
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
+                        loading: () => Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: isDark ? AppColors.inkDark : AppColors.ink,
+                          ),
+                        ),
                         error: (err, stack) => Center(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.error_outline_rounded,
-                                  size: 36, color: Colors.red),
+                              Icon(Icons.error_outline_rounded,
+                                  size: 32,
+                                  color: isDark
+                                      ? AppColors.charcoalDark
+                                      : AppColors.charcoal),
                               const SizedBox(height: 12),
-                              const Text('Failed to load documents.'),
+                              const Text('Failed to load documents.',
+                                  style: TextStyle(fontSize: 14)),
                               const SizedBox(height: 12),
                               FilledButton(
                                 onPressed: () => ref
@@ -253,42 +394,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              // Urgency Metrics Cards
                               _MetricsRow(docs: docs, isDark: isDark),
-                              const SizedBox(height: 18),
-
-                              // Grid of Documents
+                              const SizedBox(height: 16),
                               Expanded(
                                 child: LayoutBuilder(
                                   builder: (context, constraints) {
-                                    final width = constraints.maxWidth;
-                                    final crossAxisCount =
-                                        width > 900 ? 3 : (width > 600 ? 2 : 1);
-
+                                    final w = constraints.maxWidth;
+                                    final cols =
+                                        w > 900 ? 3 : (w > 600 ? 2 : 1);
                                     return GridView.builder(
                                       gridDelegate:
                                           SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: crossAxisCount,
-                                        mainAxisSpacing: 16,
-                                        crossAxisSpacing: 16,
-                                        mainAxisExtent: 195,
+                                        crossAxisCount: cols,
+                                        mainAxisSpacing: 12,
+                                        crossAxisSpacing: 12,
+                                        mainAxisExtent: 188,
                                       ),
                                       itemCount: docs.length,
                                       itemBuilder: (context, index) {
                                         final doc = docs[index];
-                                        return _DocumentCard(
-                                          doc: doc,
-                                          isDark: isDark,
-                                          onEdit: () => showDocumentDialog(
-                                              context,
-                                              document: doc),
-                                          onToggleArchive: () => ref
-                                              .read(documentsControllerProvider
-                                                  .notifier)
-                                              .toggleArchive(
-                                                  doc.id, !doc.isArchived),
-                                          onDelete: () =>
-                                              _confirmDelete(context, doc),
+                                        // Staggered entry: each card slides up + fades in
+                                        return _StaggeredCard(
+                                          index: index,
+                                          child: _DocumentCard(
+                                            doc: doc,
+                                            isDark: isDark,
+                                            onEdit: () => showDocumentDialog(
+                                                context,
+                                                document: doc),
+                                            onToggleArchive: () => ref
+                                                .read(
+                                                    documentsControllerProvider
+                                                        .notifier)
+                                                .toggleArchive(
+                                                    doc.id, !doc.isArchived),
+                                            onDelete: () =>
+                                                _confirmDelete(context, doc),
+                                          ),
                                         );
                                       },
                                     );
@@ -311,6 +453,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
+// ─── Staggered entry wrapper ───────────────────────────────────────────────────
+/// Wraps a card with a staggered fade + upward-slide entry animation.
+/// Each card's delay = index × 40ms, capped at 360ms total.
+class _StaggeredCard extends StatefulWidget {
+  const _StaggeredCard({required this.index, required this.child});
+
+  final int index;
+  final Widget child;
+
+  @override
+  State<_StaggeredCard> createState() => _StaggeredCardState();
+}
+
+class _StaggeredCardState extends State<_StaggeredCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 380),
+    );
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.12),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+
+    // Delay capped so late items don't feel sluggish
+    final delay = (widget.index * 40).clamp(0, 360);
+    Future.delayed(Duration(milliseconds: delay), () {
+      if (mounted) _ctrl.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FadeTransition(
+        opacity: _fade,
+        child: SlideTransition(position: _slide, child: widget.child),
+      );
+}
+
+// ─── Metrics row ──────────────────────────────────────────────────────────────
 class _MetricsRow extends StatelessWidget {
   const _MetricsRow({required this.docs, required this.isDark});
 
@@ -319,119 +514,150 @@ class _MetricsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final expired =
+        docs.where((d) => d.urgency == ExpiryUrgency.expired).length;
     final critical =
         docs.where((d) => d.urgency == ExpiryUrgency.critical).length;
     final expiringSoon =
         docs.where((d) => d.urgency == ExpiryUrgency.expiringSoon).length;
-    final upcoming =
-        docs.where((d) => d.urgency == ExpiryUrgency.upcoming).length;
-    final valid = docs.where((d) => d.urgency == ExpiryUrgency.valid).length;
-    final expired =
-        docs.where((d) => d.urgency == ExpiryUrgency.expired).length;
+    // Upcoming (31–90d) merged into Valid for a cleaner 4-tile layout
+    final valid = docs
+        .where((d) =>
+            d.urgency == ExpiryUrgency.valid ||
+            d.urgency == ExpiryUrgency.upcoming)
+        .length;
 
     return Row(
       children: [
-        if (expired > 0) ...[
-          Expanded(
-              child: _MetricBadge(
-                  label: 'Expired',
-                  count: expired,
-                  color: const Color(0xFFEF4444),
-                  isDark: isDark)),
-          const SizedBox(width: 8),
-        ],
-        Expanded(
-            child: _MetricBadge(
-                label: 'Critical',
-                count: critical,
-                color: const Color(0xFFF87171),
-                isDark: isDark)),
+        _MetricTile(
+          label: 'Expired',
+          count: expired,
+          urgency: ExpiryUrgency.expired,
+          isDark: isDark,
+        ),
         const SizedBox(width: 8),
-        Expanded(
-            child: _MetricBadge(
-                label: 'Expiring soon',
-                count: expiringSoon,
-                color: const Color(0xFFFBBF24),
-                isDark: isDark)),
+        _MetricTile(
+          label: 'Critical',
+          count: critical,
+          urgency: ExpiryUrgency.critical,
+          isDark: isDark,
+        ),
         const SizedBox(width: 8),
-        Expanded(
-            child: _MetricBadge(
-                label: 'Upcoming',
-                count: upcoming,
-                color: const Color(0xFF60A5FA),
-                isDark: isDark)),
+        _MetricTile(
+          label: 'Expiring',
+          count: expiringSoon,
+          urgency: ExpiryUrgency.expiringSoon,
+          isDark: isDark,
+        ),
         const SizedBox(width: 8),
-        Expanded(
-            child: _MetricBadge(
-                label: 'Valid',
-                count: valid,
-                color: const Color(0xFF34D399),
-                isDark: isDark)),
+        _MetricTile(
+          label: 'Valid',
+          count: valid,
+          urgency: ExpiryUrgency.valid,
+          isDark: isDark,
+        ),
       ],
     );
   }
 }
 
-class _MetricBadge extends StatelessWidget {
-  const _MetricBadge({
+// ─── Metric tile ──────────────────────────────────────────────────────────────
+/// The badge color fills the entire tile — count + label share the same
+/// brand-specified text color. No border stroke.
+class _MetricTile extends StatelessWidget {
+  const _MetricTile({
     required this.label,
     required this.count,
-    required this.color,
+    required this.urgency,
     required this.isDark,
   });
 
   final String label;
   final int count;
-  final Color color;
+  final ExpiryUrgency urgency;
   final bool isDark;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0x201E293B)
-            : Colors.white.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withValues(alpha: count > 0 ? 0.6 : 0.2),
-          width: 1.2,
+    // Dark mode: blend the vivid badgeText hue into the dark surface
+    // so each tile has a clearly saturated color tint.
+    // Light mode: badge bg fills the tile, dark text on it.
+    final Color bg;
+    final Color textColor;
+    if (isDark) {
+      bg = Color.alphaBlend(
+        urgency.badgeText.withValues(alpha: 0.25),
+        const Color(0xFF0E0E0C),
+      );
+      textColor = urgency.badgeBg; // lighter variant — readable on dark tint
+    } else {
+      bg = urgency.badgeBg;
+      textColor = urgency.badgeText;
+    }
+
+    return Expanded(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            '$count',
-            style: TextStyle(
-                fontWeight: FontWeight.w800, fontSize: 13, color: color),
-          ),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              label,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                color:
-                    isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Animated count
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 280),
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: ScaleTransition(
+                  scale:
+                      Tween<double>(begin: 0.75, end: 1.0).animate(animation),
+                  child: child,
+                ),
+              ),
+              child: Text(
+                '$count',
+                key: ValueKey<int>(count),
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  color: textColor,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: textColor.withValues(alpha: 0.80),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _DocumentCard extends StatelessWidget {
+// ─── Document card ────────────────────────────────────────────────────────────
+/// Hover-reactive card with animated shadow depth and scale lift.
+class _DocumentCard extends StatefulWidget {
   const _DocumentCard({
     required this.doc,
     required this.isDark,
@@ -447,7 +673,16 @@ class _DocumentCard extends StatelessWidget {
   final VoidCallback onDelete;
 
   @override
+  State<_DocumentCard> createState() => _DocumentCardState();
+}
+
+class _DocumentCardState extends State<_DocumentCard> {
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
+    final doc = widget.doc;
+    final isDark = widget.isDark;
     final urgency = doc.urgency;
     final days = doc.daysRemaining;
 
@@ -457,214 +692,308 @@ class _DocumentCard extends StatelessWidget {
     } else if (days == 0) {
       daysText = 'Expires today';
     } else {
-      daysText = '${days}d left';
+      daysText = 'Expires in $days days';
     }
 
     final dateFormatted =
-        "${doc.expiryDate.year}-${doc.expiryDate.month.toString().padLeft(2, '0')}-${doc.expiryDate.day.toString().padLeft(2, '0')}";
+        '${doc.expiryDate.year}-${doc.expiryDate.month.toString().padLeft(2, '0')}-${doc.expiryDate.day.toString().padLeft(2, '0')}';
 
-    return AdvancedGlassPanel(
-      radius: 18,
-      blurLevel: GlassBlurLevel.medium,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    final IconData badgeIcon;
+    if (urgency == ExpiryUrgency.expired) {
+      badgeIcon = Icons.warning_amber_outlined;
+    } else if (urgency == ExpiryUrgency.critical ||
+        urgency == ExpiryUrgency.expiringSoon) {
+      badgeIcon = Icons.schedule_rounded;
+    } else {
+      badgeIcon = Icons.check_circle_outline_rounded;
+    }
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onEdit,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.all(16),
+          transform: _hovered
+              ? Matrix4.translationValues(0, -2, 0)
+              : Matrix4.identity(),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.surfaceDark : AppColors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow:
+                _hovered ? _cardShadowHover(isDark) : _cardShadowRest(isDark),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0x303B82F6)
-                      : const Color(0x182563EB),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(doc.type.icon,
-                    size: 18, color: const Color(0xFF3B82F6)),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  doc.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w800, fontSize: 16),
-                ),
-              ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert_rounded, size: 18),
-                onSelected: (val) {
-                  if (val == 'edit') onEdit();
-                  if (val == 'archive') onToggleArchive();
-                  if (val == 'delete') onDelete();
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit_outlined, size: 18),
-                        SizedBox(width: 10),
-                        Text('Edit'),
-                      ],
+              // ── Header row ──────────────────────────────────────────
+              Row(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: _hovered
+                          ? (isDark
+                              ? const Color(0xFF303030)
+                              : const Color(0xFFE8E6DF))
+                          : (isDark ? const Color(0xFF252523) : AppColors.fog),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(doc.type.icon, size: 17, color: AppColors.gray),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      doc.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        color: isDark ? AppColors.inkDark : AppColors.ink,
+                      ),
                     ),
                   ),
-                  PopupMenuItem(
-                    value: 'archive',
-                    child: Row(
-                      children: [
-                        Icon(
-                          doc.isArchived
-                              ? Icons.unarchive_outlined
-                              : Icons.archive_outlined,
-                          size: 18,
+                  // Stop tap-to-edit propagating from the menu button
+                  GestureDetector(
+                    onTap: () {}, // absorb
+                    behavior: HitTestBehavior.opaque,
+                    child: PopupMenuButton<String>(
+                      icon: Icon(Icons.more_vert_rounded,
+                          size: 17,
+                          color: isDark
+                              ? AppColors.charcoalDark
+                              : AppColors.charcoal),
+                      color: isDark ? AppColors.surfaceDark : AppColors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      onSelected: (val) {
+                        if (val == 'edit') widget.onEdit();
+                        if (val == 'archive') widget.onToggleArchive();
+                        if (val == 'delete') widget.onDelete();
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Row(children: [
+                            Icon(Icons.edit_outlined, size: 16),
+                            SizedBox(width: 10),
+                            Text('Edit', style: TextStyle(fontSize: 14)),
+                          ]),
                         ),
-                        SizedBox(width: 10),
-                        Text(doc.isArchived ? 'Unarchive' : 'Archive'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_outline_rounded,
-                            size: 18, color: Colors.red),
-                        SizedBox(width: 10),
-                        Text('Delete', style: TextStyle(color: Colors.red)),
+                        PopupMenuItem(
+                          value: 'archive',
+                          child: Row(children: [
+                            Icon(
+                              doc.isArchived
+                                  ? Icons.unarchive_outlined
+                                  : Icons.archive_outlined,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(doc.isArchived ? 'Unarchive' : 'Archive',
+                                style: const TextStyle(fontSize: 14)),
+                          ]),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(children: [
+                            Icon(Icons.delete_outline_rounded,
+                                size: 16, color: Color(0xFF791F1F)),
+                            SizedBox(width: 10),
+                            Text('Delete',
+                                style: TextStyle(
+                                    fontSize: 14, color: Color(0xFF791F1F))),
+                          ]),
+                        ),
                       ],
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
-          const Spacer(),
-          if (doc.type == DocumentType.subscription &&
-              doc.providerName != null) ...[
-            Text(
-              doc.providerName!,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color:
-                    isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-              ),
-            ),
-            if (doc.renewalAmount != null)
-              Text(
-                '${doc.renewalAmount!.toStringAsFixed(2)}${doc.billingCycle != null ? " / ${doc.billingCycle!.label}" : ""}',
-                style:
-                    const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-            const SizedBox(height: 6),
-          ],
-          if (doc.notes != null && doc.notes!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Text(
-                doc.notes!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark
-                      ? const Color(0xFF94A3B8)
-                      : const Color(0xFF64748B),
-                ),
-              ),
-            ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                dateFormatted,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark
-                      ? const Color(0xFFCBD5E1)
-                      : const Color(0xFF475569),
-                ),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isDark ? urgency.darkBg : urgency.lightBg,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  daysText,
+              const Spacer(),
+
+              // ── Subscription meta ───────────────────────────────────
+              if (doc.type == DocumentType.subscription &&
+                  doc.providerName != null) ...[
+                Text(
+                  doc.providerName!,
                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color: urgency.baseColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? AppColors.charcoalDark : AppColors.charcoal,
                   ),
                 ),
+                if (doc.renewalAmount != null)
+                  Text(
+                    '${doc.renewalAmount!.toStringAsFixed(2)}'
+                    '${doc.billingCycle != null ? " / ${doc.billingCycle!.label}" : ""}',
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? AppColors.charcoalDark
+                            : AppColors.charcoal,
+                        fontFeatures: const [FontFeature.tabularFigures()]),
+                  ),
+                const SizedBox(height: 5),
+              ],
+
+              // ── Notes ───────────────────────────────────────────────
+              if (doc.notes != null && doc.notes!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 5),
+                  child: Text(
+                    doc.notes!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 12,
+                        color:
+                            isDark ? AppColors.charcoalDark : AppColors.gray),
+                  ),
+                ),
+
+              // ── Date + status badge ─────────────────────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    dateFormatted,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color:
+                          isDark ? AppColors.charcoalDark : AppColors.charcoal,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  // Status badge — colored text/icon only, no bg fill
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(badgeIcon, size: 12, color: urgency.badgeText),
+                      const SizedBox(width: 4),
+                      Text(
+                        daysText,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: urgency.badgeText,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
-class _EmptyDashboard extends StatelessWidget {
+// ─── Empty dashboard ──────────────────────────────────────────────────────────
+class _EmptyDashboard extends StatefulWidget {
   const _EmptyDashboard({required this.isDark});
 
   final bool isDark;
 
   @override
+  State<_EmptyDashboard> createState() => _EmptyDashboardState();
+}
+
+class _EmptyDashboardState extends State<_EmptyDashboard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 500));
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.10),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+    Future.delayed(const Duration(milliseconds: 100),
+        () => mounted ? _ctrl.forward() : null);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = widget.isDark;
     return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: AdvancedGlassPanel(
-          radius: 26,
-          blurLevel: GlassBlurLevel.strong,
-          padding: const EdgeInsets.all(36),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.calendar_month_outlined,
-                size: 54,
-                color: const Color(0xFF3B82F6),
+      child: FadeTransition(
+        opacity: _fade,
+        child: SlideTransition(
+          position: _slide,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Container(
+              padding: const EdgeInsets.all(36),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.surfaceDark : AppColors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: _cardShadowRest(isDark),
               ),
-              const SizedBox(height: 20),
-              const Text(
-                'No tracked documents found',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 48,
+                    color: isDark ? AppColors.charcoalDark : AppColors.gray,
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    'Nothing tracked yet',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppColors.inkDark : AppColors.ink,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Add your national IDs, driving licences, passports, and subscriptions to see expiry dates at a glance.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color:
+                          isDark ? AppColors.charcoalDark : AppColors.charcoal,
+                      fontSize: 14,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: () => showDocumentDialog(context),
+                    icon: const Icon(Icons.add_rounded, size: 17),
+                    label: const Text('Track your first item'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 22, vertical: 14),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              Text(
-                'Start tracking your national IDs, driver licenses, passports, and subscriptions to get timely reminders.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: isDark
-                      ? const Color(0xFF94A3B8)
-                      : const Color(0xFF64748B),
-                  fontSize: 14,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: () => showDocumentDialog(context),
-                icon: const Icon(Icons.add_rounded),
-                label: const Text('Track your first document'),
-                style: FilledButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

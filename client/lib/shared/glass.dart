@@ -1,17 +1,69 @@
+import 'dart:math' as math;
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
+import 'design_tokens.dart';
+
 enum GlassBlurLevel {
-  subtle(8.0), // backdrop-blur-sm
-  medium(16.0), // backdrop-blur-md
-  strong(28.0), // backdrop-blur-xl
-  maximum(50.0); // backdrop-blur-3xl
+  subtle(8.0),
+  medium(16.0),
+  strong(28.0),
+  maximum(50.0);
 
   final double sigma;
   const GlassBlurLevel(this.sigma);
 }
 
-/// Rich Apple-style background with glowing ambient orbs so glassmorphism blur is clearly visible.
+// ─── Scattered numbers background painter ─────────────────────────────────────
+/// Draws large, barely-visible day numerals (1–31) scattered across the canvas.
+/// Sizes vary from 48px to 130px, positions and rotations are deterministic
+/// (seeded by month+year) so they don't jump on every rebuild.
+class _NumberBackgroundPainter extends CustomPainter {
+  _NumberBackgroundPainter({required this.isDark});
+
+  final bool isDark;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final base = isDark ? AppColors.white : AppColors.ink;
+
+    final now = DateTime.now();
+    final seed = now.year * 12 + now.month;
+    final rng = math.Random(seed);
+
+    // Place 31 numbers pseudo-randomly; vary size + opacity per number
+    for (int day = 1; day <= 31; day++) {
+      final x = rng.nextDouble() * size.width;
+      final y = rng.nextDouble() * size.height;
+      final fontSize = 48.0 + rng.nextDouble() * 82.0; // 48–130px
+      final alpha = 0.035 + rng.nextDouble() * 0.045; // 3.5–8%
+
+      final tp = TextPainter(
+        text: TextSpan(
+          text: '$day',
+          style: TextStyle(
+            color: base.withValues(alpha: alpha),
+            fontSize: fontSize,
+            fontWeight: FontWeight.w700,
+            fontFamily: 'Inter',
+            letterSpacing: -2,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      tp.layout();
+      // Centre the number on its random point
+      tp.paint(canvas, Offset(x - tp.width / 2, y - tp.height / 2));
+    }
+  }
+
+  @override
+  bool shouldRepaint(_NumberBackgroundPainter old) => old.isDark != isDark;
+}
+
+// ─── App background ────────────────────────────────────────────────────────────
+/// Flat monochromatic canvas with scattered day-number typographic texture.
 class GlassBackground extends StatelessWidget {
   const GlassBackground({super.key, required this.child});
 
@@ -20,50 +72,31 @@ class GlassBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF0E0E0C) : AppColors.fog;
 
     return Stack(
       children: [
-        // Clean base gradient background
+        Positioned.fill(child: ColoredBox(color: bgColor)),
         Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isDark
-                    ? const [
-                        Color(0xFF0A1020),
-                        Color(0xFF101A31),
-                        Color(0xFF0B1326),
-                      ]
-                    : const [
-                        Color(0xFFF8FAFF),
-                        Color(0xFFEEF3FF),
-                        Color(0xFFF8F9FC),
-                      ],
-              ),
-            ),
-          ),
+          child: CustomPaint(painter: _NumberBackgroundPainter(isDark: isDark)),
         ),
-
-        // Content
         Positioned.fill(child: child),
       ],
     );
   }
 }
 
-/// Advanced Frosted Glass Panel implementing the Glassmorphism Advanced design specification.
+// ─── Frosted glass panel ───────────────────────────────────────────────────────
 class AdvancedGlassPanel extends StatelessWidget {
   const AdvancedGlassPanel({
     super.key,
     required this.child,
-    this.blurLevel = GlassBlurLevel.strong, // default: backdrop-blur-xl
+    this.blurLevel = GlassBlurLevel.medium,
     this.padding,
-    this.radius = 24.0,
+    this.radius = 12.0,
     this.tint,
     this.primaryColor,
-    this.showBorder = false,
+    this.showBorder = false, // No borders
   });
 
   final Widget child;
@@ -78,48 +111,23 @@ class AdvancedGlassPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Critical Rules from SKILL.md:
-    // 1. backdrop-blur required
-    // 2. Semi-transparent background (bg-white/10 to bg-white/25, dark:bg-black/40 to dark:bg-white/5)
-    // 3. Subtle borders: border-white/20 with specular light gradient
-    // 4. Shadow for depth: shadow-xl shadow-primary/10
-    // 5. Dark mode variant defined
-    final List<Color> surfaceColors;
+    final Color surface;
     if (tint != null) {
-      surfaceColors = [
-        tint!.withValues(alpha: isDark ? 0.75 : 0.90),
-        tint!.withValues(alpha: isDark ? 0.55 : 0.80),
-      ];
+      surface = tint!.withValues(alpha: isDark ? 0.72 : 0.90);
     } else if (isDark) {
-      surfaceColors = [
-        const Color(0xFF1E293B).withValues(alpha: 0.70),
-        const Color(0xFF0F172A).withValues(alpha: 0.85),
-      ];
+      surface = AppColors.surfaceDark.withValues(alpha: 0.82);
     } else {
-      surfaceColors = [
-        Colors.white.withValues(alpha: 0.92),
-        Colors.white.withValues(alpha: 0.82),
-      ];
+      surface = AppColors.white.withValues(alpha: 0.92);
     }
-
-    final Color shadowBaseColor = primaryColor ?? const Color(0xFF2563EB);
 
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(radius),
         boxShadow: [
-          // Colored depth shadow: shadow-xl shadow-primary/20
           BoxShadow(
-            color: shadowBaseColor.withValues(alpha: isDark ? 0.28 : 0.16),
-            blurRadius: 32,
-            offset: const Offset(0, 14),
-            spreadRadius: -2,
-          ),
-          // Ambient soft ambient dark shadow
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.08),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -134,18 +142,7 @@ class AdvancedGlassPanel extends StatelessWidget {
             padding: padding,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(radius),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: surfaceColors,
-              ),
-              border: showBorder
-                  ? Border.all(
-                      color:
-                          Colors.white.withValues(alpha: isDark ? 0.22 : 0.55),
-                      width: 1.2,
-                    )
-                  : null,
+              color: surface,
             ),
             child: child,
           ),
@@ -155,13 +152,9 @@ class AdvancedGlassPanel extends StatelessWidget {
   }
 }
 
-/// A pre-built layered glass stack as described in SKILL.md
+// ─── Layered glass stack ───────────────────────────────────────────────────────
 class LayeredGlassStack extends StatelessWidget {
-  const LayeredGlassStack({
-    super.key,
-    required this.child,
-    this.primaryColor,
-  });
+  const LayeredGlassStack({super.key, required this.child, this.primaryColor});
 
   final Widget child;
   final Color? primaryColor;
@@ -173,17 +166,14 @@ class LayeredGlassStack extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Background layer - most blur (3xl), bg-white/5
         Positioned.fill(
           child: AdvancedGlassPanel(
             blurLevel: GlassBlurLevel.maximum,
-            tint: isDark ? const Color(0xFF1E293B) : Colors.white,
-            radius: 32,
-            primaryColor: primaryColor,
+            tint: isDark ? AppColors.surfaceDark : AppColors.white,
+            radius: 24,
             child: const SizedBox.expand(),
           ),
         ),
-        // Middle layer - strong blur (xl), bg-white/10
         Positioned.fill(
           top: 10,
           bottom: 10,
@@ -191,21 +181,18 @@ class LayeredGlassStack extends StatelessWidget {
           right: 10,
           child: AdvancedGlassPanel(
             blurLevel: GlassBlurLevel.strong,
-            tint: isDark ? const Color(0xFF334155) : Colors.white,
-            radius: 28,
-            primaryColor: primaryColor,
+            tint: isDark ? const Color(0xFF222220) : AppColors.white,
+            radius: 20,
             child: const SizedBox.expand(),
           ),
         ),
-        // Content layer - medium blur (md), bg-white/20
         Padding(
           padding: const EdgeInsets.all(20.0),
           child: AdvancedGlassPanel(
             blurLevel: GlassBlurLevel.medium,
-            tint: isDark ? const Color(0xFF0F172A) : Colors.white,
-            radius: 24,
+            tint: isDark ? const Color(0xFF111110) : AppColors.white,
+            radius: 16,
             padding: const EdgeInsets.all(24.0),
-            primaryColor: primaryColor,
             child: child,
           ),
         ),

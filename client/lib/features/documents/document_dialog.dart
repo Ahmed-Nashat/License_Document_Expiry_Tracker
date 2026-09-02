@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../shared/glass.dart';
+
+import '../../shared/design_tokens.dart';
 import '../../shared/glass_dropdown.dart';
 import 'document_models.dart';
 import 'documents_controller.dart';
@@ -15,16 +16,15 @@ Future<void> showDocumentDialog(
     barrierDismissible: true,
     barrierLabel: 'Dismiss',
     barrierColor: isDark
-        ? Colors.black.withValues(alpha: 0.65)
-        : const Color(0xFF0F172A).withValues(alpha: 0.35),
-    transitionDuration: const Duration(milliseconds: 260),
-    pageBuilder: (context, anim1, anim2) => Center(
-      child: DocumentDialog(document: document),
-    ),
+        ? Colors.black.withValues(alpha: 0.60)
+        : Colors.black.withValues(alpha: 0.30),
+    transitionDuration: const Duration(milliseconds: 220),
+    pageBuilder: (context, anim1, anim2) =>
+        Center(child: DocumentDialog(document: document)),
     transitionBuilder: (context, anim1, anim2, child) => FadeTransition(
       opacity: anim1,
       child: ScaleTransition(
-        scale: Tween<double>(begin: 0.94, end: 1.0).animate(
+        scale: Tween<double>(begin: 0.96, end: 1.0).animate(
           CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic),
         ),
         child: child,
@@ -87,15 +87,13 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
       firstDate: DateTime(now.year - 5),
       lastDate: DateTime(now.year + 50),
     );
-    if (picked != null) {
-      setState(() => _expiryDate = picked);
-    }
+    if (picked != null) setState(() => _expiryDate = picked);
   }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     if (_expiryDate == null) {
-      setState(() => _errorMessage = 'Please select an expiry date.');
+      setState(() => _errorMessage = 'Select an expiry date.');
       return;
     }
 
@@ -165,95 +163,98 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
     final isEditing = widget.document != null;
 
     final dateLabel = _expiryDate != null
-        ? "${_expiryDate!.year}-${_expiryDate!.month.toString().padLeft(2, '0')}-${_expiryDate!.day.toString().padLeft(2, '0')}"
+        ? '${_expiryDate!.year}-${_expiryDate!.month.toString().padLeft(2, '0')}-${_expiryDate!.day.toString().padLeft(2, '0')}'
         : 'Select expiry date';
 
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 520),
-        child: AdvancedGlassPanel(
-          radius: 26,
-          blurLevel: GlassBlurLevel.strong,
-          primaryColor: const Color(0xFF2563EB),
-          showBorder: false,
-          padding: const EdgeInsets.all(28),
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.surfaceDark : AppColors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.08),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
           child: SingleChildScrollView(
+            padding: const EdgeInsets.all(28),
             child: Form(
               key: _formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Header
                   Row(
                     children: [
                       Icon(
                         isEditing
                             ? Icons.edit_note_rounded
                             : Icons.add_circle_outline_rounded,
-                        color: const Color(0xFF3B82F6),
-                        size: 28,
+                        color: isDark ? AppColors.gray : AppColors.charcoal,
+                        size: 24,
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Text(
-                        isEditing ? 'Edit document' : 'Track new item',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.6,
+                        isEditing ? 'Edit item' : 'Track new item',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.4,
+                          color: isDark ? AppColors.inkDark : AppColors.ink,
                         ),
                       ),
                       const Spacer(),
                       IconButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close_rounded),
+                        icon: Icon(Icons.close_rounded,
+                            color: isDark
+                                ? AppColors.charcoal
+                                : AppColors.charcoal,
+                            size: 20),
                         tooltip: 'Close',
+                        style: IconButton.styleFrom(
+                          side: BorderSide.none,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
+
+                  // Error box
                   if (_errorMessage != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 14),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF3F1212)
-                              : const Color(0xFFFFF1F0),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          _errorMessage!,
-                          style: TextStyle(
-                            color: isDark
-                                ? const Color(0xFFFECACA)
-                                : const Color(0xFFBA1A1A),
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
+                      child: _ErrorBox(message: _errorMessage!),
                     ),
+
+                  // Category
                   GlassDropdownField<DocumentType>(
                     initialValue: _selectedType,
                     labelText: 'Category',
                     prefixIcon: Icon(_selectedType.icon),
                     items: DocumentType.values
-                        .map(
-                          (t) => GlassDropdownItem(
-                            value: t,
-                            label: t.label,
-                            icon: t.icon,
-                          ),
-                        )
+                        .map((t) => GlassDropdownItem(
+                              value: t,
+                              label: t.label,
+                              icon: t.icon,
+                            ))
                         .toList(),
                     onChanged: (val) {
                       if (val != null) setState(() => _selectedType = val);
                     },
                   ),
+
+                  // Title — only for "Other"
                   if (_selectedType == DocumentType.other) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     TextFormField(
                       controller: _titleController,
                       decoration: const InputDecoration(
@@ -267,24 +268,31 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                           : null,
                     ),
                   ],
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
+
+                  // Expiry date picker
                   InkWell(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(8),
                     onTap: _pickDate,
                     child: InputDecorator(
                       decoration: const InputDecoration(
                         labelText: 'Expiry date',
-                        prefixIcon: Icon(Icons.calendar_today_rounded),
+                        prefixIcon: Icon(Icons.calendar_today_outlined),
                         suffixIcon: Icon(Icons.arrow_drop_down_rounded),
                       ),
                       child: Text(
                         dateLabel,
-                        style: const TextStyle(fontSize: 15),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDark ? AppColors.inkDark : AppColors.ink,
+                        ),
                       ),
                     ),
                   ),
+
+                  // Subscription fields
                   if (_selectedType == DocumentType.subscription) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     TextFormField(
                       controller: _providerController,
                       decoration: const InputDecoration(
@@ -298,7 +306,7 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                               ? 'Enter a provider name.'
                               : null,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     Row(
                       children: [
                         Expanded(
@@ -314,19 +322,15 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           flex: 2,
                           child: GlassDropdownField<BillingCycle>(
                             initialValue: _billingCycle,
                             labelText: 'Cycle',
                             items: BillingCycle.values
-                                .map(
-                                  (b) => GlassDropdownItem(
-                                    value: b,
-                                    label: b.label,
-                                  ),
-                                )
+                                .map((b) =>
+                                    GlassDropdownItem(value: b, label: b.label))
                                 .toList(),
                             onChanged: (val) =>
                                 setState(() => _billingCycle = val),
@@ -335,17 +339,21 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                       ],
                     ),
                   ],
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
+
+                  // Notes
                   TextFormField(
                     controller: _notesController,
                     maxLines: 2,
                     decoration: const InputDecoration(
                       labelText: 'Notes (optional)',
-                      hintText: 'Any reminder details...',
+                      hintText: 'Any reminder details…',
                       prefixIcon: Icon(Icons.notes_rounded),
                     ),
                   ),
                   const SizedBox(height: 24),
+
+                  // Action buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -353,50 +361,21 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                         onPressed: _isSaving
                             ? null
                             : () => Navigator.of(context).pop(),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 14),
-                          foregroundColor: isDark
-                              ? const Color(0xFFE2E8F0)
-                              : const Color(0xFF1E293B),
-                          side: BorderSide(
-                            color: isDark
-                                ? const Color(0x4094A3B8)
-                                : const Color(0xFFCBD5E1),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: const Text('Cancel',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
+                        child: const Text('Cancel'),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       FilledButton(
                         onPressed: _isSaving ? null : _save,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF2563EB),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
                         child: _isSaving
                             ? const SizedBox(
-                                width: 18,
-                                height: 18,
+                                width: 16,
+                                height: 16,
                                 child: CircularProgressIndicator(
                                   color: Colors.white,
                                   strokeWidth: 2,
                                 ),
                               )
-                            : Text(
-                                isEditing ? 'Save changes' : 'Add document',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w700, fontSize: 15),
-                              ),
+                            : Text(isEditing ? 'Save changes' : 'Add item'),
                       ),
                     ],
                   ),
@@ -408,4 +387,38 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
       ),
     );
   }
+}
+
+// ─── Error box ────────────────────────────────────────────────────────────────
+
+class _ErrorBox extends StatelessWidget {
+  const _ErrorBox({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFCEBEB),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.info_outline_rounded,
+                color: Color(0xFF791F1F), size: 18),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Color(0xFF791F1F),
+                  fontSize: 13,
+                  height: 1.35,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
 }
