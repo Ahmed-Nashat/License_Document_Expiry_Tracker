@@ -374,89 +374,99 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
                     // ── Document list ────────────────────────────────────
                     Expanded(
-                      child: docsAsync.when(
-                        loading: () => Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: isDark ? AppColors.inkDark : AppColors.ink,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        child: docsAsync.when(
+                          loading: () => Center(
+                            key: const ValueKey('loading'),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: isDark ? AppColors.inkDark : AppColors.ink,
+                            ),
                           ),
-                        ),
-                        error: (err, stack) => Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.error_outline_rounded,
-                                  size: 32,
-                                  color: isDark
-                                      ? AppColors.charcoalDark
-                                      : AppColors.charcoal),
-                              const SizedBox(height: 12),
-                              const Text('Failed to load documents.',
-                                  style: TextStyle(fontSize: 14)),
-                              const SizedBox(height: 12),
-                              FilledButton(
-                                onPressed: () => ref
-                                    .read(documentsControllerProvider.notifier)
-                                    .reload(),
-                                child: const Text('Retry'),
-                              ),
-                            ],
-                          ),
-                        ),
-                        data: (docs) {
-                          if (docs.isEmpty) {
-                            return _EmptyDashboard(isDark: isDark);
-                          }
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _MetricsRow(docs: docs, isDark: isDark),
-                              const SizedBox(height: 16),
-                              Expanded(
-                                child: LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    final w = constraints.maxWidth;
-                                    final cols =
-                                        w > 900 ? 3 : (w > 600 ? 2 : 1);
-                                    return GridView.builder(
-                                      gridDelegate:
-                                          SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: cols,
-                                        mainAxisSpacing: 12,
-                                        crossAxisSpacing: 12,
-                                        mainAxisExtent: 188,
-                                      ),
-                                      itemCount: docs.length,
-                                      itemBuilder: (context, index) {
-                                        final doc = docs[index];
-                                        // Staggered entry: each card slides up + fades in
-                                        return _StaggeredCard(
-                                          index: index,
-                                          child: _DocumentCard(
-                                            doc: doc,
-                                            isDark: isDark,
-                                            onEdit: () => showDocumentDialog(
-                                                context,
-                                                document: doc),
-                                            onToggleArchive: () => ref
-                                                .read(
-                                                    documentsControllerProvider
-                                                        .notifier)
-                                                .toggleArchive(
-                                                    doc.id, !doc.isArchived),
-                                            onDelete: () =>
-                                                _confirmDelete(context, doc),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
+                          error: (err, stack) => Center(
+                            key: const ValueKey('error'),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.error_outline_rounded,
+                                    size: 32,
+                                    color: isDark
+                                        ? AppColors.charcoalDark
+                                        : AppColors.charcoal),
+                                const SizedBox(height: 12),
+                                const Text('Failed to load documents.',
+                                    style: TextStyle(fontSize: 14)),
+                                const SizedBox(height: 12),
+                                FilledButton(
+                                  onPressed: () => ref
+                                      .read(documentsControllerProvider.notifier)
+                                      .reload(),
+                                  child: const Text('Retry'),
                                 ),
-                              ),
-                            ],
-                          );
-                        },
+                              ],
+                            ),
+                          ),
+                          data: (docs) {
+                            if (docs.isEmpty) {
+                              return _EmptyDashboard(
+                                  key: const ValueKey('empty'), isDark: isDark);
+                            }
+
+                            return Column(
+                              key: ValueKey('data_${docs.length}_$selectedType'),
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _MetricsRow(docs: docs, isDark: isDark),
+                                const SizedBox(height: 16),
+                                Expanded(
+                                  child: LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final w = constraints.maxWidth;
+                                      final cols =
+                                          w > 900 ? 3 : (w > 600 ? 2 : 1);
+                                      return GridView.builder(
+                                        gridDelegate:
+                                            SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: cols,
+                                          mainAxisSpacing: 12,
+                                          crossAxisSpacing: 12,
+                                          mainAxisExtent: 188,
+                                        ),
+                                        itemCount: docs.length,
+                                        itemBuilder: (context, index) {
+                                          final doc = docs[index];
+                                          // Staggered entry: each card slides up + fades in
+                                          return _StaggeredCard(
+                                            key: ValueKey(doc.id),
+                                            index: index,
+                                            child: _DocumentCard(
+                                              doc: doc,
+                                              isDark: isDark,
+                                              onEdit: () => showDocumentDialog(
+                                                  context,
+                                                  document: doc),
+                                              onToggleArchive: () => ref
+                                                  .read(
+                                                      documentsControllerProvider
+                                                          .notifier)
+                                                  .toggleArchive(
+                                                      doc.id, !doc.isArchived),
+                                              onDelete: () =>
+                                                  _confirmDelete(context, doc),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ],
