@@ -607,7 +607,8 @@ class AdminActions {
   }
 
   Future<void> sendTicketMessage(String id, String message) async {
-    await _client.post('/api/admin/support/$id/message', data: {'message': message});
+    await _client
+        .post('/api/admin/support/$id/message', data: {'message': message});
     _ref.invalidate(adminAuditLogsProvider);
   }
 

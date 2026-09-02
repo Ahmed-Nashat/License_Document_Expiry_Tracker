@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../../lib/prisma.js';
 import { requireAdmin } from '../../plugins/requireAdmin.js';
 import { createAuditLog } from '../../utils/auditLogger.js';
+import { escapeHtml } from '../../utils/escapeHtml.js';
 
 interface JwtPayload {
   userId: string;
@@ -567,7 +568,7 @@ export async function adminRoutes(app: FastifyInstance) {
     <h2 style="margin-top: 0; color: #FAFAFA; font-weight: 600;">Update on your ticket</h2>
     <p style="color: #B4B2A9; font-size: 15px; line-height: 1.6;">An admin has sent you a message regarding your ticket:</p>
     <div style="background-color: #2A2A28; padding: 16px 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #B4B2A9;">
-      <p style="margin: 0; font-size: 15px; line-height: 1.5;">${input.message.replace(/\n/g, '<br>')}</p>
+      <p style="margin: 0; font-size: 15px; line-height: 1.5;">${escapeHtml(input.message).replace(/\r?\n/g, '<br>')}</p>
     </div>
     <p style="color: #B4B2A9; font-size: 13px; margin-bottom: 0; border-top: 1px solid #3A3A38; padding-top: 20px;">
       This is an automated message from DueNest Support.<br/>Please do not reply directly to this email.
@@ -579,12 +580,12 @@ export async function adminRoutes(app: FastifyInstance) {
       request.log.error({ err }, 'Failed to send support email message');
       return reply.status(500).send({ error: 'EMAIL_FAILED', message: 'Could not send the email.' });
     }
-    await createAuditLog(request.server, { 
-      actorId: (request.user as any).userId, 
-      action: 'SUPPORT_MESSAGE_SENT', 
-      actorType: 'ADMIN', 
-      targetId: ticket.id, 
-      result: 'SUCCESS' 
+    await createAuditLog(request.server, {
+      actorId: (request.user as JwtPayload).userId,
+      action: 'SUPPORT_MESSAGE_SENT',
+      actorType: 'ADMIN',
+      targetId: ticket.id,
+      result: 'SUCCESS'
     });
     return reply.status(200).send({ message: 'Message sent successfully.' });
   });

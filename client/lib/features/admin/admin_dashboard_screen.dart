@@ -805,14 +805,16 @@ class _UserDetailPanel extends ConsumerWidget {
                       decoration: BoxDecoration(
                           color: const Color(0xFF4C1415),
                           borderRadius: BorderRadius.circular(8)),
-                      child: Text('SUSPENDED: ${user.suspendedReason ?? 'Ã¢â‚¬â€'}',
+                      child: Text(
+                          'SUSPENDED: ${user.suspendedReason ?? 'Ã¢â‚¬â€'}',
                           style: const TextStyle(
                               fontSize: 12, color: Colors.redAccent)),
                     ),
                     const SizedBox(height: 16),
                   ],
                   _DetailRow(label: 'Email', value: user.email),
-                  _DetailRow(label: 'Name', value: user.displayName ?? 'Ã¢â‚¬â€'),
+                  _DetailRow(
+                      label: 'Name', value: user.displayName ?? 'Ã¢â‚¬â€'),
                   _DetailRow(label: 'Role', value: user.role),
                   _DetailRow(label: 'Timezone', value: user.timeZone),
                   _DetailRow(label: 'Joined', value: _fmtDate(user.createdAt)),
@@ -913,7 +915,8 @@ class _AuditLogsTab extends ConsumerWidget {
       children: [
         const _TabHeader(
             title: 'Audit Logs',
-            subtitle: 'Append-only Ã¢â‚¬â€ no admin can edit or delete entries'),
+            subtitle:
+                'Append-only Ã¢â‚¬â€ no admin can edit or delete entries'),
         Padding(
           padding: const EdgeInsets.fromLTRB(32, 16, 32, 8),
           child: Row(
@@ -1475,7 +1478,10 @@ class _SupportTabState extends ConsumerState<_SupportTab> {
                   key: ValueKey(_selected!.id),
                   width: 360,
                   child: _TicketDetailPanel(
-                      ticket: ticketsAsync.value?.tickets.where((t) => t.id == _selected!.id).firstOrNull ?? _selected!,
+                      ticket: ticketsAsync.value?.tickets
+                              .where((t) => t.id == _selected!.id)
+                              .firstOrNull ??
+                          _selected!,
                       onClose: () => setState(() => _selected = null)),
                 ),
         ),
@@ -1494,7 +1500,8 @@ class _TicketDetailPanel extends ConsumerStatefulWidget {
 
 class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
   late TextEditingController _notesCtrl;
-  Future<void> _showEmailDialog(BuildContext context, String ticketId, AdminActions actions) async {
+  Future<void> _showEmailDialog(
+      BuildContext context, String ticketId, AdminActions actions) async {
     final msgCtrl = TextEditingController();
     await showDialog(
       context: context,
@@ -1503,49 +1510,71 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
         return StatefulBuilder(
           builder: (context, setState) {
             final isDark = Theme.of(context).brightness == Brightness.dark;
-            
+
             return AlertDialog(
               backgroundColor: isDark ? AppColors.surfaceDark : AppColors.white,
-              title: Text('Send Email to Requester', style: TextStyle(color: isDark ? AppColors.inkDark : AppColors.ink)),
+              title: Text('Send Email to Requester',
+                  style: TextStyle(
+                      color: isDark ? AppColors.inkDark : AppColors.ink)),
               content: SizedBox(
                 width: 400,
                 child: TextField(
                   controller: msgCtrl,
                   maxLines: 6,
-                  decoration: const InputDecoration(labelText: 'Message content', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'Message content',
+                      border: OutlineInputBorder()),
                 ),
               ),
               actions: [
-                TextButton(onPressed: isLoading ? null : () => Navigator.pop(ctx), child: const Text('Cancel')),
+                TextButton(
+                    onPressed: isLoading ? null : () => Navigator.pop(ctx),
+                    child: const Text('Cancel')),
                 FilledButton.icon(
-                  onPressed: isLoading ? null : () async {
-                    if (msgCtrl.text.trim().isEmpty) return;
-                    setState(() => isLoading = true);
-                    try {
-                      await actions.sendTicketMessage(ticketId, msgCtrl.text.trim());
-                      if (ctx.mounted) {
-                        Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email sent successfully.')));
-                      }
-                    } catch (e) {
-                      if (ctx.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                    } finally {
-                      if (ctx.mounted) setState(() => isLoading = false);
-                    }
-                  },
-                  icon: isLoading 
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          if (msgCtrl.text.trim().isEmpty) return;
+                          setState(() => isLoading = true);
+                          try {
+                            await actions.sendTicketMessage(
+                                ticketId, msgCtrl.text.trim());
+                            if (ctx.mounted) {
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text('Email sent successfully.')));
+                            }
+                          } catch (e) {
+                            if (ctx.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error: $e')));
+                            }
+                          } finally {
+                            if (ctx.mounted) {
+                              setState(() => isLoading = false);
+                            }
+                          }
+                        },
+                  icon: isLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.send_rounded, size: 16),
                   label: Text(isLoading ? 'Sending...' : 'Send Email'),
                   style: FilledButton.styleFrom(
-                    disabledBackgroundColor: isDark ? AppColors.charcoal : AppColors.gray,
-                    disabledForegroundColor: isDark ? AppColors.white : AppColors.ink,
+                    disabledBackgroundColor:
+                        isDark ? AppColors.charcoal : AppColors.gray,
+                    disabledForegroundColor:
+                        isDark ? AppColors.white : AppColors.ink,
                   ),
                 ),
-            ],
-          );
-        },
-      );
+              ],
+            );
+          },
+        );
       },
     );
   }
@@ -1644,70 +1673,84 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
                   const Text('Actions',
                       style: TextStyle(fontSize: 12, color: AppColors.gray)),
                   const SizedBox(height: 8),
-                  Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        FilledButton.icon(
-                          onPressed: widget.ticket.status == 'RESOLVED' ? null : () => _showEmailDialog(context, widget.ticket.id, actions),
-                          icon: const Icon(Icons.mail_outline_rounded, size: 16),
-                          label: const Text('Send Email to Requester'),
-                        ),
-                        OutlinedButton.icon(
-                          onPressed: widget.ticket.status == 'RESOLVED' ? null : () async {
-                            try {
-                              await actions.updateTicket(widget.ticket.id, notes: _notesCtrl.text.trim());
-                              if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notes saved.')));
-                            } catch (e) {
-                              if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                            }
-                          },
-                          icon: const Icon(Icons.save_rounded, size: 16),
-                          label: const Text('Save Notes'),
-                        ),
-                      ]),
+                  Wrap(spacing: 8, runSpacing: 8, children: [
+                    FilledButton.icon(
+                      onPressed: widget.ticket.status == 'RESOLVED'
+                          ? null
+                          : () => _showEmailDialog(
+                              context, widget.ticket.id, actions),
+                      icon: const Icon(Icons.mail_outline_rounded, size: 16),
+                      label: const Text('Send Email to Requester'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: widget.ticket.status == 'RESOLVED'
+                          ? null
+                          : () async {
+                              try {
+                                await actions.updateTicket(widget.ticket.id,
+                                    notes: _notesCtrl.text.trim());
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('Notes saved.')));
+                              } catch (e) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error: $e')));
+                              }
+                            },
+                      icon: const Icon(Icons.save_rounded, size: 16),
+                      label: const Text('Save Notes'),
+                    ),
+                  ]),
                   const SizedBox(height: 20),
                   const Text('Update Status',
                       style: TextStyle(fontSize: 12, color: AppColors.gray)),
                   const SizedBox(height: 8),
                   Wrap(
                       spacing: 8,
-                      children: ['OPEN', 'IN_PROGRESS', 'RESOLVED']
-                          .map((s) {
-                            final isActive = widget.ticket.status == s;
-                            final isResolved = widget.ticket.status == 'RESOLVED';
-                            
-                            final onPressed = (isActive || isResolved) ? null : () async {
-                              try {
-                                await actions.updateTicket(
-                                    widget.ticket.id,
-                                    status: s,
-                                    notes: _notesCtrl.text.trim());
-                                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Status updated to $s')));
-                              } catch (e) {
-                                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                              }
-                            };
+                      children: ['OPEN', 'IN_PROGRESS', 'RESOLVED'].map((s) {
+                        final isActive = widget.ticket.status == s;
+                        final isResolved = widget.ticket.status == 'RESOLVED';
 
-                            final child = Text(s.replaceAll('_', ' '));
+                        final onPressed = (isActive || isResolved)
+                            ? null
+                            : () async {
+                                try {
+                                  await actions.updateTicket(widget.ticket.id,
+                                      status: s, notes: _notesCtrl.text.trim());
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content:
+                                              Text('Status updated to $s')));
+                                } catch (e) {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Error: $e')));
+                                }
+                              };
 
-                            if (isActive) {
-                              return FilledButton.tonal(
-                                onPressed: onPressed,
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: isDark ? AppColors.charcoal : AppColors.fog,
-                                  foregroundColor: isDark ? AppColors.inkDark : AppColors.ink,
-                                ),
-                                child: child,
-                              );
-                            }
+                        final child = Text(s.replaceAll('_', ' '));
 
-                            return OutlinedButton(
-                              onPressed: onPressed,
-                              child: child,
-                            );
-                          })
-                          .toList()),
+                        if (isActive) {
+                          return FilledButton.tonal(
+                            onPressed: onPressed,
+                            style: FilledButton.styleFrom(
+                              backgroundColor:
+                                  isDark ? AppColors.charcoal : AppColors.fog,
+                              foregroundColor:
+                                  isDark ? AppColors.inkDark : AppColors.ink,
+                            ),
+                            child: child,
+                          );
+                        }
+
+                        return OutlinedButton(
+                          onPressed: onPressed,
+                          child: child,
+                        );
+                      }).toList()),
                 ],
               ),
             ),
@@ -1872,15 +1915,23 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
 
   Future<void> _updateProfile() async {
     final name = _nameCtrl.text.trim();
-    if (name.isEmpty) return;
+    if (name.isEmpty) {
+      return;
+    }
     setState(() => _isLoading = true);
     try {
       await ref.read(authControllerProvider.notifier).updateProfile(name);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated.')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Profile updated.')));
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -1888,8 +1939,10 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
     final cur = _curPassCtrl.text;
     final newP = _newPassCtrl.text;
     if (cur.isEmpty || newP.length < 12) {
-       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter current password and new password (min 12 chars).')));
-       return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content:
+              Text('Enter current password and new password (min 12 chars).')));
+      return;
     }
     setState(() => _isLoading = true);
     try {
@@ -1897,12 +1950,17 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
       if (mounted) {
         _curPassCtrl.clear();
         _newPassCtrl.clear();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password updated successfully.')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Password updated. Please sign in again.')));
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -1916,14 +1974,18 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _TabHeader(title: 'My Account', subtitle: 'Manage your admin profile and security'),
+          const _TabHeader(
+              title: 'My Account',
+              subtitle: 'Manage your admin profile and security'),
           const SizedBox(height: 32),
           _SectionCard(
             padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Profile', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                const Text('Profile',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 20),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1932,14 +1994,18 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
                       child: TextFormField(
                         enabled: false,
                         initialValue: user.email,
-                        decoration: const InputDecoration(labelText: 'Email address', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(
+                            labelText: 'Email address',
+                            border: OutlineInputBorder()),
                       ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: TextFormField(
                         controller: _nameCtrl,
-                        decoration: const InputDecoration(labelText: 'Display name', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(
+                            labelText: 'Display name',
+                            border: OutlineInputBorder()),
                       ),
                     ),
                   ],
@@ -1958,18 +2024,25 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Change Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                const Text('Change Password',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _curPassCtrl,
                   obscureText: true,
-                  decoration: const InputDecoration(labelText: 'Current password', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'Current password',
+                      border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _newPassCtrl,
                   obscureText: true,
-                  decoration: const InputDecoration(labelText: 'New password', helperText: 'At least 12 characters.', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'New password',
+                      helperText: 'At least 12 characters.',
+                      border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 16),
                 FilledButton(
@@ -1984,6 +2057,3 @@ class _MyAccountTabState extends ConsumerState<_MyAccountTab> {
     );
   }
 }
-
-
-

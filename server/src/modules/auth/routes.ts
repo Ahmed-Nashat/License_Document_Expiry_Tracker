@@ -4,7 +4,14 @@ import { z } from 'zod';
 import { env } from '../../config/env.js';
 import { prisma } from '../../lib/prisma.js';
 import { sendEmail } from '../../utils/mailer.js';
+import { requireAuthenticatedSession } from '../../plugins/requireAuthenticatedSession.js';
 import { hashPassword, verifyPassword } from './password.js';
+
+interface JwtPayload {
+  userId: string;
+  sessionId: string;
+  role: string;
+}
 
 const credentials = z.object({
   email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
@@ -160,55 +167,48 @@ export async function authRoutes(app: FastifyInstance) {
   });
   app.patch('/api/auth/profile', {
     preHandler: async (request, reply) => {
-      try {
-        await request.jwtVerify();
-      } catch (err) {
-        return reply.status(401).send({ error: 'UNAUTHORIZED' });
-      }
-    }
+      await requireAuthenticatedSession(request, reply);
+    },
   }, async (request, reply) => {
     const input = z.object({
       displayName: z.string().trim().min(2).max(100),
     }).parse(request.body);
-    
-    const userId = (request.user as any).userId;
-    
+    const userId = (request.user as JwtPayload).userId;
+
     const updated = await prisma.user.update({
       where: { id: userId },
       data: { displayName: input.displayName },
       select: { id: true, email: true, displayName: true, role: true, ageRange: true, gender: true }
     });
-    
+
     return reply.status(200).send(updated);
   });
 
   app.patch('/api/auth/password', {
     preHandler: async (request, reply) => {
-      try {
-        await request.jwtVerify();
-      } catch (err) {
-        return reply.status(401).send({ error: 'UNAUTHORIZED' });
-      }
-    }
+      await requireAuthenticatedSession(request, reply);
+    },
   }, async (request, reply) => {
     const input = z.object({
       currentPassword: z.string().min(1),
       newPassword: z.string().min(12).max(128),
     }).parse(request.body);
-    
-    const userId = (request.user as any).userId;
-    
+    const userId = (request.user as JwtPayload).userId;
+
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user || !(await verifyPassword(user.passwordHash, input.currentPassword))) {
       return reply.status(400).send({ error: 'INVALID_CREDENTIALS', message: 'Current password is incorrect.' });
     }
-    
+
     const newPasswordHash = await hashPassword(input.newPassword);
-    await prisma.user.update({
-      where: { id: userId },
-      data: { passwordHash: newPasswordHash }
-    });
-    
-    return reply.status(200).send({ message: 'Password updated successfully.' });
+    await prisma.$transaction([
+      prisma.user.update({ where: { id: userId }, data: { passwordHash: newPasswordHash } }),
+      prisma.userSession.updateMany({
+        where: { userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      }),
+    ]);
+
+    return reply.status(200).send({ message: 'Password updated successfully. Please sign in again.' });
   });
 }

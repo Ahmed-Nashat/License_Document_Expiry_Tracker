@@ -3,18 +3,9 @@
 import cron from 'node-cron';
 import { prisma } from '../../lib/prisma.js';
 import { sendEmail } from '../../utils/mailer.js';
+import { escapeHtml } from '../../utils/escapeHtml.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>'"]/g, (character) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    "'": '&#39;',
-    '"': '&quot;',
-  })[character] ?? character);
-}
 
 function getDateParts(timeZone: string, date = new Date()) {
   const formatter = new Intl.DateTimeFormat('en-US', {

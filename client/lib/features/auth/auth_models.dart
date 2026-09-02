@@ -1,4 +1,4 @@
-﻿class DeuNestUser {
+class DeuNestUser {
   const DeuNestUser({
     required this.id,
     required this.email,
@@ -27,7 +27,7 @@
 
 class AuthSession {
   const AuthSession({required this.user, required this.accessToken});
-  
+
   final DeuNestUser user;
   final String accessToken;
 

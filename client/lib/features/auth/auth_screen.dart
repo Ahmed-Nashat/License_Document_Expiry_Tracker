@@ -141,7 +141,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       _message = null;
     });
     try {
-      final res = await ref.read(authApiProvider).requestPasswordReset(email);
+      await ref.read(authApiProvider).requestPasswordReset(email);
       if (mounted) {
         setState(() {
           _resetStep = 1;

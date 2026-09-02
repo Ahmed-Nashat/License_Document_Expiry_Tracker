@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -43,13 +43,18 @@ class AuthController extends AsyncNotifier<AuthSession?> {
   }
 
   Future<void> updateProfile(String displayName) async {
-    final updatedUser = await ref.read(authApiProvider).updateProfile(displayName);
+    final updatedUser =
+        await ref.read(authApiProvider).updateProfile(displayName);
     if (state.value != null) {
       state = AsyncData(state.value!.copyWith(user: updatedUser));
     }
   }
 
-  Future<void> updatePassword(String currentPassword, String newPassword) async {
-    await ref.read(authApiProvider).updatePassword(currentPassword, newPassword);
+  Future<void> updatePassword(
+      String currentPassword, String newPassword) async {
+    await ref
+        .read(authApiProvider)
+        .updatePassword(currentPassword, newPassword);
+    await signOut();
   }
 }

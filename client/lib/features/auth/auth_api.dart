@@ -1,4 +1,4 @@
-﻿import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'api_client_platform.dart';
@@ -98,7 +98,8 @@ class AuthApi {
     }
   }
 
-  Future<void> updatePassword(String currentPassword, String newPassword) async {
+  Future<void> updatePassword(
+      String currentPassword, String newPassword) async {
     try {
       await _dio.patch<Map<String, dynamic>>(
         '/api/auth/password',
