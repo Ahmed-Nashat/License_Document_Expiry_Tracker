@@ -484,7 +484,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 /// Wraps a card with a staggered fade + upward-slide entry animation.
 /// Each card's delay = index × 40ms, capped at 360ms total.
 class _StaggeredCard extends StatefulWidget {
-  const _StaggeredCard({required this.index, required this.child});
+  const _StaggeredCard({super.key, required this.index, required this.child});
 
   final int index;
   final Widget child;
@@ -927,7 +927,7 @@ class _DocumentCardState extends State<_DocumentCard> {
 
 // ─── Empty dashboard ──────────────────────────────────────────────────────────
 class _EmptyDashboard extends StatefulWidget {
-  const _EmptyDashboard({required this.isDark});
+  const _EmptyDashboard({super.key, required this.isDark});
 
   final bool isDark;
 
@@ -1054,7 +1054,7 @@ Future<void> _showSupportDialog(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DropdownButtonFormField<String>(
-                  initialValue: category,
+                  value: category,
                   decoration: const InputDecoration(
                       labelText: 'Category', border: OutlineInputBorder()),
                   items: const [

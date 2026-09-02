@@ -25,8 +25,18 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
   bool _isSavingProfile = false;
   bool _isSavingPassword = false;
 
-  final _ageRanges = ['18-24', '25-34', '35-44', '45-54', '55+'];
-  final _genders = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
+  static const _ageRanges = [
+    GlassDropdownItem(value: 'UNDER_18', label: 'Under 18'),
+    GlassDropdownItem(value: 'AGE_18_24', label: '18–24'),
+    GlassDropdownItem(value: 'AGE_25_34', label: '25–34'),
+    GlassDropdownItem(value: 'AGE_35_44', label: '35–44'),
+    GlassDropdownItem(value: 'AGE_45_PLUS', label: '45+'),
+  ];
+  static const _genders = [
+    GlassDropdownItem(value: 'MALE', label: 'Male'),
+    GlassDropdownItem(value: 'FEMALE', label: 'Female'),
+    GlassDropdownItem(value: 'PREFER_NOT_TO_SAY', label: 'Prefer not to say'),
+  ];
 
   @override
   void initState() {
@@ -36,12 +46,14 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
     _newPassCtrl = TextEditingController();
 
     _selectedAgeRange = widget.user.ageRange;
-    if (_selectedAgeRange != null && !_ageRanges.contains(_selectedAgeRange)) {
+    if (_selectedAgeRange != null &&
+        !_ageRanges.any((item) => item.value == _selectedAgeRange)) {
       _selectedAgeRange = null;
     }
 
     _selectedGender = widget.user.gender;
-    if (_selectedGender != null && !_genders.contains(_selectedGender)) {
+    if (_selectedGender != null &&
+        !_genders.any((item) => item.value == _selectedGender)) {
       _selectedGender = null;
     }
   }
@@ -75,7 +87,7 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error: \$e')));
+          .showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _isSavingProfile = false);
     }
@@ -108,7 +120,7 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error: \$e')));
+          .showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _isSavingPassword = false);
     }
@@ -182,9 +194,7 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
                           child: GlassDropdownField<String>(
                             initialValue: _selectedAgeRange,
                             labelText: 'Age Range',
-                            items: _ageRanges
-                                .map((r) => GlassDropdownItem(value: r, label: r))
-                                .toList(),
+                            items: _ageRanges,
                             onChanged: (val) => setState(() => _selectedAgeRange = val),
                           ),
                         ),
@@ -193,9 +203,7 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
                           child: GlassDropdownField<String>(
                             initialValue: _selectedGender,
                             labelText: 'Gender',
-                            items: _genders
-                                .map((g) => GlassDropdownItem(value: g, label: g))
-                                .toList(),
+                            items: _genders,
                             onChanged: (val) => setState(() => _selectedGender = val),
                           ),
                         ),

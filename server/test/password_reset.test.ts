@@ -145,6 +145,20 @@ describe('password reset endpoints', async () => {
     expect(mockPrisma.user.update).not.toHaveBeenCalled();
   });
 
+  it('rejects demographic values outside the profile enum contract', async () => {
+    const token = app.jwt.sign({ userId: 'user-1', sessionId: 'session-1', role: 'USER' });
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: '/api/auth/profile',
+      headers: { authorization: `Bearer ${token}` },
+      payload: { displayName: 'Updated User', ageRange: '18-24', gender: 'Male' },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(mockPrisma.user.update).not.toHaveBeenCalled();
+  });
+
   it('updates a password for an active session and revokes all sessions', async () => {
     const token = app.jwt.sign({ userId: 'user-1', sessionId: 'session-1', role: 'USER' });
     mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-1', passwordHash: 'password-hash' });
