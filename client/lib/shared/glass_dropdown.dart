@@ -195,7 +195,11 @@ class _GlassDropdownTriggerState<T> extends State<_GlassDropdownTrigger<T>> {
                     },
                   ),
                 ),
-              ).animate().fadeIn(duration: 150.ms).slideY(begin: -0.05, end: 0, duration: 150.ms, curve: Curves.easeOutCubic),
+              ).animate().fadeIn(duration: 150.ms).slideY(
+                  begin: -0.05,
+                  end: 0,
+                  duration: 150.ms,
+                  curve: Curves.easeOutCubic),
             ),
           ),
         ],
