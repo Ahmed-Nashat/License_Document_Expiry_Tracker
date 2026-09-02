@@ -121,6 +121,7 @@ model AuditLog {
 
 enum NotificationStatus {
   PENDING
+  PROCESSING
   SENT
   FAILED
 }
@@ -133,6 +134,7 @@ model NotificationLog {
   targetExpiryDate DateTime           @db.Date
   channel          String             @default("EMAIL")
   status           NotificationStatus @default(PENDING)
+  processingAt     DateTime?
   retryCount       Int                @default(0)
   error            String?
   sentAt           DateTime?

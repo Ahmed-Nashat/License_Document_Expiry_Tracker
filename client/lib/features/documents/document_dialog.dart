@@ -385,7 +385,9 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                           label,
                           style: TextStyle(
                             fontSize: 12,
-                            color: isSelected ? Colors.white : (isDark ? AppColors.inkDark : AppColors.ink),
+                            color: isSelected
+                                ? Colors.white
+                                : (isDark ? AppColors.inkDark : AppColors.ink),
                           ),
                         ),
                         selected: isSelected,
@@ -398,13 +400,18 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                             }
                           });
                         },
-                        backgroundColor: isDark ? AppColors.surfaceDark : AppColors.fog,
+                        backgroundColor:
+                            isDark ? AppColors.surfaceDark : AppColors.fog,
                         selectedColor: AppColors.charcoal,
                         checkmarkColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                           side: BorderSide(
-                            color: isSelected ? Colors.transparent : (isDark ? AppColors.borderDark : AppColors.border),
+                            color: isSelected
+                                ? Colors.transparent
+                                : (isDark
+                                    ? AppColors.borderDark
+                                    : AppColors.border),
                           ),
                         ),
                       );

@@ -30,7 +30,7 @@ export async function getMailer() {
           pass: testAccount.pass,
         },
       });
-      console.log([Mailer] Created test account: );
+      console.log('[Mailer] Development test account created.');
     } else {
        transporter = nodemailer.createTransport({
         host: env.SMTP_HOST || 'smtp.ethereal.email',
@@ -58,7 +58,7 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
   });
 
   if (env.NODE_ENV !== 'production') {
-    console.log([Mailer] Email sent to . Preview URL: );
+    console.log('[Mailer] Development email sent.');
   }
 
   return info;
