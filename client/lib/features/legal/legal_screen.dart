@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../shared/design_tokens.dart';
 
 class LegalScreen extends StatelessWidget {
@@ -22,7 +22,9 @@ class LegalScreen extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: backgroundColor,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         elevation: 0,
         iconTheme: IconThemeData(color: textColor),
         centerTitle: true,
