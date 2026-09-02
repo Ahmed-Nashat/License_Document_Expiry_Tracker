@@ -584,7 +584,7 @@ class _UsersTabState extends ConsumerState<_UsersTab> {
                 child: TextField(
                   controller: _searchCtrl,
                   decoration: InputDecoration(
-                    hintText: 'Search by email or nameÃ¢â‚¬Â¦',
+                    hintText: 'Search by email or name...',
                     prefixIcon: const Icon(Icons.search_rounded, size: 18),
                     suffixIcon: _searchCtrl.text.isNotEmpty
                         ? IconButton(
