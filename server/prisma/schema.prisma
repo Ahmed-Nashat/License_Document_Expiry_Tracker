@@ -35,11 +35,17 @@ enum Gender {
   PREFER_NOT_TO_SAY
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id                        String        @id @default(cuid())
   email                     String        @unique
   passwordHash              String
   displayName               String?
+  role                      Role          @default(USER)
   ageRange                  AgeRange?
   gender                    Gender?
   timeZone                  String        @default("Africa/Cairo")
@@ -95,4 +101,18 @@ model ReminderRule {
   updatedAt        DateTime @updatedAt
 
   @@unique([documentId, daysBeforeExpiry])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  timestamp  DateTime @default(now())
+  actorId    String
+  action     String
+  targetId   String?
+  reason     String?
+  ipAddress  String?
+  
+  @@index([timestamp])
+  @@index([actorId])
+  @@index([action])
 }

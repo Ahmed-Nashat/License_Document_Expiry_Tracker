@@ -8,6 +8,7 @@ import { env } from './config/env.js';
 import { prisma } from './lib/prisma.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { documentRoutes } from './modules/documents/routes.js';
+import { adminRoutes } from './modules/admin/routes.js';
 
 export function buildApp() {
   const app = Fastify({
@@ -42,6 +43,7 @@ export function buildApp() {
 
   app.register(authRoutes);
   app.register(documentRoutes);
+  app.register(adminRoutes);
 
 
   app.setErrorHandler((error, request, reply) => {
