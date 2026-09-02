@@ -50,9 +50,14 @@ model User {
   gender                    Gender?
   timeZone                  String        @default("Africa/Cairo")
   emailNotificationsEnabled Boolean       @default(true)
+  suspendedAt               DateTime?
+  suspendedReason           String?
+  suspendedById             String?
   sessions                  UserSession[]
   documents                 Document[]
   notifications             NotificationLog[]
+  supportTickets            SupportTicket[] @relation("TicketRequester")
+  assignedTickets           SupportTicket[] @relation("TicketAssignee")
   passwordReset             PasswordReset?
   createdAt                 DateTime      @default(now())
   updatedAt                 DateTime      @updatedAt
@@ -110,15 +115,50 @@ model AuditLog {
   id         String   @id @default(cuid())
   timestamp  DateTime @default(now())
   actorId    String
+  actorType  String   @default("ADMIN")
   action     String
   targetId   String?
   reason     String?
   ipAddress  String?
+  requestId  String?
+  result     String   @default("SUCCESS")
+  metadata   Json?
   
   @@index([timestamp])
   @@index([actorId])
   @@index([action])
+  @@index([result])
 }
+
+model SupportTicket {
+  id             String    @id @default(cuid())
+  requesterEmail String
+  userId         String?
+  category       String    @default("OTHER")
+  subject        String
+  description    String    @db.Text
+  status         String    @default("OPEN")
+  assignedToId   String?
+  internalNotes  String?   @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  requester      User?     @relation("TicketRequester", fields: [userId], references: [id], onDelete: SetNull)
+  assignee       User?     @relation("TicketAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId])
+}
+
+model SystemConfig {
+  key           String   @id
+  value         String
+  updatedAt     DateTime @updatedAt
+  updatedById   String
+  reason        String
+}
+
 enum NotificationStatus {
   PENDING
   PROCESSING
