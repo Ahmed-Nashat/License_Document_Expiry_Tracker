@@ -17,10 +17,10 @@ This setup is designed for a protected public demo with no paid infrastructure. 
 ## Vercel web app
 
 1. Import the repository into Vercel and set the **Root Directory** to `client`.
-2. Add `API_BASE_URL` with the public HTTPS Render API URL, then deploy.
+2. Add `RENDER_API_URL` with the public HTTPS Render API URL, then deploy. Vercel automatically supplies its production URL to the build, so no `API_BASE_URL` value is needed there.
 3. Update Render's `WEB_ORIGINS` if Vercel gives the project a different production URL, then redeploy Render.
 
-The API uses a secure HTTP-only refresh cookie. The most reliable setup is same-site subdomains such as `app.example.com` and `api.example.com`. Without a custom domain, configure a Vercel dashboard rewrite from `/api/(.*)` to `https://your-api.onrender.com/api/$1` and use the Vercel URL as `API_BASE_URL`; this keeps browser API calls same-origin. Never move refresh tokens to local storage as a workaround.
+The Vercel API proxy keeps browser API calls and the HTTP-only refresh cookie first-party, even when Render uses its free `onrender.com` URL. Never move refresh tokens to local storage as a workaround.
 
 ## Free-tier reminder trigger
 

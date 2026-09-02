@@ -1,7 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-: "${API_BASE_URL:?API_BASE_URL must be set to the public HTTPS API URL}"
+if [[ -z "${API_BASE_URL:-}" ]]; then
+  : "${VERCEL_URL:?API_BASE_URL must be set locally; Vercel supplies VERCEL_URL during deployment}"
+  API_BASE_URL="https://${VERCEL_URL}"
+fi
 
 echo "Installing Flutter for Vercel..."
 git clone --depth 1 --branch 3.29.3 https://github.com/flutter/flutter.git
