@@ -42,7 +42,9 @@ class LegalScreen extends StatelessWidget {
                 color: cardColor,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isDark ? AppColors.borderDark : AppColors.border.withValues(alpha: 0.5),
+                  color: isDark
+                      ? AppColors.borderDark
+                      : AppColors.border.withValues(alpha: 0.5),
                   width: 1,
                 ),
                 boxShadow: [
@@ -56,11 +58,12 @@ class LegalScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('DueNest Privacy Policy', style: _headingStyle(isDark).copyWith(fontSize: 24)),
+                  Text('DueNest Privacy Policy',
+                      style: _headingStyle(isDark).copyWith(fontSize: 24)),
                   const SizedBox(height: 8),
-                  const Text('Last updated: September 2026', style: TextStyle(color: AppColors.gray, fontSize: 13)),
+                  const Text('Last updated: September 2026',
+                      style: TextStyle(color: AppColors.gray, fontSize: 13)),
                   const SizedBox(height: 32),
-                  
                   Text('1. Data Collection', style: _headingStyle(isDark)),
                   const SizedBox(height: 12),
                   Text(
@@ -69,9 +72,7 @@ class LegalScreen extends StatelessWidget {
                     'We only process your data to provide the tracking and reminder services you requested.',
                     style: _bodyStyle(isDark),
                   ),
-                  
                   const SizedBox(height: 32),
-                  
                   Text('2. Cookies & Sessions', style: _headingStyle(isDark)),
                   const SizedBox(height: 12),
                   Text(
@@ -79,9 +80,7 @@ class LegalScreen extends StatelessWidget {
                     'We do not use tracking, advertising, or third-party analytics cookies.',
                     style: _bodyStyle(isDark),
                   ),
-
                   const SizedBox(height: 32),
-                  
                   Text('3. Third-Party Services', style: _headingStyle(isDark)),
                   const SizedBox(height: 12),
                   Text(
@@ -90,9 +89,7 @@ class LegalScreen extends StatelessWidget {
                     'obligated to protect your data and may not use it for their own purposes.',
                     style: _bodyStyle(isDark),
                   ),
-
                   const SizedBox(height: 32),
-
                   Text('4. Security Measures', style: _headingStyle(isDark)),
                   const SizedBox(height: 12),
                   Text(
@@ -100,9 +97,7 @@ class LegalScreen extends StatelessWidget {
                     'Your passwords are never stored in plain text; they are mathematically hashed before saving.',
                     style: _bodyStyle(isDark),
                   ),
-
                   const SizedBox(height: 32),
-                  
                   Text('5. Age Restrictions', style: _headingStyle(isDark)),
                   const SizedBox(height: 12),
                   Text(
@@ -110,9 +105,7 @@ class LegalScreen extends StatelessWidget {
                     'We do not knowingly collect personal information from individuals under this age.',
                     style: _bodyStyle(isDark),
                   ),
-
                   const SizedBox(height: 32),
-                  
                   Text('6. Data Deletion', style: _headingStyle(isDark)),
                   const SizedBox(height: 12),
                   Text(
@@ -120,9 +113,7 @@ class LegalScreen extends StatelessWidget {
                     'permanently removes the associated data from our active databases.',
                     style: _bodyStyle(isDark),
                   ),
-                  
                   const SizedBox(height: 32),
-                  
                   Text('7. Policy Updates', style: _headingStyle(isDark)),
                   const SizedBox(height: 12),
                   Text(
@@ -130,12 +121,11 @@ class LegalScreen extends StatelessWidget {
                     'We will notify you of any significant changes by updating the date at the top of this document.',
                     style: _bodyStyle(isDark),
                   ),
-
                   const SizedBox(height: 48),
                   const Divider(height: 1, color: AppColors.border),
                   const SizedBox(height: 48),
-
-                  Text('Disclaimer', style: _headingStyle(isDark).copyWith(fontSize: 24)),
+                  Text('Disclaimer',
+                      style: _headingStyle(isDark).copyWith(fontSize: 24)),
                   const SizedBox(height: 16),
                   Text(
                     'DueNest is provided "as is" without any warranties. While we strive for 100% '
@@ -147,7 +137,11 @@ class LegalScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ).animate().fadeIn(duration: 400.ms, curve: Curves.easeOut).slideY(begin: 0.04, end: 0, duration: 400.ms, curve: Curves.easeOutQuart),
+          ).animate().fadeIn(duration: 400.ms, curve: Curves.easeOut).slideY(
+              begin: 0.04,
+              end: 0,
+              duration: 400.ms,
+              curve: Curves.easeOutQuart),
         ),
       ),
     );

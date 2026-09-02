@@ -734,21 +734,26 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                 onTap: () {
                   Navigator.of(context).push(
                     PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => const LegalScreen(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          const LegalScreen(),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
                         return FadeTransition(
-                          opacity: CurveTween(curve: Curves.easeOut).animate(animation),
+                          opacity: CurveTween(curve: Curves.easeOut)
+                              .animate(animation),
                           child: SlideTransition(
                             position: Tween<Offset>(
                               begin: const Offset(0, 0.05),
                               end: Offset.zero,
-                            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+                            ).animate(CurvedAnimation(
+                                parent: animation, curve: Curves.easeOutCubic)),
                             child: child,
                           ),
                         );
                       },
                       transitionDuration: const Duration(milliseconds: 300),
-                      reverseTransitionDuration: const Duration(milliseconds: 250),
+                      reverseTransitionDuration:
+                          const Duration(milliseconds: 250),
                     ),
                   );
                 },

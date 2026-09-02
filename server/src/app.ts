@@ -2,6 +2,7 @@ import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
+import rateLimit from '@fastify/rate-limit';
 import Fastify from 'fastify';
 import { ZodError } from 'zod';
 import { env } from './config/env.js';
@@ -26,6 +27,7 @@ export function buildApp() {
   app.register(helmet, { contentSecurityPolicy: false, global: true });
   app.register(cookie);
   app.register(jwt, { secret: env.JWT_ACCESS_SECRET });
+  app.register(rateLimit, { global: false });
   app.register(cors, {
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);

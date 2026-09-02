@@ -1,8 +1,9 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { env } from '../../config/env.js';
 import { prisma } from '../../lib/prisma.js';
+import { sendEmail } from '../../utils/mailer.js';
 import { hashPassword, verifyPassword } from './password.js';
 
 const credentials = z.object({
@@ -16,10 +17,18 @@ const registration = credentials.extend({
 });
 
 const cookieName = 'deunest_refresh';
-const cookieOptions = { httpOnly: true, secure: env.COOKIE_SECURE, sameSite: 'lax' as const, path: '/api/auth', domain: env.COOKIE_DOMAIN || undefined };
+const cookieOptions = { httpOnly: true, secure: env.COOKIE_SECURE, sameSite: env.COOKIE_SAME_SITE, path: '/api/auth', domain: env.COOKIE_DOMAIN || undefined };
 const refreshHash = (value: string) => createHash('sha256').update(`${env.JWT_REFRESH_SECRET}:${value}`).digest('base64url');
 const refreshToken = () => randomBytes(48).toString('base64url');
 const expiry = () => new Date(Date.now() + env.REFRESH_TOKEN_TTL_DAYS * 86_400_000);
+const passwordResetCode = () => randomInt(0, 1_000_000).toString().padStart(6, '0');
+const passwordResetHash = (email: string, code: string) => createHash('sha256').update(`${env.JWT_REFRESH_SECRET}:password-reset:${email}:${code}`).digest('base64url');
+const passwordResetExpiry = () => new Date(Date.now() + 15 * 60_000);
+const hashesMatch = (left: string, right: string) => {
+  const leftValue = Buffer.from(left);
+  const rightValue = Buffer.from(right);
+  return leftValue.length === rightValue.length && timingSafeEqual(leftValue, rightValue);
+};
 const publicUser = (user: { id: string; email: string; displayName: string | null; role: string; ageRange: string | null; gender: string | null }) => ({ id: user.id, email: user.email, displayName: user.displayName, role: user.role, ageRange: user.ageRange, gender: user.gender });
 
 async function createSession(app: FastifyInstance, userId: string, deviceName?: string) {
@@ -85,8 +94,6 @@ export async function authRoutes(app: FastifyInstance) {
     reply.clearCookie(cookieName, cookieOptions);
     return reply.status(204).send();
   });
-  const resetCodes = new Map<string, { code: string; expiresAt: number }>();
-
   app.post('/api/auth/forgot-password', {
     config: {
       rateLimit: { max: 3, timeWindow: '1 hour' }
@@ -97,37 +104,54 @@ export async function authRoutes(app: FastifyInstance) {
     }).parse(request.body);
 
     const user = await prisma.user.findUnique({ where: { email } });
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const code = passwordResetCode();
     if (user) {
-      resetCodes.set(email, { code, expiresAt: Date.now() + 15 * 60 * 1000 });
+      await prisma.passwordReset.upsert({
+        where: { userId: user.id },
+        create: { userId: user.id, codeHash: passwordResetHash(email, code), expiresAt: passwordResetExpiry() },
+        update: { codeHash: passwordResetHash(email, code), expiresAt: passwordResetExpiry() },
+      });
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: 'Your DueNest password reset code',
+          html: `<p>Use this code to reset your DueNest password:</p><p><strong>${code}</strong></p><p>This code expires in 15 minutes.</p>`,
+        });
+      } catch (error) {
+        request.log.error({ error }, 'Password reset email delivery failed');
+      }
     }
     return reply.status(200).send({
-      message: 'Reset code generated.',
+      message: 'If an account exists for this email, a reset code has been sent.',
       code: env.NODE_ENV === 'development' ? code : undefined,
     });
   });
 
-  app.post('/api/auth/reset-password', async (request, reply) => {
+  app.post('/api/auth/reset-password', {
+    config: {
+      rateLimit: { max: 5, timeWindow: '15 minutes' },
+    },
+  }, async (request, reply) => {
     const input = z.object({
       email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
       code: z.string().length(6),
       newPassword: z.string().min(12).max(128),
     }).parse(request.body);
 
-    const entry = resetCodes.get(input.email);
-    if (!entry || entry.code !== input.code || entry.expiresAt < Date.now()) {
+    const user = await prisma.user.findUnique({ where: { email: input.email } });
+    const reset = user
+      ? await prisma.passwordReset.findUnique({ where: { userId: user.id } })
+      : null;
+    if (!user || !reset || reset.expiresAt <= new Date() || !hashesMatch(reset.codeHash, passwordResetHash(input.email, input.code))) {
       return reply.status(400).send({ error: 'INVALID_CODE', message: 'The reset code is invalid or has expired.' });
     }
 
-    const user = await prisma.user.findUnique({ where: { email: input.email } });
-    if (!user) {
-      return reply.status(404).send({ error: 'USER_NOT_FOUND', message: 'Account not found.' });
-    }
-
     const newPasswordHash = await hashPassword(input.newPassword);
-    await prisma.user.update({ where: { email: input.email }, data: { passwordHash: newPasswordHash } });
-    await prisma.userSession.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } });
-    resetCodes.delete(input.email);
+    await prisma.$transaction([
+      prisma.user.update({ where: { id: user.id }, data: { passwordHash: newPasswordHash } }),
+      prisma.userSession.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } }),
+      prisma.passwordReset.delete({ where: { userId: user.id } }),
+    ]);
 
     return reply.status(200).send({ message: 'Password updated successfully. You can now sign in.' });
   });

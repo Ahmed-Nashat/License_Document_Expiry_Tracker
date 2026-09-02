@@ -19,11 +19,20 @@ const schema = z.object({
   ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().min(5).max(60).default(15),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(90).default(30),
   COOKIE_SECURE: booleanFromEnvironment,
+  COOKIE_SAME_SITE: z.enum(['lax', 'none', 'strict']).default('lax'),
   COOKIE_DOMAIN: z.string().optional(),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.string().optional(),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
+}).superRefine((value, context) => {
+  if (value.NODE_ENV !== 'production') return;
+
+  for (const key of ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS'] as const) {
+    if (!value[key]) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: [key], message: `${key} is required in production.` });
+    }
+  }
 });
 
 const parsed = schema.safeParse(process.env);
@@ -33,5 +42,7 @@ if (!parsed.success) {
 
 export const env = {
   ...parsed.data,
+  COOKIE_SECURE: parsed.data.NODE_ENV === 'production' ? true : parsed.data.COOKIE_SECURE,
+  COOKIE_SAME_SITE: parsed.data.NODE_ENV === 'production' ? 'none' : parsed.data.COOKIE_SAME_SITE,
   webOrigins: parsed.data.WEB_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean),
 };
