@@ -33,7 +33,14 @@ async function createSession(app: FastifyInstance, userId: string, deviceName?: 
 export async function authRoutes(app: FastifyInstance) {
   const issue = (userId: string, role: string, sessionId: string) => app.jwt.sign({ userId, role, sessionId }, { expiresIn: `${env.ACCESS_TOKEN_TTL_MINUTES}m` });
   
-  app.post('/api/auth/register', async (request, reply) => {
+  app.post('/api/auth/register', {
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: '1 minute'
+      }
+    }
+  }, async (request, reply) => {
     const input = registration.parse(request.body);
     if (await prisma.user.findUnique({ where: { email: input.email }, select: { id: true } })) return reply.status(409).send({ error: 'EMAIL_IN_USE', message: 'An account already exists for this email.' });
     const user = await prisma.user.create({ data: { email: input.email, passwordHash: await hashPassword(input.password), displayName: input.displayName, ageRange: input.ageRange, gender: input.gender } });
@@ -42,7 +49,14 @@ export async function authRoutes(app: FastifyInstance) {
     return reply.status(201).send({ accessToken: issue(user.id, user.role, session.id), user: publicUser(user) });
   });
 
-  app.post('/api/auth/login', async (request, reply) => {
+  app.post('/api/auth/login', {
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: '1 minute'
+      }
+    }
+  }, async (request, reply) => {
     const input = credentials.pick({ email: true, password: true }).parse(request.body);
     const user = await prisma.user.findUnique({ where: { email: input.email } });
     if (!user || !(await verifyPassword(input.password, user.passwordHash))) return reply.status(401).send({ error: 'INVALID_CREDENTIALS', message: 'Email or password is incorrect.' });
@@ -73,7 +87,11 @@ export async function authRoutes(app: FastifyInstance) {
   });
   const resetCodes = new Map<string, { code: string; expiresAt: number }>();
 
-  app.post('/api/auth/forgot-password', async (request, reply) => {
+  app.post('/api/auth/forgot-password', {
+    config: {
+      rateLimit: { max: 3, timeWindow: '1 hour' }
+    }
+  }, async (request, reply) => {
     const { email } = z.object({
       email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
     }).parse(request.body);
