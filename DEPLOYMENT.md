@@ -5,13 +5,13 @@ This setup is designed for a protected public demo with no paid infrastructure. 
 ## Before deploying
 
 1. Create a Neon project and copy its **pooled** PostgreSQL connection string into `DATABASE_URL`. Keep it secret and do not add it to a repository file.
-2. Create an HTTPS email-provider account (the app uses Resend's API) and verify a sender address. Set `RESEND_API_KEY` and `EMAIL_FROM`.
+2. Create a Brevo account, verify your sender email address, and create an API key. Set `BREVO_API_KEY` and `EMAIL_FROM`.
 3. Generate three different random values of at least 32 characters for `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, and `REMINDER_CRON_SECRET`.
 
 ## Render API
 
 1. Create a Render Blueprint from `render.yaml`. The service is configured as a free Docker web service and does not provision a Render database.
-2. Set these Render values: `DATABASE_URL` (Neon pooled URL), `WEB_ORIGINS` (the exact Vercel HTTPS URL), `RESEND_API_KEY`, `EMAIL_FROM`, and `REMINDER_CRON_SECRET`. Leave `REMINDER_SCHEDULER_ENABLED=false`.
+2. Set these Render values: `DATABASE_URL` (Neon pooled URL), `WEB_ORIGINS` (the exact Vercel HTTPS URL), `BREVO_API_KEY`, `EMAIL_FROM`, and `REMINDER_CRON_SECRET`. Leave `REMINDER_SCHEDULER_ENABLED=false`.
 3. The container applies Prisma migrations when it starts. Migrations must remain backward-compatible because the free service can restart.
 
 ## Vercel web app
