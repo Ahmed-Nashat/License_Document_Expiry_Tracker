@@ -3,12 +3,14 @@ class DeuNestUser {
       {required this.id,
       required this.email,
       this.displayName,
+      this.role = 'USER',
       this.ageRange,
       this.gender});
 
   final String id;
   final String email;
   final String? displayName;
+  final String role;
   final String? ageRange;
   final String? gender;
 
@@ -16,6 +18,7 @@ class DeuNestUser {
         id: json['id'] as String,
         email: json['email'] as String,
         displayName: json['displayName'] as String?,
+        role: json['role'] as String? ?? 'USER',
         ageRange: json['ageRange'] as String?,
         gender: json['gender'] as String?,
       );

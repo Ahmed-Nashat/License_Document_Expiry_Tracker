@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'features/admin/admin_login_screen.dart';
+import 'features/admin/admin_dashboard_screen.dart';
 
 import 'features/auth/auth_controller.dart';
 import 'features/auth/auth_screen.dart';
@@ -13,12 +16,31 @@ void main() {
   runApp(const ProviderScope(child: LicenseTrackerApp()));
 }
 
+final _router = GoRouter(
+  initialLocation: '/',
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const AuthGate(),
+    ),
+    GoRoute(
+      path: '/admin/login',
+      builder: (context, state) => const AdminLoginScreen(),
+    ),
+    GoRoute(
+      path: '/admin/dashboard',
+      builder: (context, state) => const AdminDashboardScreen(),
+    ),
+  ],
+);
+
 class LicenseTrackerApp extends ConsumerWidget {
   const LicenseTrackerApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp(
+    return MaterialApp.router(
+      routerConfig: _router,
       title: 'DueNest',
       debugShowCheckedModeBanner: false,
       themeMode: ref.watch(themeModeProvider),
@@ -258,8 +280,6 @@ class LicenseTrackerApp extends ConsumerWidget {
         dividerTheme:
             const DividerThemeData(color: Colors.transparent, thickness: 0),
       ),
-
-      home: const AuthGate(),
     );
   }
 }

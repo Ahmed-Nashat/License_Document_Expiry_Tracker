@@ -20,7 +20,7 @@ const cookieOptions = { httpOnly: true, secure: env.COOKIE_SECURE, sameSite: 'la
 const refreshHash = (value: string) => createHash('sha256').update(`${env.JWT_REFRESH_SECRET}:${value}`).digest('base64url');
 const refreshToken = () => randomBytes(48).toString('base64url');
 const expiry = () => new Date(Date.now() + env.REFRESH_TOKEN_TTL_DAYS * 86_400_000);
-const publicUser = (user: { id: string; email: string; displayName: string | null; ageRange: string | null; gender: string | null }) => ({ id: user.id, email: user.email, displayName: user.displayName, ageRange: user.ageRange, gender: user.gender });
+const publicUser = (user: { id: string; email: string; displayName: string | null; role: string; ageRange: string | null; gender: string | null }) => ({ id: user.id, email: user.email, displayName: user.displayName, role: user.role, ageRange: user.ageRange, gender: user.gender });
 
 async function createSession(app: FastifyInstance, userId: string, deviceName?: string) {
   const rawToken = refreshToken();
@@ -31,36 +31,39 @@ async function createSession(app: FastifyInstance, userId: string, deviceName?: 
 }
 
 export async function authRoutes(app: FastifyInstance) {
-  const issue = (userId: string, sessionId: string) => app.jwt.sign({ userId, sessionId }, { expiresIn: `${env.ACCESS_TOKEN_TTL_MINUTES}m` });
+  const issue = (userId: string, role: string, sessionId: string) => app.jwt.sign({ userId, role, sessionId }, { expiresIn: `${env.ACCESS_TOKEN_TTL_MINUTES}m` });
+  
   app.post('/api/auth/register', async (request, reply) => {
     const input = registration.parse(request.body);
     if (await prisma.user.findUnique({ where: { email: input.email }, select: { id: true } })) return reply.status(409).send({ error: 'EMAIL_IN_USE', message: 'An account already exists for this email.' });
     const user = await prisma.user.create({ data: { email: input.email, passwordHash: await hashPassword(input.password), displayName: input.displayName, ageRange: input.ageRange, gender: input.gender } });
     const { rawToken, session } = await createSession(app, user.id, request.headers['user-agent']);
     reply.setCookie(cookieName, rawToken, { ...cookieOptions, expires: session.expiresAt });
-    return reply.status(201).send({ accessToken: issue(user.id, session.id), user: publicUser(user) });
+    return reply.status(201).send({ accessToken: issue(user.id, user.role, session.id), user: publicUser(user) });
   });
+
   app.post('/api/auth/login', async (request, reply) => {
     const input = credentials.pick({ email: true, password: true }).parse(request.body);
     const user = await prisma.user.findUnique({ where: { email: input.email } });
     if (!user || !(await verifyPassword(input.password, user.passwordHash))) return reply.status(401).send({ error: 'INVALID_CREDENTIALS', message: 'Email or password is incorrect.' });
     const { rawToken, session } = await createSession(app, user.id, request.headers['user-agent']);
     reply.setCookie(cookieName, rawToken, { ...cookieOptions, expires: session.expiresAt });
-    return { accessToken: issue(user.id, session.id), user: publicUser(user) };
+    return { accessToken: issue(user.id, user.role, session.id), user: publicUser(user) };
   });
+
   app.post('/api/auth/refresh', async (request, reply) => {
     const rawToken = request.cookies[cookieName];
     if (!rawToken) return reply.status(401).send({ error: 'SESSION_EXPIRED', message: 'Please sign in again.' });
     const session = await prisma.userSession.findUnique({
       where: { refreshTokenHash: refreshHash(rawToken) },
-      include: { user: { select: { id: true, email: true, displayName: true, ageRange: true, gender: true } } },
+      include: { user: { select: { id: true, email: true, displayName: true, role: true, ageRange: true, gender: true } } },
     });
     if (!session || session.revokedAt || session.expiresAt <= new Date()) return reply.status(401).send({ error: 'SESSION_EXPIRED', message: 'Please sign in again.' });
     const nextToken = refreshToken();
     const expiresAt = expiry();
     await prisma.userSession.update({ where: { id: session.id }, data: { refreshTokenHash: refreshHash(nextToken), lastUsedAt: new Date(), lastRefreshAt: new Date(), expiresAt } });
     reply.setCookie(cookieName, nextToken, { ...cookieOptions, expires: expiresAt });
-    return { accessToken: issue(session.userId, session.id), user: publicUser(session.user) };
+    return { accessToken: issue(session.userId, session.user.role, session.id), user: publicUser(session.user) };
   });
   app.post('/api/auth/logout', async (request, reply) => {
     const rawToken = request.cookies[cookieName];
