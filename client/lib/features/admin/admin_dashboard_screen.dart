@@ -1510,7 +1510,8 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
             ],
           );
         },
-      ),
+      );
+      },
     );
   }
 
