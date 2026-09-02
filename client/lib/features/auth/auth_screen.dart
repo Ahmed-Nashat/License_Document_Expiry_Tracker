@@ -143,8 +143,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     try {
       final res = await ref.read(authApiProvider).requestPasswordReset(email);
       if (mounted) {
-        final devCode = res['code'] as String?;
-        if (devCode != null) _resetCodeController.text = devCode;
         setState(() {
           _resetStep = 1;
           _message = null;
@@ -433,6 +431,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               controller: _resetCodeController,
               keyboardType: TextInputType.number,
               maxLength: 6,
+              obscureText: true,
               decoration: const InputDecoration(
                   labelText: '6-digit verification code',
                   counterText: '',
