@@ -1470,27 +1470,28 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
     final msgCtrl = TextEditingController();
     await showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) {
-          bool isLoading = false;
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          
-          return AlertDialog(
-            backgroundColor: isDark ? AppColors.surfaceDark : AppColors.white,
-            title: Text('Send Email to Requester', style: TextStyle(color: isDark ? AppColors.inkDark : AppColors.ink)),
-            content: SizedBox(
-              width: 400,
-              child: TextField(
-                controller: msgCtrl,
-                maxLines: 6,
-                decoration: const InputDecoration(labelText: 'Message content', border: OutlineInputBorder()),
+      builder: (ctx) {
+        bool isLoading = false;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            
+            return AlertDialog(
+              backgroundColor: isDark ? AppColors.surfaceDark : AppColors.white,
+              title: Text('Send Email to Requester', style: TextStyle(color: isDark ? AppColors.inkDark : AppColors.ink)),
+              content: SizedBox(
+                width: 400,
+                child: TextField(
+                  controller: msgCtrl,
+                  maxLines: 6,
+                  decoration: const InputDecoration(labelText: 'Message content', border: OutlineInputBorder()),
+                ),
               ),
-            ),
-            actions: [
-              TextButton(onPressed: isLoading ? null : () => Navigator.pop(ctx), child: const Text('Cancel')),
-              FilledButton(
-                onPressed: isLoading ? null : () async {
-                  if (msgCtrl.text.trim().isEmpty) return;
+              actions: [
+                TextButton(onPressed: isLoading ? null : () => Navigator.pop(ctx), child: const Text('Cancel')),
+                FilledButton(
+                  onPressed: isLoading ? null : () async {
+                    if (msgCtrl.text.trim().isEmpty) return;
                   setState(() => isLoading = true);
                   try {
                     await actions.sendTicketMessage(ticketId, msgCtrl.text.trim());
@@ -1517,6 +1518,14 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
   void initState() {
     super.initState();
     _notesCtrl = TextEditingController(text: widget.ticket.internalNotes ?? '');
+  }
+
+  @override
+  void didUpdateWidget(covariant _TicketDetailPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.ticket.internalNotes != widget.ticket.internalNotes) {
+      _notesCtrl.text = widget.ticket.internalNotes ?? '';
+    }
   }
 
   @override
@@ -1608,9 +1617,13 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
                           label: const Text('Send Email to Requester'),
                         ),
                         OutlinedButton.icon(
-                          onPressed: () {
-                            actions.updateTicket(widget.ticket.id, notes: _notesCtrl.text.trim());
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notes saved.')));
+                          onPressed: () async {
+                            try {
+                              await actions.updateTicket(widget.ticket.id, notes: _notesCtrl.text.trim());
+                              if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notes saved.')));
+                            } catch (e) {
+                              if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                            }
                           },
                           icon: const Icon(Icons.save_rounded, size: 16),
                           label: const Text('Save Notes'),
@@ -1624,10 +1637,17 @@ class _TicketDetailPanelState extends ConsumerState<_TicketDetailPanel> {
                       spacing: 8,
                       children: ['OPEN', 'IN_PROGRESS', 'RESOLVED']
                           .map((s) => OutlinedButton(
-                                onPressed: () => actions.updateTicket(
-                                    widget.ticket.id,
-                                    status: s,
-                                    notes: _notesCtrl.text.trim()),
+                                onPressed: () async {
+                                  try {
+                                    await actions.updateTicket(
+                                        widget.ticket.id,
+                                        status: s,
+                                        notes: _notesCtrl.text.trim());
+                                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Status updated to $s')));
+                                  } catch (e) {
+                                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                                  }
+                                },
                                 child: Text(s.replaceAll('_', ' ')),
                               ))
                           .toList()),

@@ -38,6 +38,7 @@ export function buildApp() {
       return callback(null, env.webOrigins.includes(origin));
     },
     credentials: true,
+    methods: ['GET', 'PUT', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
   app.get('/health/live', async () => ({ status: 'ok', version: env.APP_VERSION }));
