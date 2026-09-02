@@ -25,10 +25,6 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
   bool _isSavingProfile = false;
   bool _isSavingPassword = false;
 
-  static const _ageRanges = [
-    GlassDropdownItem(value: 'UNDER_18', label: 'Under 18'),
-    GlassDropdownItem(value: 'AGE_18_24', label: '18–24'),
-    GlassDropdownItem(value: 'AGE_25_34', label: '25–34'),
   final _ageRanges = {
     'UNDER_18': 'Under 18',
     'AGE_18_24': '18–24',
@@ -51,7 +47,8 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
     _newPassCtrl = TextEditingController();
 
     _selectedAgeRange = widget.user.ageRange;
-    if (_selectedAgeRange != null && !_ageRanges.containsKey(_selectedAgeRange)) {
+    if (_selectedAgeRange != null &&
+        !_ageRanges.containsKey(_selectedAgeRange)) {
       _selectedAgeRange = null;
     }
 
@@ -198,7 +195,8 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
                             initialValue: _selectedAgeRange,
                             labelText: 'Age Range',
                             items: _ageRanges.entries
-                                .map((e) => GlassDropdownItem(value: e.key, label: e.value))
+                                .map((e) => GlassDropdownItem(
+                                    value: e.key, label: e.value))
                                 .toList(),
                             onChanged: (val) =>
                                 setState(() => _selectedAgeRange = val),
@@ -210,7 +208,8 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
                             initialValue: _selectedGender,
                             labelText: 'Gender',
                             items: _genders.entries
-                                .map((e) => GlassDropdownItem(value: e.key, label: e.value))
+                                .map((e) => GlassDropdownItem(
+                                    value: e.key, label: e.value))
                                 .toList(),
                             onChanged: (val) =>
                                 setState(() => _selectedGender = val),
