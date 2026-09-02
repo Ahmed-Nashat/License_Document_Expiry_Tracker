@@ -561,7 +561,19 @@ export async function adminRoutes(app: FastifyInstance) {
       await sendEmail({
         to: ticket.requesterEmail,
         subject: `Update on your DueNest Support Ticket: ${ticket.subject}`,
-        html: `<p>An admin has sent you a message regarding your ticket:</p><blockquote>${input.message.replace(/\n/g, '<br>')}</blockquote>`,
+        html: `
+<div style="font-family: system-ui, -apple-system, sans-serif; background-color: #0F0F0D; padding: 40px; color: #FAFAFA; text-align: center;">
+  <div style="background-color: #1A1A18; border: 1px solid #3A3A38; border-radius: 12px; padding: 32px; max-width: 600px; margin: 0 auto; text-align: left;">
+    <h2 style="margin-top: 0; color: #FAFAFA; font-weight: 600;">Update on your ticket</h2>
+    <p style="color: #B4B2A9; font-size: 15px; line-height: 1.6;">An admin has sent you a message regarding your ticket:</p>
+    <div style="background-color: #2A2A28; padding: 16px 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #B4B2A9;">
+      <p style="margin: 0; font-size: 15px; line-height: 1.5;">${input.message.replace(/\n/g, '<br>')}</p>
+    </div>
+    <p style="color: #B4B2A9; font-size: 13px; margin-bottom: 0; border-top: 1px solid #3A3A38; padding-top: 20px;">
+      This is an automated message from DueNest Support.<br/>Please do not reply directly to this email.
+    </p>
+  </div>
+</div>`,
       });
     } catch (err) {
       request.log.error({ err }, 'Failed to send support email message');
