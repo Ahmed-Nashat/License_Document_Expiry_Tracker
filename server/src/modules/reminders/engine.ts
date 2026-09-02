@@ -3,18 +3,9 @@
 import cron from 'node-cron';
 import { prisma } from '../../lib/prisma.js';
 import { sendEmail } from '../../utils/mailer.js';
+import { escapeHtml } from '../../utils/escapeHtml.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>'"]/g, (character) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    "'": '&#39;',
-    '"': '&quot;',
-  })[character] ?? character);
-}
 
 function getDateParts(timeZone: string, date = new Date()) {
   const formatter = new Intl.DateTimeFormat('en-US', {
@@ -67,6 +58,20 @@ function getDaysUntilExpiry(expiryDate: Date, timeZone: string): number {
 }
 
 async function generateReminders() {
+  // Check if the engine has been paused by an admin
+  const pauseFlag = await prisma.systemConfig.findUnique({ where: { key: 'REMINDER_ENGINE_PAUSED' } });
+  if (pauseFlag?.value === 'true') {
+    console.log('[ReminderEngine] Engine is paused. Skipping generateReminders.');
+    return;
+  }
+
+  // Record last run timestamp
+  await prisma.systemConfig.upsert({
+    where: { key: 'REMINDER_ENGINE_LAST_RUN' },
+    update: { value: new Date().toISOString(), updatedById: 'SYSTEM', reason: 'Automatic engine run' },
+    create: { key: 'REMINDER_ENGINE_LAST_RUN', value: new Date().toISOString(), updatedById: 'SYSTEM', reason: 'Automatic engine run' },
+  });
+
   const users = await prisma.user.findMany({
     include: {
       documents: {
@@ -109,6 +114,12 @@ async function generateReminders() {
 }
 
 async function dispatchReminders() {
+  const pauseFlag = await prisma.systemConfig.findUnique({ where: { key: 'REMINDER_ENGINE_PAUSED' } });
+  if (pauseFlag?.value === 'true') {
+    console.log('[ReminderEngine] Engine is paused. Skipping dispatchReminders.');
+    return;
+  }
+
   const processingCutoff = new Date(Date.now() - 15 * 60 * 1000);
   const pendingLogs = await prisma.notificationLog.findMany({
     where: {

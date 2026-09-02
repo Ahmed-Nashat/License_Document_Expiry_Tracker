@@ -4,7 +4,14 @@ import { z } from 'zod';
 import { env } from '../../config/env.js';
 import { prisma } from '../../lib/prisma.js';
 import { sendEmail } from '../../utils/mailer.js';
+import { requireAuthenticatedSession } from '../../plugins/requireAuthenticatedSession.js';
 import { hashPassword, verifyPassword } from './password.js';
+
+interface JwtPayload {
+  userId: string;
+  sessionId: string;
+  role: string;
+}
 
 const credentials = z.object({
   email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
@@ -69,6 +76,7 @@ export async function authRoutes(app: FastifyInstance) {
     const input = credentials.pick({ email: true, password: true }).parse(request.body);
     const user = await prisma.user.findUnique({ where: { email: input.email } });
     if (!user || !(await verifyPassword(input.password, user.passwordHash))) return reply.status(401).send({ error: 'INVALID_CREDENTIALS', message: 'Email or password is incorrect.' });
+    if (user.suspendedAt) return reply.status(403).send({ error: 'ACCOUNT_SUSPENDED', message: 'This account has been suspended.' });
     const { rawToken, session } = await createSession(app, user.id, request.headers['user-agent']);
     reply.setCookie(cookieName, rawToken, { ...cookieOptions, expires: session.expiresAt });
     return { accessToken: issue(user.id, user.role, session.id), user: publicUser(user) };
@@ -79,9 +87,11 @@ export async function authRoutes(app: FastifyInstance) {
     if (!rawToken) return reply.status(401).send({ error: 'SESSION_EXPIRED', message: 'Please sign in again.' });
     const session = await prisma.userSession.findUnique({
       where: { refreshTokenHash: refreshHash(rawToken) },
-      include: { user: { select: { id: true, email: true, displayName: true, role: true, ageRange: true, gender: true } } },
+      include: { user: { select: { id: true, email: true, displayName: true, role: true, ageRange: true, gender: true, suspendedAt: true } } },
     });
-    if (!session || session.revokedAt || session.expiresAt <= new Date()) return reply.status(401).send({ error: 'SESSION_EXPIRED', message: 'Please sign in again.' });
+    if (!session || session.revokedAt || session.expiresAt <= new Date() || session.user.suspendedAt) {
+      return reply.status(401).send({ error: 'SESSION_EXPIRED', message: 'Please sign in again.' });
+    }
     const nextToken = refreshToken();
     const expiresAt = expiry();
     await prisma.userSession.update({ where: { id: session.id }, data: { refreshTokenHash: refreshHash(nextToken), lastUsedAt: new Date(), lastRefreshAt: new Date(), expiresAt } });
@@ -154,5 +164,51 @@ export async function authRoutes(app: FastifyInstance) {
     ]);
 
     return reply.status(200).send({ message: 'Password updated successfully. You can now sign in.' });
+  });
+  app.patch('/api/auth/profile', {
+    preHandler: async (request, reply) => {
+      await requireAuthenticatedSession(request, reply);
+    },
+  }, async (request, reply) => {
+    const input = z.object({
+      displayName: z.string().trim().min(2).max(100),
+    }).parse(request.body);
+    const userId = (request.user as JwtPayload).userId;
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { displayName: input.displayName },
+      select: { id: true, email: true, displayName: true, role: true, ageRange: true, gender: true }
+    });
+
+    return reply.status(200).send(updated);
+  });
+
+  app.patch('/api/auth/password', {
+    preHandler: async (request, reply) => {
+      await requireAuthenticatedSession(request, reply);
+    },
+  }, async (request, reply) => {
+    const input = z.object({
+      currentPassword: z.string().min(1),
+      newPassword: z.string().min(12).max(128),
+    }).parse(request.body);
+    const userId = (request.user as JwtPayload).userId;
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !(await verifyPassword(user.passwordHash, input.currentPassword))) {
+      return reply.status(400).send({ error: 'INVALID_CREDENTIALS', message: 'Current password is incorrect.' });
+    }
+
+    const newPasswordHash = await hashPassword(input.newPassword);
+    await prisma.$transaction([
+      prisma.user.update({ where: { id: userId }, data: { passwordHash: newPasswordHash } }),
+      prisma.userSession.updateMany({
+        where: { userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      }),
+    ]);
+
+    return reply.status(200).send({ message: 'Password updated successfully. Please sign in again.' });
   });
 }

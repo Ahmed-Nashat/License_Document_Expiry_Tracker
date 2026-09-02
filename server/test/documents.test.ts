@@ -13,6 +13,14 @@ const mockPrisma = {
     deleteMany: vi.fn(),
     createMany: vi.fn(),
   },
+  userSession: {
+    findUnique: vi.fn().mockResolvedValue({
+      userId: 'user-123',
+      revokedAt: null,
+      expiresAt: new Date(Date.now() + 60_000),
+      user: { suspendedAt: null },
+    }),
+  },
   $transaction: vi.fn().mockImplementation((promises) => Promise.all(promises)),
 };
 
@@ -34,6 +42,23 @@ describe('document endpoints', async () => {
       method: 'GET',
       url: '/api/documents',
     });
+    expect(response.statusCode).toBe(401);
+  });
+
+  it('rejects a token whose server session was revoked', async () => {
+    mockPrisma.userSession.findUnique.mockResolvedValueOnce({
+      userId: 'user-123',
+      revokedAt: new Date(),
+      expiresAt: new Date(Date.now() + 60_000),
+      user: { suspendedAt: null },
+    });
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/documents',
+      headers: { authorization: `Bearer ${token}` },
+    });
+
     expect(response.statusCode).toBe(401);
   });
 

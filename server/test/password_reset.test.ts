@@ -11,6 +11,7 @@ const mockPrisma = {
   userSession: {
     create: vi.fn(),
     findMany: vi.fn(),
+    findUnique: vi.fn(),
     updateMany: vi.fn().mockResolvedValue({ count: 1 }),
   },
   passwordReset: {
@@ -21,12 +22,13 @@ const mockPrisma = {
 };
 
 const sendEmail = vi.fn().mockResolvedValue({});
+const verifyPassword = vi.fn();
 
 vi.mock('../src/lib/prisma.js', () => ({ prisma: mockPrisma }));
 vi.mock('../src/utils/mailer.js', () => ({ sendEmail }));
 vi.mock('../src/modules/auth/password.js', () => ({
   hashPassword: vi.fn().mockResolvedValue('new-password-hash'),
-  verifyPassword: vi.fn(),
+  verifyPassword,
 }));
 
 describe('password reset endpoints', async () => {
@@ -36,6 +38,12 @@ describe('password reset endpoints', async () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPrisma.userSession.findUnique.mockResolvedValue({
+      userId: 'user-1',
+      revokedAt: null,
+      expiresAt: new Date(Date.now() + 60_000),
+      user: { suspendedAt: null },
+    });
   });
 
   it('stores a hashed code and sends it through the mailer', async () => {
@@ -70,6 +78,26 @@ describe('password reset endpoints', async () => {
     expect(response.json()).toEqual({ message: 'If an account exists for this email, a reset code has been sent.' });
   });
 
+  it('does not create a new session for a suspended account', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'user-1',
+      email: 'person@example.com',
+      passwordHash: 'password-hash',
+      role: 'USER',
+      suspendedAt: new Date(),
+    });
+    verifyPassword.mockResolvedValueOnce(true);
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      payload: { email: 'person@example.com', password: 'a-secure-password' },
+    });
+
+    expect(response.statusCode).toBe(403);
+    expect(mockPrisma.userSession.create).not.toHaveBeenCalled();
+  });
+
   it('resets the password only for a valid stored code and revokes sessions', async () => {
     const email = 'person@example.com';
     const code = '123456';
@@ -95,5 +123,44 @@ describe('password reset endpoints', async () => {
       data: { revokedAt: expect.any(Date) },
     });
     expect(mockPrisma.passwordReset.delete).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
+  });
+
+  it('rejects a revoked session before it can update the profile', async () => {
+    const token = app.jwt.sign({ userId: 'user-1', sessionId: 'session-1', role: 'USER' });
+    mockPrisma.userSession.findUnique.mockResolvedValueOnce({
+      userId: 'user-1',
+      revokedAt: new Date(),
+      expiresAt: new Date(Date.now() + 60_000),
+      user: { suspendedAt: null },
+    });
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: '/api/auth/profile',
+      headers: { authorization: `Bearer ${token}` },
+      payload: { displayName: 'Updated User' },
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(mockPrisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it('updates a password for an active session and revokes all sessions', async () => {
+    const token = app.jwt.sign({ userId: 'user-1', sessionId: 'session-1', role: 'USER' });
+    mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-1', passwordHash: 'password-hash' });
+    verifyPassword.mockResolvedValueOnce(true);
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: '/api/auth/password',
+      headers: { authorization: `Bearer ${token}` },
+      payload: { currentPassword: 'a-secure-password', newPassword: 'a-new-secure-password' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(mockPrisma.userSession.updateMany).toHaveBeenCalledWith({
+      where: { userId: 'user-1', revokedAt: null },
+      data: { revokedAt: expect.any(Date) },
+    });
   });
 });

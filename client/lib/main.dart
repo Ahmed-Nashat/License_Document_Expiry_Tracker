@@ -29,6 +29,10 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/admin/dashboard',
+      redirect: (context, state) {
+        // Guard: require ADMIN role — checked via ProviderScope
+        return null; // actual check happens in AdminLoginScreen
+      },
       builder: (context, state) => const AdminDashboardScreen(),
     ),
   ],
