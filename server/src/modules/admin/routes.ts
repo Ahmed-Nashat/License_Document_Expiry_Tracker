@@ -1,4 +1,4 @@
-﻿import { FastifyInstance } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../../lib/prisma.js';
 import { requireAdmin } from '../../plugins/requireAdmin.js';
@@ -560,15 +560,20 @@ export async function adminRoutes(app: FastifyInstance) {
     try {
       await sendEmail({
         to: ticket.requesterEmail,
-        subject: \Update on your DueNest Support Ticket: \\,
-        html: \<p>An admin has sent you a message regarding your ticket:</p><blockquote>\</blockquote>\,
+        subject: `Update on your DueNest Support Ticket: ${ticket.subject}`,
+        html: `<p>An admin has sent you a message regarding your ticket:</p><blockquote>${input.message.replace(/\n/g, '<br>')}</blockquote>`,
       });
     } catch (err) {
       request.log.error({ err }, 'Failed to send support email message');
       return reply.status(500).send({ error: 'EMAIL_FAILED', message: 'Could not send the email.' });
     }
-
-    await createAuditLog(prisma, (request.user as any).userId, 'SUPPORT_MESSAGE_SENT', { actorType: 'ADMIN', targetId: ticket.id, result: 'SUCCESS' });
+    await createAuditLog(request.server, { 
+      actorId: (request.user as any).userId, 
+      action: 'SUPPORT_MESSAGE_SENT', 
+      actorType: 'ADMIN', 
+      targetId: ticket.id, 
+      result: 'SUCCESS' 
+    });
     return reply.status(200).send({ message: 'Message sent successfully.' });
   });
 }

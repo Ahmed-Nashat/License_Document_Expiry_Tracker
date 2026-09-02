@@ -1,4 +1,4 @@
-﻿import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { env } from '../../config/env.js';
@@ -176,7 +176,7 @@ export async function authRoutes(app: FastifyInstance) {
     const updated = await prisma.user.update({
       where: { id: userId },
       data: { displayName: input.displayName },
-      select: { id: true, email: true, displayName: true, role: true, isEmailVerified: true, createdAt: true, timezone: true, notifyEmail: true }
+      select: { id: true, email: true, displayName: true, role: true, ageRange: true, gender: true }
     });
     
     return reply.status(200).send(updated);
