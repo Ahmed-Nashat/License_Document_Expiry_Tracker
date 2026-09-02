@@ -149,7 +149,6 @@ model NotificationLog {
   @@index([status, retryCount])
   @@index([userId])
 }
-
 model PasswordReset {
   userId    String   @id
   codeHash  String
