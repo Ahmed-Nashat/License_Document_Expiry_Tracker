@@ -6,6 +6,7 @@ const mockPrisma = {
   $transaction: vi.fn().mockImplementation((operations) => Promise.all(operations)),
   user: {
     findUnique: vi.fn(),
+    findFirst: vi.fn(),
     update: vi.fn().mockResolvedValue({}),
   },
   userSession: {
@@ -48,7 +49,7 @@ describe('password reset endpoints', async () => {
   });
 
   it('stores a hashed code and sends it through the mailer', async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-1', email: 'person@example.com' });
+    mockPrisma.user.findFirst.mockResolvedValue({ id: 'user-1', email: 'person@example.com' });
 
     const response = await app.inject({
       method: 'POST',
@@ -57,6 +58,9 @@ describe('password reset endpoints', async () => {
     });
 
     expect(response.statusCode).toBe(200);
+    expect(mockPrisma.user.findFirst).toHaveBeenCalledWith({
+      where: { email: { equals: 'person@example.com', mode: 'insensitive' } },
+    });
     expect(mockPrisma.passwordReset.upsert).toHaveBeenCalledOnce();
     expect(sendEmail).toHaveBeenCalledWith(expect.objectContaining({
       to: 'person@example.com',
@@ -66,7 +70,7 @@ describe('password reset endpoints', async () => {
   });
 
   it('keeps the response generic when password reset email delivery fails', async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-1', email: 'person@example.com' });
+    mockPrisma.user.findFirst.mockResolvedValue({ id: 'user-1', email: 'person@example.com' });
     sendEmail.mockRejectedValueOnce(new Error('SMTP unavailable'));
 
     const response = await app.inject({
@@ -105,7 +109,7 @@ describe('password reset endpoints', async () => {
     const codeHash = createHash('sha256')
       .update(`${process.env.JWT_REFRESH_SECRET}:password-reset:${email}:${code}`)
       .digest('base64url');
-    mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-1', email });
+    mockPrisma.user.findFirst.mockResolvedValue({ id: 'user-1', email });
     mockPrisma.passwordReset.findUnique.mockResolvedValue({
       userId: 'user-1',
       codeHash,
@@ -182,7 +186,7 @@ describe('password reset endpoints', async () => {
   });
 
   it('counts invalid reset-code attempts without disclosing whether the account exists', async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-1', email: 'person@example.com' });
+    mockPrisma.user.findFirst.mockResolvedValue({ id: 'user-1', email: 'person@example.com' });
     mockPrisma.passwordReset.findUnique.mockResolvedValue({
       userId: 'user-1',
       codeHash: 'wrong-hash',

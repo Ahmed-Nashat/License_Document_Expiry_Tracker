@@ -36,6 +36,9 @@ const hashesMatch = (left: string, right: string) => {
   const rightValue = Buffer.from(right);
   return leftValue.length === rightValue.length && timingSafeEqual(leftValue, rightValue);
 };
+const findUserForPasswordReset = (email: string) => prisma.user.findFirst({
+  where: { email: { equals: email, mode: 'insensitive' } },
+});
 const hasAllowedCookieOrigin = (origin: string | undefined) =>
   env.NODE_ENV === 'test' || Boolean(origin && env.webOrigins.includes(origin));
 const publicUser = (user: { id: string; email: string; displayName: string | null; role: string; ageRange: string | null; gender: string | null }) => ({ id: user.id, email: user.email, displayName: user.displayName, role: user.role, ageRange: user.ageRange, gender: user.gender });
@@ -121,14 +124,18 @@ export async function authRoutes(app: FastifyInstance) {
       email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
     }).parse(request.body);
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await findUserForPasswordReset(email);
     const code = passwordResetCode();
     if (user) {
-      request.log.info('Password reset request matched an account; starting email delivery.');
+      request.log.info(
+        { deploymentCommit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? 'local' },
+        'Password reset request matched an account; starting email delivery.',
+      );
+      const resetEmail = user.email.toLowerCase();
       await prisma.passwordReset.upsert({
         where: { userId: user.id },
-        create: { userId: user.id, codeHash: passwordResetHash(email, code), attemptCount: 0, expiresAt: passwordResetExpiry() },
-        update: { codeHash: passwordResetHash(email, code), attemptCount: 0, expiresAt: passwordResetExpiry() },
+        create: { userId: user.id, codeHash: passwordResetHash(resetEmail, code), attemptCount: 0, expiresAt: passwordResetExpiry() },
+        update: { codeHash: passwordResetHash(resetEmail, code), attemptCount: 0, expiresAt: passwordResetExpiry() },
       });
       try {
         await sendEmail({
@@ -160,11 +167,11 @@ export async function authRoutes(app: FastifyInstance) {
       newPassword: z.string().min(12).max(128),
     }).parse(request.body);
 
-    const user = await prisma.user.findUnique({ where: { email: input.email } });
+    const user = await findUserForPasswordReset(input.email);
     const reset = user
       ? await prisma.passwordReset.findUnique({ where: { userId: user.id } })
       : null;
-    const validCode = Boolean(user && reset && reset.expiresAt > new Date() && reset.attemptCount < 5 && hashesMatch(reset.codeHash, passwordResetHash(input.email, input.code)));
+    const validCode = Boolean(user && reset && reset.expiresAt > new Date() && reset.attemptCount < 5 && hashesMatch(reset.codeHash, passwordResetHash(user.email.toLowerCase(), input.code)));
     if (!validCode || !user) {
       if (user && reset && reset.expiresAt > new Date() && reset.attemptCount < 5) {
         await prisma.passwordReset.update({ where: { userId: user.id }, data: { attemptCount: { increment: 1 } } });
