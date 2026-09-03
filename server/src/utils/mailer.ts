@@ -36,7 +36,7 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
     },
     body: JSON.stringify({ raw: base64UrlEncode(message) }),
   });
-  if (!response.ok) throw new Error(`Email delivery failed with status ${response.status}.`);
+  if (!response.ok) throw await googleRequestError('Gmail message delivery', response);
   const result = await response.json() as { id: string };
   return { id: result.id };
 }
@@ -55,7 +55,7 @@ async function getAccessToken() {
       grant_type: 'refresh_token',
     }),
   });
-  if (!response.ok) throw new Error(`Google authorization failed with status ${response.status}.`);
+  if (!response.ok) throw await googleRequestError('Google authorization', response);
   const result = await response.json() as { access_token?: string; expires_in?: number };
   if (!result.access_token) throw new Error('Google authorization did not return an access token.');
   cachedAccessToken = { value: result.access_token, expiresAt: Date.now() + (result.expires_in ?? 3600) * 1000 };
@@ -69,4 +69,15 @@ function formatSenderHeader() {
 
 function base64UrlEncode(value: string) {
   return Buffer.from(value, 'utf8').toString('base64').replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
+}
+
+async function googleRequestError(operation: string, response: Response) {
+  const payload = await response.json().catch(() => undefined) as {
+    error?: string | { message?: string; status?: string };
+    error_description?: string;
+  } | undefined;
+  const reason = typeof payload?.error === 'string'
+    ? payload.error_description ?? payload.error
+    : payload?.error?.message ?? payload?.error?.status;
+  return new Error(`${operation} failed with status ${response.status}${reason ? `: ${reason}` : ''}.`);
 }
