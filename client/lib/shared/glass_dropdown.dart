@@ -236,6 +236,11 @@ class _GlassDropdownTriggerState<T> extends State<_GlassDropdownTrigger<T>> {
             decoration: InputDecoration(
               labelText: widget.labelText,
               hintText: widget.hintText,
+              isDense: true,
+              floatingLabelBehavior: selectedItem == null
+                  ? FloatingLabelBehavior.auto
+                  : FloatingLabelBehavior.always,
+              contentPadding: const EdgeInsets.fromLTRB(16, 22, 12, 10),
               prefixIcon: widget.prefixIcon != null
                   ? IconTheme(
                       data: IconThemeData(color: AppColors.gray, size: 20),
