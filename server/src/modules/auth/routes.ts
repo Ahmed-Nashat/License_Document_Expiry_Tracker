@@ -41,7 +41,7 @@ const findUserForPasswordReset = (email: string) => prisma.user.findFirst({
 });
 const hasAllowedCookieOrigin = (origin: string | undefined) =>
   env.NODE_ENV === 'test' || Boolean(origin && env.webOrigins.includes(origin));
-const publicUser = (user: { id: string; email: string; displayName: string | null; role: string; ageRange: string | null; gender: string | null }) => ({ id: user.id, email: user.email, displayName: user.displayName, role: user.role, ageRange: user.ageRange, gender: user.gender });
+const publicUser = (user: { id: string; email: string; displayName: string | null; role: string; ageRange: string | null; gender: string | null; timeZone: string }) => ({ id: user.id, email: user.email, displayName: user.displayName, role: user.role, ageRange: user.ageRange, gender: user.gender, timeZone: user.timeZone });
 
 async function createSession(app: FastifyInstance, userId: string, deviceName?: string) {
   const rawToken = refreshToken();
@@ -95,7 +95,7 @@ export async function authRoutes(app: FastifyInstance) {
     if (!rawToken) return reply.status(401).send({ error: 'SESSION_EXPIRED', message: 'Please sign in again.' });
     const session = await prisma.userSession.findUnique({
       where: { refreshTokenHash: refreshHash(rawToken) },
-      include: { user: { select: { id: true, email: true, displayName: true, role: true, ageRange: true, gender: true, suspendedAt: true } } },
+      include: { user: { select: { id: true, email: true, displayName: true, role: true, ageRange: true, gender: true, timeZone: true, suspendedAt: true } } },
     });
     if (!session || session.revokedAt || session.expiresAt <= new Date() || session.user.suspendedAt) {
       return reply.status(401).send({ error: 'SESSION_EXPIRED', message: 'Please sign in again.' });
@@ -207,7 +207,7 @@ export async function authRoutes(app: FastifyInstance) {
         ageRange: input.ageRange,
         gender: input.gender,
       },
-      select: { id: true, email: true, displayName: true, role: true, ageRange: true, gender: true }
+      select: { id: true, email: true, displayName: true, role: true, ageRange: true, gender: true, timeZone: true }
     });
 
     return reply.status(200).send(updated);

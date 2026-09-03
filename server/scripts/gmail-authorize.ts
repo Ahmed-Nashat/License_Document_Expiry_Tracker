@@ -21,7 +21,11 @@ authorizationUrl.search = new URLSearchParams({
   response_type: 'code',
   access_type: 'offline',
   prompt: 'consent',
-  scope: 'https://www.googleapis.com/auth/gmail.send',
+  include_granted_scopes: 'true',
+  scope: [
+    'https://www.googleapis.com/auth/gmail.send',
+    'https://www.googleapis.com/auth/calendar.events',
+  ].join(' '),
 }).toString();
 
 const server = createServer(async (request, response) => {
@@ -52,7 +56,7 @@ const server = createServer(async (request, response) => {
   await writeFile(resolve('.gmail-token.json'), JSON.stringify({ clientId: client.client_id, clientSecret: client.client_secret, refreshToken: token.refresh_token }, null, 2), { mode: 0o600 });
   response.end('Authorization complete. You can close this window.');
   server.close();
-  console.log('Gmail authorization complete. Token saved locally in server/.gmail-token.json.');
+  console.log('Google authorization complete. Token saved locally in server/.gmail-token.json.');
 });
 
 server.listen(53682, '127.0.0.1', () => {

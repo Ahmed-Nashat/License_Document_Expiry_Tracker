@@ -7,6 +7,7 @@ import '../../shared/glass.dart';
 import '../../shared/theme_mode.dart';
 import '../auth/auth_models.dart';
 import '../auth/api_client_platform.dart';
+import '../calendar/calendar_api.dart';
 import '../documents/document_dialog.dart';
 import '../documents/document_models.dart';
 import '../documents/documents_controller.dart';
@@ -121,6 +122,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ],
       ),
     );
+  }
+
+  Future<void> _addToGoogleCalendar(TrackedDocument document) async {
+    try {
+      final result = await ref.read(calendarApiProvider).addExpiryEvent(
+            document: document,
+            timeZone: widget.session.user.timeZone,
+          );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.created
+              ? 'Expiry added to Google Calendar.'
+              : 'This expiry is already in Google Calendar.'),
+        ),
+      );
+    } on CalendarApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    }
   }
 
   @override
@@ -487,6 +510,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                                           .notifier)
                                                   .toggleArchive(
                                                       doc.id, !doc.isArchived),
+                                              onAddToCalendar: () =>
+                                                  _addToGoogleCalendar(doc),
                                               onDelete: () =>
                                                   _confirmDelete(context, doc),
                                             ),
@@ -755,6 +780,7 @@ class _DocumentCard extends StatefulWidget {
     required this.isDark,
     required this.onEdit,
     required this.onToggleArchive,
+    required this.onAddToCalendar,
     required this.onDelete,
   });
 
@@ -762,6 +788,7 @@ class _DocumentCard extends StatefulWidget {
   final bool isDark;
   final VoidCallback onEdit;
   final VoidCallback onToggleArchive;
+  final Future<void> Function() onAddToCalendar;
   final VoidCallback onDelete;
 
   @override
@@ -770,6 +797,17 @@ class _DocumentCard extends StatefulWidget {
 
 class _DocumentCardState extends State<_DocumentCard> {
   bool _hovered = false;
+  bool _addingToCalendar = false;
+
+  Future<void> _addToCalendar() async {
+    if (_addingToCalendar) return;
+    setState(() => _addingToCalendar = true);
+    try {
+      await widget.onAddToCalendar();
+    } finally {
+      if (mounted) setState(() => _addingToCalendar = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -867,6 +905,7 @@ class _DocumentCardState extends State<_DocumentCard> {
                       onSelected: (val) {
                         if (val == 'edit') widget.onEdit();
                         if (val == 'archive') widget.onToggleArchive();
+                        if (val == 'calendar') _addToCalendar();
                         if (val == 'delete') widget.onDelete();
                       },
                       itemBuilder: (context) => [
@@ -890,6 +929,21 @@ class _DocumentCardState extends State<_DocumentCard> {
                             const SizedBox(width: 10),
                             Text(doc.isArchived ? 'Unarchive' : 'Archive',
                                 style: const TextStyle(fontSize: 14)),
+                          ]),
+                        ),
+                        PopupMenuItem(
+                          value: 'calendar',
+                          enabled: !_addingToCalendar,
+                          child: Row(children: [
+                            const Icon(Icons.event_available_outlined,
+                                size: 16),
+                            const SizedBox(width: 10),
+                            Text(
+                              _addingToCalendar
+                                  ? 'Adding to Google Calendar…'
+                                  : 'Add to Google Calendar',
+                              style: const TextStyle(fontSize: 14),
+                            ),
                           ]),
                         ),
                         const PopupMenuItem(

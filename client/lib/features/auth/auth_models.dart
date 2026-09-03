@@ -6,6 +6,7 @@ class DeuNestUser {
     this.role = 'USER',
     this.ageRange,
     this.gender,
+    this.timeZone = 'Africa/Cairo',
   });
 
   final String id;
@@ -14,6 +15,7 @@ class DeuNestUser {
   final String role;
   final String? ageRange;
   final String? gender;
+  final String timeZone;
 
   factory DeuNestUser.fromJson(Map<String, dynamic> json) => DeuNestUser(
         id: json['id'] as String,
@@ -22,6 +24,7 @@ class DeuNestUser {
         role: json['role'] as String? ?? 'USER',
         ageRange: json['ageRange'] as String?,
         gender: json['gender'] as String?,
+        timeZone: json['timeZone'] as String? ?? 'Africa/Cairo',
       );
 }
 
