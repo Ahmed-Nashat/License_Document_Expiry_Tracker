@@ -124,6 +124,7 @@ export async function authRoutes(app: FastifyInstance) {
     const user = await prisma.user.findUnique({ where: { email } });
     const code = passwordResetCode();
     if (user) {
+      request.log.info('Password reset request matched an account; starting email delivery.');
       await prisma.passwordReset.upsert({
         where: { userId: user.id },
         create: { userId: user.id, codeHash: passwordResetHash(email, code), attemptCount: 0, expiresAt: passwordResetExpiry() },
@@ -138,6 +139,9 @@ export async function authRoutes(app: FastifyInstance) {
       } catch (error) {
         request.log.error({ err: error }, 'Password reset email delivery failed');
       }
+    } else {
+      // Keep the public response generic, but make configuration/data issues diagnosable in private server logs.
+      request.log.warn('Password reset request did not match an account.');
     }
     return reply.status(200).send({
       message: 'If an account exists for this email, a reset code has been sent.',
