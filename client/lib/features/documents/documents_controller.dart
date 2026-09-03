@@ -31,7 +31,7 @@ class DocumentsController extends AsyncNotifier<List<TrackedDocument>> {
     state = await AsyncValue.guard(() async => await build());
   }
 
-  Future<void> addDocument({
+  Future<TrackedDocument> addDocument({
     required DocumentType type,
     required String title,
     required DateTime expiryDate,
@@ -41,7 +41,7 @@ class DocumentsController extends AsyncNotifier<List<TrackedDocument>> {
     BillingCycle? billingCycle,
     List<int>? reminderDays,
   }) async {
-    await ref.read(documentsApiProvider).createDocument(
+    final created = await ref.read(documentsApiProvider).createDocument(
           type: type,
           title: title,
           expiryDate: expiryDate,
@@ -52,6 +52,7 @@ class DocumentsController extends AsyncNotifier<List<TrackedDocument>> {
           reminderDays: reminderDays,
         );
     await reload();
+    return created;
   }
 
   Future<void> editDocument(

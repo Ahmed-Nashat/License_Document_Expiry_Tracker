@@ -29,6 +29,10 @@ const schema = z.object({
   GMAIL_CLIENT_SECRET: z.string().min(10).optional(),
   GMAIL_REFRESH_TOKEN: z.string().min(10).optional(),
   EMAIL_FROM: senderAddress.optional(),
+  GOOGLE_CALENDAR_CLIENT_ID: z.string().min(10).optional(),
+  GOOGLE_CALENDAR_CLIENT_SECRET: z.string().min(10).optional(),
+  GOOGLE_CALENDAR_REDIRECT_URI: z.string().url().optional(),
+  GOOGLE_TOKEN_ENCRYPTION_KEY: z.string().min(32).optional(),
   REMINDER_CRON_SECRET: z.string().min(32).optional(),
   REMINDER_SCHEDULER_ENABLED: booleanFromEnvironment,
 }).superRefine((value, context) => {

@@ -54,6 +54,8 @@ model User {
   suspendedReason           String?
   suspendedById             String?
   sessions                  UserSession[]
+  googleCalendarConnection  GoogleCalendarConnection?
+  googleCalendarAttempts    GoogleCalendarOAuthAttempt[]
   documents                 Document[]
   notifications             NotificationLog[]
   supportTickets            SupportTicket[] @relation("TicketRequester")
@@ -61,6 +63,30 @@ model User {
   passwordReset             PasswordReset?
   createdAt                 DateTime      @default(now())
   updatedAt                 DateTime      @updatedAt
+}
+
+model GoogleCalendarConnection {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  encryptedRefreshToken String   @db.Text
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model GoogleCalendarOAuthAttempt {
+  id                    String   @id @default(cuid())
+  userId                String
+  stateHash             String   @unique
+  encryptedCodeVerifier String   @db.Text
+  returnUrl             String
+  expiresAt             DateTime
+  createdAt             DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
 }
 
 model UserSession {

@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { getGoogleAccessToken, GoogleAuthorizationError, GoogleServiceError } from '../../integrations/google/oauth.js';
+import { getUserGoogleCalendarAccessToken } from '../../integrations/google/calendar_connection.js';
+import { GoogleAuthorizationError, GoogleServiceError } from '../../integrations/google/oauth.js';
 
 interface CalendarEventInput {
   userId: string;
@@ -46,8 +47,8 @@ function safeEvent(event: GoogleCalendarEvent, created: boolean): CreatedCalenda
   return { eventId: event.id, eventLink: link.toString(), created };
 }
 
-async function calendarRequest(url: string, init?: RequestInit): Promise<Response> {
-  const accessToken = await getGoogleAccessToken();
+async function calendarRequest(userId: string, url: string, init?: RequestInit): Promise<Response> {
+  const accessToken = await getUserGoogleCalendarAccessToken(userId);
   return fetch(url, {
     ...init,
     headers: {
@@ -68,7 +69,7 @@ function throwCalendarError(response: Response): never {
 export async function createGoogleCalendarEvent(input: CalendarEventInput): Promise<CreatedCalendarEvent> {
   const eventId = eventIdFor(input);
   const eventUrl = `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`;
-  const response = await calendarRequest(
+  const response = await calendarRequest(input.userId,
     'https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=none',
     {
       method: 'POST',
@@ -84,7 +85,7 @@ export async function createGoogleCalendarEvent(input: CalendarEventInput): Prom
   );
 
   if (response.status === 409) {
-    const existingResponse = await calendarRequest(eventUrl);
+    const existingResponse = await calendarRequest(input.userId, eventUrl);
     if (!existingResponse.ok) throwCalendarError(existingResponse);
     return safeEvent(await existingResponse.json() as GoogleCalendarEvent, false);
   }

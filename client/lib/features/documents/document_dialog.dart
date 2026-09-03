@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../shared/design_tokens.dart';
 import '../../shared/glass_dropdown.dart';
+import '../calendar/calendar_api.dart';
+import '../auth/auth_controller.dart';
 import 'document_models.dart';
 import 'documents_controller.dart';
 
@@ -52,6 +55,9 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
   BillingCycle? _billingCycle;
   DateTime? _expiryDate;
   bool _isSaving = false;
+  bool _addToCalendar = false;
+  bool? _calendarConnected;
+  bool _isConnectingCalendar = false;
   String? _errorMessage;
   Set<int> _reminderDays = {90, 30, 7, 1, 0};
 
@@ -76,6 +82,7 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
           .map((r) => r.daysBeforeExpiry)
           .toSet();
     }
+    if (doc == null) _refreshCalendarConnection();
   }
 
   @override
@@ -98,10 +105,45 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
     if (picked != null) setState(() => _expiryDate = picked);
   }
 
+  Future<void> _refreshCalendarConnection() async {
+    final connection = await ref.read(calendarApiProvider).connection();
+    if (mounted) setState(() => _calendarConnected = connection.connected);
+  }
+
+  Future<void> _connectGoogleCalendar() async {
+    setState(() {
+      _isConnectingCalendar = true;
+      _errorMessage = null;
+    });
+    try {
+      final url = await ref.read(calendarApiProvider).beginConnection();
+      final launched = await launchUrl(
+        url,
+        mode: LaunchMode.externalApplication,
+        webOnlyWindowName: '_blank',
+      );
+      if (!launched && mounted) {
+        setState(() => _errorMessage =
+            'Could not open Google Calendar sign-in. Please try again.');
+      }
+    } on CalendarApiException catch (error) {
+      if (mounted) setState(() => _errorMessage = error.message);
+    } finally {
+      if (mounted) setState(() => _isConnectingCalendar = false);
+    }
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     if (_expiryDate == null) {
       setState(() => _errorMessage = 'Select an expiry date.');
+      return;
+    }
+    if (widget.document == null &&
+        _addToCalendar &&
+        _calendarConnected != true) {
+      setState(() => _errorMessage =
+          'Connect your Google Calendar before adding this item to it.');
       return;
     }
 
@@ -122,22 +164,25 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
         title = _selectedType.label;
       }
 
+      TrackedDocument? createdDocument;
       if (widget.document == null) {
-        await ref.read(documentsControllerProvider.notifier).addDocument(
-              type: _selectedType,
-              title: title,
-              expiryDate: _expiryDate!,
-              notes: _notesController.text.trim(),
-              providerName: _selectedType == DocumentType.subscription
-                  ? _providerController.text.trim()
-                  : null,
-              renewalAmount:
-                  _selectedType == DocumentType.subscription ? amount : null,
-              billingCycle: _selectedType == DocumentType.subscription
-                  ? _billingCycle
-                  : null,
-              reminderDays: _reminderDays.toList(),
-            );
+        createdDocument =
+            await ref.read(documentsControllerProvider.notifier).addDocument(
+                  type: _selectedType,
+                  title: title,
+                  expiryDate: _expiryDate!,
+                  notes: _notesController.text.trim(),
+                  providerName: _selectedType == DocumentType.subscription
+                      ? _providerController.text.trim()
+                      : null,
+                  renewalAmount: _selectedType == DocumentType.subscription
+                      ? amount
+                      : null,
+                  billingCycle: _selectedType == DocumentType.subscription
+                      ? _billingCycle
+                      : null,
+                  reminderDays: _reminderDays.toList(),
+                );
       } else {
         await ref.read(documentsControllerProvider.notifier).editDocument(
               widget.document!.id,
@@ -156,7 +201,31 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
               reminderDays: _reminderDays.toList(),
             );
       }
-      if (mounted) Navigator.of(context).pop();
+      String? calendarMessage;
+      if (createdDocument != null && _addToCalendar) {
+        final session = ref.read(authControllerProvider).value;
+        if (session != null) {
+          try {
+            final result = await ref.read(calendarApiProvider).addExpiryEvent(
+                  document: createdDocument,
+                  timeZone: session.user.timeZone,
+                );
+            calendarMessage = result.created
+                ? 'Item saved and expiry added to Google Calendar.'
+                : 'Item saved. This expiry is already in Google Calendar.';
+          } on CalendarApiException catch (error) {
+            calendarMessage =
+                'Item saved, but Calendar could not be updated: ${error.message}';
+          }
+        }
+      }
+      if (mounted) {
+        Navigator.of(context).pop();
+        if (calendarMessage != null) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(calendarMessage)));
+        }
+      }
     } catch (e) {
       if (mounted) {
         setState(
@@ -362,6 +431,88 @@ class _DocumentDialogState extends ConsumerState<DocumentDialog> {
                     ),
                   ),
                   const SizedBox(height: 16),
+
+                  if (!isEditing) ...[
+                    Text(
+                      'Google Calendar',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? AppColors.gray : AppColors.charcoal,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    SwitchListTile.adaptive(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Add to my Google Calendar'),
+                      subtitle: const Text(
+                        'Uses the expiry date selected above.',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                      value: _addToCalendar,
+                      onChanged: _isSaving
+                          ? null
+                          : (value) => setState(() => _addToCalendar = value),
+                    ),
+                    if (_addToCalendar)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.surfaceDark : AppColors.fog,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isDark
+                                ? AppColors.borderDark
+                                : AppColors.border,
+                          ),
+                        ),
+                        child: _calendarConnected == true
+                            ? const Row(
+                                children: [
+                                  Icon(Icons.check_circle_outline_rounded,
+                                      color: Color(0xFF1F7A4D), size: 18),
+                                  SizedBox(width: 8),
+                                  Text('Google Calendar connected.'),
+                                ],
+                              )
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Connect your Google account before adding this event.',
+                                    style:
+                                        TextStyle(fontSize: 12, height: 1.35),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      OutlinedButton.icon(
+                                        onPressed: _isConnectingCalendar
+                                            ? null
+                                            : _connectGoogleCalendar,
+                                        icon: const Icon(
+                                            Icons.account_circle_outlined,
+                                            size: 18),
+                                        label: Text(_isConnectingCalendar
+                                            ? 'Opening Google…'
+                                            : 'Connect Google Calendar'),
+                                      ),
+                                      TextButton(
+                                        onPressed: _isConnectingCalendar
+                                            ? null
+                                            : _refreshCalendarConnection,
+                                        child: const Text('I’ve connected it'),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                      ),
+                    const SizedBox(height: 16),
+                  ],
 
                   // Reminders
                   Text(

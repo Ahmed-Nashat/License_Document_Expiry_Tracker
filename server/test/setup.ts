@@ -7,3 +7,7 @@ process.env.GMAIL_CLIENT_ID = 'test-google-client-id';
 process.env.GMAIL_CLIENT_SECRET = 'test-google-client-secret';
 process.env.GMAIL_REFRESH_TOKEN = 'test-google-refresh-token';
 process.env.EMAIL_FROM = 'DueNest <test@example.com>';
+process.env.GOOGLE_CALENDAR_CLIENT_ID = 'test-calendar-client-id';
+process.env.GOOGLE_CALENDAR_CLIENT_SECRET = 'test-calendar-client-secret';
+process.env.GOOGLE_CALENDAR_REDIRECT_URI = 'http://localhost:3000/api/calendar/oauth/callback';
+process.env.GOOGLE_TOKEN_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString('base64url');
