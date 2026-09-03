@@ -68,6 +68,7 @@ class CalendarApi {
     try {
       final response = await _dio.post<Map<String, dynamic>>(
         '/api/calendar/connection/authorize',
+        data: const <String, dynamic>{},
       );
       final rawUrl = response.data?['authorizationUrl'];
       final uri = rawUrl is String ? Uri.tryParse(rawUrl) : null;
