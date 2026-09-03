@@ -136,7 +136,7 @@ export async function authRoutes(app: FastifyInstance) {
           html: `<p>Use this code to reset your DueNest password:</p><p><strong>${code}</strong></p><p>This code expires in 15 minutes.</p>`,
         });
       } catch (error) {
-        request.log.error({ error }, 'Password reset email delivery failed');
+        request.log.error({ err: error }, 'Password reset email delivery failed');
       }
     }
     return reply.status(200).send({
