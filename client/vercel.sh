@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+if [[ -z "${API_BASE_URL:-}" && -n "${RENDER_API_URL:-}" ]]; then
+  API_BASE_URL="${RENDER_API_URL%/}"
+fi
+
 if [[ -z "${API_BASE_URL:-}" ]]; then
   : "${VERCEL_URL:?API_BASE_URL must be set locally; Vercel supplies VERCEL_URL during deployment}"
   API_BASE_URL="https://${VERCEL_URL}"
