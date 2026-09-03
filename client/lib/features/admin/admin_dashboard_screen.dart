@@ -22,6 +22,13 @@ String _fmtDate(DateTime dt) {
   return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
 }
 
+String _fmtTimestamp(String value) {
+  final parsed = DateTime.tryParse(value);
+  if (parsed == null) return value;
+  final local = parsed.toLocal();
+  return '${_fmt(local)} ${local.timeZoneName}';
+}
+
 Widget _chip(String label, Color bg, Color fg) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration:
@@ -497,7 +504,7 @@ class _OverviewTab extends ConsumerWidget {
                             ? Colors.orange
                             : Colors.greenAccent.shade400,
                         sub: r.lastRun != null
-                            ? 'Last: ${r.lastRun!.substring(0, 16).replaceAll('T', ' ')}'
+                            ? 'Last: ${_fmtTimestamp(r.lastRun!)}'
                             : null,
                       ),
                     ]),
@@ -1100,7 +1107,7 @@ class _RemindersTab extends ConsumerWidget {
                                               : AppColors.ink)),
                                   if (s.lastRun != null)
                                     Text(
-                                        'Last run: ${s.lastRun!.substring(0, 16).replaceAll('T', ' ')}',
+                                        'Last run: ${_fmtTimestamp(s.lastRun!)}',
                                         style: const TextStyle(
                                             fontSize: 11,
                                             color: AppColors.gray)),
